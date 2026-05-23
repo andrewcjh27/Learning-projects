@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 0 — CS Fundamentals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1f;--surface:#0e1628;--card:#121c30;--border:#1e2d47;--border-b:#2d4470;
+  --primary:#4f8ef7;--primary-dim:rgba(79,142,247,.12);--primary-glow:rgba(79,142,247,.3);
+  --secondary:#a78bfa;--accent:#34d399;--warning:#fbbf24;--danger:#f87171;--orange:#fb923c;
+  --text:#dde8f5;--muted:#7a8faa;--dim:#3d5070;
+  --font:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;--r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-back{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-back:hover{color:var(--primary)}
+.nav-sep{color:var(--dim)}
+.nav-title{font-weight:600;font-size:.9rem}
+.lesson-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0}
+.lesson-tab{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;white-space:nowrap;background:transparent;color:var(--muted)}
+.lesson-tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.lesson-tab.active{background:var(--primary-dim);color:var(--primary);border:1px solid var(--primary-glow)}
+@media(max-width:640px){nav{flex-direction:column;height:auto;padding:10px 16px;gap:6px}.lesson-tabs{width:100%}}
+
+/* HERO */
+.phase-hero{padding:48px 32px 32px;max-width:1100px;margin:0 auto}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.phase-hero h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;letter-spacing:-.04em;margin-bottom:8px;background:linear-gradient(135deg,#fff 40%,#7ab2ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.phase-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+.phase-progress{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.pp-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.pp-step.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.pp-step.done{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.pp-step:not(.active):not(.done){color:var(--dim)}
+.pp-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+/* SECTIONS */
+.lesson-section{display:none;max-width:1100px;margin:0 auto;padding:32px 32px 80px}
+.lesson-section.active{display:block}
+.lesson-header{margin-bottom:32px}
+.lesson-num{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-family:var(--mono)}
+.lesson-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.lesson-desc{color:var(--muted);max-width:680px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.split-wide{grid-template-columns:2fr 3fr}
+
+/* PROSE */
+.prose h3{font-size:1rem;font-weight:600;margin:20px 0 8px;color:var(--text)}
+.prose h3:first-child{margin-top:0}
+.prose p{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.prose ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.prose li{font-size:.9rem;color:var(--muted);padding-left:16px;position:relative}
+.prose li::before{content:'›';position:absolute;left:0;color:var(--primary)}
+.prose strong{color:var(--text);font-weight:600}
+.prose .callout{background:var(--primary-dim);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 16px;margin:12px 0}
+.prose .callout p{color:var(--text);margin:0}
+.prose code{font-family:var(--mono);font-size:.82rem;background:rgba(79,142,247,.1);padding:2px 6px;border-radius:4px;color:var(--primary)}
+
+/* KEY CONCEPTS BOX */
+.concepts-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:20px}
+.concepts-box h4{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.concept-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.concept-item:last-child{border-bottom:none}
+.concept-key{font-family:var(--mono);font-size:.75rem;color:var(--primary);font-weight:500;white-space:nowrap;min-width:90px}
+.concept-val{font-size:.8rem;color:var(--muted)}
+
+/* INTERACTIVE PANELS */
+.demo-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:relative}
+.demo-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.demo-title span{color:var(--accent);font-size:.7rem;font-weight:600}
+
+/* BUTTONS */
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.btn:hover{border-color:var(--border-b);color:var(--text)}
+.btn.active,.btn.primary{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.btn.accent{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.btn.warning{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3);color:var(--warning)}
+.btn.danger{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:var(--danger)}
+
+/* ====================================================
+   LESSON 1 — CPU CORES DIAGRAM
+   ==================================================== */
+.cores-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.cpu-core{border:2px solid var(--border);border-radius:10px;padding:14px 8px;text-align:center;transition:all .4s;position:relative;background:var(--surface)}
+.cpu-core.active{border-color:var(--primary);background:rgba(79,142,247,.08);box-shadow:0 0 20px rgba(79,142,247,.2)}
+.cpu-core.mp-active{border-color:var(--accent);background:rgba(52,211,153,.08);box-shadow:0 0 20px rgba(52,211,153,.2)}
+.cpu-core.gil-active{border-color:var(--primary);background:rgba(79,142,247,.12);box-shadow:0 0 20px rgba(79,142,247,.3)}
+.core-label{font-family:var(--mono);font-size:.65rem;color:var(--dim)}
+.core-icon{font-size:1.4rem;margin:6px 0}
+.thread-bar{height:4px;border-radius:2px;background:var(--border);margin-top:6px;transition:background .4s}
+.thread-bar.running{background:var(--primary)}
+.thread-bar.running-green{background:var(--accent)}
+.gil-badge{position:absolute;top:-8px;right:-8px;background:var(--warning);color:#000;font-size:.55rem;font-weight:800;padding:2px 5px;border-radius:4px;display:none}
+.gil-badge.visible{display:block}
+.core-info-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;font-size:.82rem;color:var(--muted);min-height:60px;transition:all .3s}
+
+/* ====================================================
+   LESSON 2 — CACHE HIERARCHY
+   ==================================================== */
+.cache-pyramid{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:20px}
+.cache-layer{border-radius:6px;padding:12px 24px;cursor:pointer;border:2px solid transparent;transition:all .25s;text-align:center;position:relative}
+.cache-layer:hover{filter:brightness(1.2)}
+.cache-layer.selected{border-color:rgba(255,255,255,.4)!important;box-shadow:0 0 20px rgba(255,255,255,.1)}
+.cache-name{font-weight:700;font-size:.85rem;color:#fff}
+.cache-quick{font-size:.7rem;opacity:.7}
+.cache-info{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:20px;min-height:120px}
+.cache-info-name{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+.cache-info-row{display:flex;gap:24px;margin:12px 0;flex-wrap:wrap}
+.ci-box{padding:8px 14px;background:var(--card);border-radius:var(--r-sm);border:1px solid var(--border)}
+.ci-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+.ci-val{font-size:.95rem;font-weight:700;font-family:var(--mono)}
+.cache-info-desc{font-size:.82rem;color:var(--muted);margin-top:8px}
+.cache-animate-btn{margin-bottom:12px}
+.data-ball{width:12px;height:12px;border-radius:50%;background:var(--warning);position:absolute;left:50%;transform:translateX(-50%);transition:top .6s cubic-bezier(.4,0,.2,1);pointer-events:none;display:none;z-index:10;box-shadow:0 0 12px var(--warning)}
+
+/* ====================================================
+   LESSON 3 — LATENCY CHART
+   ==================================================== */
+.latency-chart{display:flex;flex-direction:column;gap:8px}
+.lat-row{display:flex;align-items:center;gap:10px;cursor:pointer}
+.lat-row:hover .lat-bar-fill{filter:brightness(1.2)}
+.lat-row.highlighted .lat-label{color:var(--text)}
+.lat-label{font-size:.75rem;font-family:var(--mono);min-width:110px;text-align:right;color:var(--muted);flex-shrink:0;transition:color .2s}
+.lat-bar-track{flex:1;height:20px;background:var(--surface);border-radius:4px;overflow:hidden;position:relative}
+.lat-bar-fill{height:100%;border-radius:4px;transition:width 1s ease,opacity .2s;opacity:1}
+.lat-val{font-size:.7rem;font-family:var(--mono);color:var(--muted);white-space:nowrap;min-width:70px}
+.lat-tooltip{background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;margin-top:12px;font-size:.82rem;min-height:48px;color:var(--muted);transition:all .3s}
+.lat-tooltip strong{color:var(--text)}
+
+/* ====================================================
+   LESSON 4 — ROW vs COLUMN STORAGE
+   ==================================================== */
+.table-viz-wrap{overflow-x:auto}
+.table-viz{width:100%;border-collapse:collapse;font-size:.78rem}
+.table-viz th{background:var(--surface);color:var(--dim);font-weight:600;padding:8px 12px;text-align:left;border:1px solid var(--border);font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em}
+.table-viz td{padding:8px 12px;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:.75rem;transition:background .15s,color .15s,border-color .15s}
+.table-viz td.highlight-col{background:rgba(79,142,247,.15);color:var(--primary);border-color:rgba(79,142,247,.3)}
+.table-viz td.highlight-row{background:rgba(52,211,153,.12);color:var(--accent);border-color:rgba(52,211,153,.3)}
+.table-viz td.highlight-both{background:rgba(251,191,36,.15);color:var(--warning);border-color:rgba(251,191,36,.3)}
+.table-viz td.dim{opacity:.2}
+.storage-stats{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+.stat-box{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px}
+.stat-box-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+.stat-box-val{font-size:1.1rem;font-weight:700;font-family:var(--mono);margin-top:2px}
+.stat-box-val.good{color:var(--accent)}
+.stat-box-val.bad{color:var(--danger)}
+.sql-query{background:rgba(79,142,247,.07);border:1px solid rgba(79,142,247,.2);border-radius:var(--r-sm);padding:10px 14px;font-family:var(--mono);font-size:.78rem;color:var(--primary);margin-bottom:12px}
+.sql-comment{color:var(--dim)}
+
+/* ====================================================
+   LESSON 5 — CPU vs GPU
+   ==================================================== */
+.cpu-gpu-split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:640px){.cpu-gpu-split{grid-template-columns:1fr}}
+.chip-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center}
+.chip-label{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.chip-label span{color:var(--text)}
+.cpu-cores-display{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.cpu-mini-core{border:1px solid var(--border);border-radius:6px;padding:12px 4px;text-align:center;font-size:.6rem;color:var(--dim);transition:all .3s}
+.cpu-mini-core.proc{border-color:var(--primary);background:rgba(79,142,247,.15);color:var(--primary)}
+.gpu-grid{display:grid;grid-template-columns:repeat(32,1fr);gap:1px;margin-bottom:12px}
+.gpu-mini-core{width:100%;aspect-ratio:1;border-radius:1px;background:var(--border);transition:background .1s}
+.gpu-mini-core.proc{background:var(--secondary)}
+.chip-stat{font-size:.8rem;color:var(--muted)}
+.chip-stat strong{color:var(--text)}
+.speed-meter{margin-top:16px}
+.speed-label{font-size:.75rem;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between}
+.speed-track{height:8px;background:var(--surface);border-radius:4px;border:1px solid var(--border);overflow:hidden}
+.speed-fill{height:100%;width:0%;border-radius:4px;transition:width .3s}
+
+/* ====================================================
+   QUIZ
+   ==================================================== */
+.quiz-wrap{max-width:720px;margin:0 auto}
+.quiz-progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:32px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:2px;transition:width .4s ease}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.q-text{font-size:1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:12px 16px;border-radius:var(--r-sm);border:1px solid var(--border);cursor:pointer;font-size:.88rem;transition:all .2s;background:var(--surface)}
+.option:hover:not(.locked){border-color:var(--border-b);background:rgba(255,255,255,.03)}
+.option.correct{border-color:var(--accent)!important;background:rgba(52,211,153,.1)!important;color:var(--accent)}
+.option.wrong{border-color:var(--danger)!important;background:rgba(248,113,113,.1)!important;color:var(--danger)}
+.option.locked{cursor:default}
+.explanation{margin-top:16px;padding:14px 16px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:var(--r-sm);font-size:.84rem;color:var(--text);line-height:1.6;display:none}
+.explanation.visible{display:block;animation:slideUp .3s ease}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.quiz-score{text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);display:none}
+.quiz-score.visible{display:block;animation:slideUp .4s ease}
+.score-num{font-size:4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-msg{font-size:1.1rem;color:var(--muted);margin-bottom:24px}
+
+/* NAV BUTTONS at lesson end */
+.lesson-nav{display:flex;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.big-btn{padding:12px 24px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font)}
+.big-btn.primary{background:var(--primary);color:#fff}
+.big-btn.primary:hover{background:#6fa2ff;box-shadow:0 4px 20px rgba(79,142,247,.4)}
+.big-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.big-btn.ghost:hover{color:var(--text);border-color:var(--border-b)}
+
+@media(max-width:640px){
+  .phase-hero,.lesson-section{padding-left:20px;padding-right:20px}
+  .cores-grid{grid-template-columns:repeat(4,1fr);gap:6px}
+  .cpu-cores-display{grid-template-columns:repeat(4,1fr)}
+  .gpu-grid{grid-template-columns:repeat(20,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- ========== NAV ========== -->
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← Roadmap</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Phase 0: CS Fundamentals</span>
+  </div>
+  <div class="lesson-tabs" id="lessonTabs">
+    <button class="lesson-tab active" data-lesson="0">1. CPU Cores</button>
+    <button class="lesson-tab" data-lesson="1">2. Cache Hierarchy</button>
+    <button class="lesson-tab" data-lesson="2">3. Memory Speed</button>
+    <button class="lesson-tab" data-lesson="3">4. Row vs Column</button>
+    <button class="lesson-tab" data-lesson="4">5. CPU vs GPU</button>
+    <button class="lesson-tab" data-lesson="5">✦ Quiz</button>
+  </div>
+</nav>
+
+<!-- ========== PHASE HERO ========== -->
+<div class="phase-hero">
+  <div class="breadcrumb"><a href="index.html">Roadmap</a> / Phase 0</div>
+  <h1>Computer Science Fundamentals</h1>
+  <p>Build the mental model that makes every tool — Spark, GPUs, cloud instances — make sense from first principles.</p>
+  <div class="phase-progress" id="phaseProgress">
+    <div class="pp-step active" data-lesson="0"><span class="pp-dot"></span>CPU Cores</div>
+    <div class="pp-step" data-lesson="1"><span class="pp-dot"></span>Cache</div>
+    <div class="pp-step" data-lesson="2"><span class="pp-dot"></span>Memory Speed</div>
+    <div class="pp-step" data-lesson="3"><span class="pp-dot"></span>Row vs Col</div>
+    <div class="pp-step" data-lesson="4"><span class="pp-dot"></span>CPU vs GPU</div>
+    <div class="pp-step" data-lesson="5"><span class="pp-dot"></span>Quiz</div>
+  </div>
+</div>
+
+<!-- ========================================================
+     LESSON 0 — CPU CORES & THREADING
+     ======================================================== -->
+<div class="lesson-section active" id="lesson-0">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 1 of 5</div>
+    <div class="lesson-title">CPU Cores, Threads & Python's GIL</div>
+    <div class="lesson-desc">Understand why running more Python threads doesn't speed up your code — and what to do about it.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>What is a CPU Core?</h3>
+      <p>A <strong>core</strong> is a complete, independent processor inside your CPU. Each core can execute one stream of instructions at a time. A modern laptop has 8–16 cores; a cloud server might have 96.</p>
+
+      <h3>Hyper-threading</h3>
+      <p>Each physical core can appear as <strong>2 logical CPUs</strong> to the OS. The hardware shares some execution units between the two logical threads. This helps when one thread stalls waiting on memory — the other can use the idle hardware. It does <em>not</em> double performance.</p>
+
+      <h3>Python's GIL — The Crucial Catch</h3>
+      <p>CPython (the standard Python) has a <strong>Global Interpreter Lock</strong>. Only <strong>one thread</strong> can execute Python bytecode at a time — even on a 16-core machine.</p>
+
+      <div class="callout"><p>This is why threading your pandas code doesn't make it faster. Use <code>multiprocessing</code> instead — each process gets its own GIL.</p></div>
+
+      <h3>NumPy & pandas release the GIL</h3>
+      <p>When numpy/pandas call into C-level code (array math, sort, etc.), they release the GIL. So threads <em>can</em> help if most of your time is in C extensions, not Python logic.</p>
+
+      <div class="concepts-box">
+        <h4>Key Concepts</h4>
+        <div class="concept-item"><div class="concept-key">Core</div><div class="concept-val">Independent processor — can run 1 instruction stream</div></div>
+        <div class="concept-item"><div class="concept-key">Thread</div><div class="concept-val">Lightweight execution unit within a process</div></div>
+        <div class="concept-item"><div class="concept-key">GIL</div><div class="concept-val">Python lock — only 1 thread runs Python at a time</div></div>
+        <div class="concept-item"><div class="concept-key">Process</div><div class="concept-val">Independent memory space + its own GIL — true parallelism</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Interactive — 8-Core CPU <span>Click a mode to see how threads run</span></div>
+        <div class="btn-group">
+          <button class="btn active" id="btnSingle" onclick="setMode('single')">Single Thread</button>
+          <button class="btn" id="btnThread" onclick="setMode('threading')">Python Threads (GIL)</button>
+          <button class="btn" id="btnMP" onclick="setMode('multiprocessing')">Multiprocessing</button>
+        </div>
+        <div class="cores-grid" id="coresGrid"></div>
+        <div class="core-info-box" id="coreInfoBox">
+          <strong style="color:var(--text)">Single Thread:</strong> One core is running your Python script. The other 7 sit completely idle. This is the default.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <span></span>
+    <button class="big-btn primary" onclick="goLesson(1)">Next: Cache Hierarchy →</button>
+  </div>
+</div>
+
+<!-- ========================================================
+     LESSON 1 — CACHE HIERARCHY
+     ======================================================== -->
+<div class="lesson-section" id="lesson-1">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 2 of 5</div>
+    <div class="lesson-title">The Cache Hierarchy</div>
+    <div class="lesson-desc">Why the same piece of data can take 0.3 ns or 10 ms to access — and how this shapes every data tool you'll use.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>Why caches exist</h3>
+      <p>RAM is <strong>100x slower</strong> than L1 cache. CPUs would stall constantly waiting on RAM. Caches store copies of recently-used data close to the core so it can be reused at near-zero cost.</p>
+
+      <h3>The hierarchy</h3>
+      <p>Data flows up (toward the core) as it's needed. The CPU checks L1 first. If not there (<strong>cache miss</strong>), it checks L2, then L3, then RAM. Each miss wastes dozens to hundreds of cycles.</p>
+
+      <h3>Why Parquet &amp; DuckDB win</h3>
+      <p><strong>Columnar formats</strong> pack all values of a column sequentially. When doing <code>AVG(salary)</code>, the CPU fetches salary values that are contiguous in memory — they fill a cache line perfectly. A row store loads entire rows (all 50 columns), most of which you didn't ask for.</p>
+
+      <div class="callout"><p>This is called <strong>cache locality</strong>. Algorithms and data structures that respect it can be 10–100x faster than ones that don't.</p></div>
+
+      <div class="concepts-box">
+        <h4>Key Concepts</h4>
+        <div class="concept-item"><div class="concept-key">Cache hit</div><div class="concept-val">Data found in cache — served in ~1–40 ns</div></div>
+        <div class="concept-item"><div class="concept-key">Cache miss</div><div class="concept-val">Data not in cache — must wait on RAM (~100 ns)</div></div>
+        <div class="concept-item"><div class="concept-key">Cache line</div><div class="concept-val">64 bytes fetched at once — spatial locality</div></div>
+        <div class="concept-item"><div class="concept-key">NUMA</div><div class="concept-val">Multi-socket servers: some RAM is "far" from some cores</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Cache Pyramid <span>Click a layer to explore</span></div>
+        <button class="btn cache-animate-btn" onclick="animateDataFetch()">▶ Simulate Data Fetch from RAM</button>
+        <div style="position:relative">
+          <div class="cache-pyramid" id="cachePyramid"></div>
+          <div class="data-ball" id="dataBall"></div>
+        </div>
+        <div class="cache-info" id="cacheInfo">
+          <div style="color:var(--muted);font-size:.85rem">← Click any layer to see details</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(0)">← Back</button>
+    <button class="big-btn primary" onclick="goLesson(2)">Next: Memory Speed →</button>
+  </div>
+</div>
+
+<!-- ========================================================
+     LESSON 2 — MEMORY LATENCY CHART
+     ======================================================== -->
+<div class="lesson-section" id="lesson-2">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 3 of 5</div>
+    <div class="lesson-title">Memory Latency — The Speed of Everything</div>
+    <div class="lesson-desc">Visualize why in-memory databases exist, why Redis is fast, and why network calls are expensive.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>Latency vs. bandwidth</h3>
+      <p><strong>Latency</strong> is the delay before data starts arriving. <strong>Bandwidth</strong> is how much data arrives per second. You can have high bandwidth with high latency (bulk transfer) or low latency with low bandwidth. For interactive systems, latency is usually the bottleneck.</p>
+
+      <h3>The human analogy</h3>
+      <p>If L1 cache access = <strong>1 second</strong>, then:</p>
+      <ul>
+        <li>L2 = 4 seconds</li>
+        <li>L3 = 40 seconds</li>
+        <li>RAM = <strong>1.5 minutes</strong></li>
+        <li>NVMe SSD = <strong>3 days</strong></li>
+        <li>HDD = <strong>11 months</strong></li>
+        <li>Network (WAN) = <strong>100+ years</strong></li>
+      </ul>
+
+      <h3>Why Redis exists</h3>
+      <p>A PostgreSQL query hitting disk = milliseconds. Redis in memory = microseconds. For hot data (sessions, counters, leaderboards), the 1000x latency difference matters enormously.</p>
+
+      <h3>Why Spark uses RAM</h3>
+      <p>Hadoop MapReduce wrote intermediate results to disk between steps. Spark keeps them in RAM. That's why Spark is typically 100x faster than MapReduce — it avoids disk I/O entirely for iterative workloads.</p>
+
+      <div class="concepts-box">
+        <h4>Key Numbers to Memorize</h4>
+        <div class="concept-item"><div class="concept-key">L1 cache</div><div class="concept-val">~1 ns — the speed of thought</div></div>
+        <div class="concept-item"><div class="concept-key">RAM</div><div class="concept-val">~60–100 ns — 100x slower than L1</div></div>
+        <div class="concept-item"><div class="concept-key">NVMe SSD</div><div class="concept-val">~100 μs — 100,000x slower than L1</div></div>
+        <div class="concept-item"><div class="concept-key">Network</div><div class="concept-val">~1–100 ms — 1,000,000x slower</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Latency Visualizer <span>Log scale — hover to compare</span></div>
+        <div class="latency-chart" id="latencyChart"></div>
+        <div class="lat-tooltip" id="latTooltip">Hover a bar to see the latency and a human-scale analogy.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(1)">← Back</button>
+    <button class="big-btn primary" onclick="goLesson(3)">Next: Row vs Column →</button>
+  </div>
+</div>
+
+<!-- ========================================================
+     LESSON 3 — ROW vs COLUMN STORAGE
+     ======================================================== -->
+<div class="lesson-section" id="lesson-3">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 4 of 5</div>
+    <div class="lesson-title">Row vs Column Storage</div>
+    <div class="lesson-desc">The architecture choice behind why DuckDB, Snowflake and Parquet are so much faster for analytics.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>Row stores (OLTP)</h3>
+      <p>Traditional databases (MySQL, PostgreSQL in row mode) store data row by row. <strong>Inserting or updating a record is fast</strong> — all fields for a row are together. Perfect for transactional workloads (e-commerce, banking).</p>
+
+      <h3>Column stores (OLAP)</h3>
+      <p>Columnar databases store all values of a column together. When you do <code>SELECT AVG(salary)</code>, you read only the salary column — not the name, city, or any other field. <strong>10–100x less I/O for analytical queries.</strong></p>
+
+      <h3>Compression</h3>
+      <p>Columnar data also <strong>compresses far better</strong>. A column of cities might have thousands of repeated values like "NYC". Run-length encoding can compress that to near zero. A row store mixes types, making compression less effective.</p>
+
+      <h3>When to use what</h3>
+      <ul>
+        <li><strong>Row store</strong>: OLTP — inserts, updates, point lookups by ID</li>
+        <li><strong>Column store</strong>: OLAP — aggregations, scans, analytical queries</li>
+        <li><strong>Parquet</strong>: columnar file format — the lingua franca of data lakes</li>
+      </ul>
+
+      <div class="callout"><p>Snowflake, DuckDB, BigQuery, Redshift — all columnar. This is why they can query billions of rows in seconds.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Storage Simulator <span>Watch which cells get loaded</span></div>
+        <div class="sql-query" id="sqlDisplay">
+          <span class="sql-comment">-- Click a query to run it</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn" onclick="runQuery('avg_salary')">SELECT AVG(salary)</button>
+          <button class="btn" onclick="runQuery('point_lookup')">SELECT * WHERE id=3</button>
+          <button class="btn" onclick="runQuery('reset')">Reset</button>
+        </div>
+        <div class="btn-group" id="modeButtons">
+          <button class="btn active" id="btnRowMode" onclick="setStorageMode('row')">Row Store</button>
+          <button class="btn" id="btnColMode" onclick="setStorageMode('col')">Column Store</button>
+        </div>
+        <div class="table-viz-wrap">
+          <table class="table-viz" id="tableViz"></table>
+        </div>
+        <div class="storage-stats" id="storageStats">
+          <div class="stat-box"><div class="stat-box-label">Cells Read</div><div class="stat-box-val" id="cellsRead">—</div></div>
+          <div class="stat-box"><div class="stat-box-label">Cells Total</div><div class="stat-box-val">35</div></div>
+          <div class="stat-box"><div class="stat-box-label">Efficiency</div><div class="stat-box-val" id="cellsEff">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(2)">← Back</button>
+    <button class="big-btn primary" onclick="goLesson(4)">Next: CPU vs GPU →</button>
+  </div>
+</div>
+
+<!-- ========================================================
+     LESSON 4 — CPU vs GPU
+     ======================================================== -->
+<div class="lesson-section" id="lesson-4">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 5 of 5</div>
+    <div class="lesson-title">CPU vs GPU Architecture</div>
+    <div class="lesson-desc">Why deep learning needs GPUs, what CUDA is, and when a GPU actually helps you as a data engineer.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>The fundamental difference</h3>
+      <p>A CPU has <strong>8–96 powerful cores</strong> — each can handle complex logic, branching, and diverse tasks. A GPU has <strong>thousands of tiny cores</strong> — each is simpler, but they all run simultaneously.</p>
+      <p>Think CPU = a few expert surgeons. GPU = tens of thousands of factory workers doing one repetitive task in parallel.</p>
+
+      <h3>Embarrassingly parallel problems</h3>
+      <p>Matrix multiplication (the core of neural networks) is embarrassingly parallel — every output element is independent. A 1024×1024 matrix multiply has ~1 million independent operations. A GPU can do them all at once.</p>
+
+      <h3>CUDA</h3>
+      <p>CUDA is NVIDIA's parallel computing platform. When you run a PyTorch model on a GPU, CUDA launches thousands of threads on the GPU cores to compute matrix operations in parallel. You don't write CUDA directly — PyTorch and NumPy handle this.</p>
+
+      <h3>VRAM — the constraint</h3>
+      <p>GPU memory (VRAM) is separate from system RAM. A model must fit in VRAM to run on GPU. An RTX 4090 has 24 GB VRAM. LLaMA 70B needs ~140 GB — it needs multiple GPUs or quantization.</p>
+
+      <h3>When GPU helps in data engineering</h3>
+      <ul>
+        <li><strong>Model training</strong> — always GPU</li>
+        <li><strong>Batch inference</strong> — GPU if throughput matters</li>
+        <li><strong>RAPIDS cuDF</strong> — GPU-accelerated pandas replacement</li>
+        <li><strong>SQL on GPU</strong> — BlazingSQL, OmniSci</li>
+        <li><strong>Traditional ETL</strong> — usually CPU is fine</li>
+      </ul>
+
+      <div class="concepts-box">
+        <h4>Key Concepts</h4>
+        <div class="concept-item"><div class="concept-key">VRAM</div><div class="concept-val">GPU memory — model must fit here</div></div>
+        <div class="concept-item"><div class="concept-key">CUDA core</div><div class="concept-val">Basic GPU compute unit — thousands per chip</div></div>
+        <div class="concept-item"><div class="concept-key">Tensor core</div><div class="concept-val">Specialized unit for matrix math — A100 has 432</div></div>
+        <div class="concept-item"><div class="concept-key">Batch size</div><div class="concept-val">Bigger batch = better GPU utilization</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">CPU vs GPU — Parallel Processing <span>Multiply 128 matrix elements</span></div>
+        <div class="cpu-gpu-split">
+          <div class="chip-box">
+            <div class="chip-label">CPU <span>8 Cores</span></div>
+            <div class="cpu-cores-display" id="cpuCoresDisplay"></div>
+            <div class="chip-stat"><strong id="cpuDone">0</strong>/128 computed</div>
+            <div class="speed-meter">
+              <div class="speed-label"><span>Progress</span><span id="cpuPct">0%</span></div>
+              <div class="speed-track"><div class="speed-fill" id="cpuFill" style="background:var(--primary)"></div></div>
+            </div>
+          </div>
+          <div class="chip-box">
+            <div class="chip-label">GPU <span>1024 Cores</span></div>
+            <div class="gpu-grid" id="gpuGrid"></div>
+            <div class="chip-stat"><strong id="gpuDone">0</strong>/128 computed</div>
+            <div class="speed-meter">
+              <div class="speed-label"><span>Progress</span><span id="gpuPct">0%</span></div>
+              <div class="speed-track"><div class="speed-fill" id="gpuFill" style="background:var(--secondary)"></div></div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn primary" id="gpuRunBtn" onclick="runGpuDemo()">▶ Run Matrix Multiply</button>
+          <button class="btn" onclick="resetGpuDemo()" style="margin-left:8px">Reset</button>
+        </div>
+        <div class="lat-tooltip" id="gpuNote" style="margin-top:12px">Press Run to see how CPU and GPU process 128 elements differently.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(3)">← Back</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
+  </div>
+</div>
+
+<!-- ========================================================
+     LESSON 5 — QUIZ
+     ======================================================== -->
+<div class="lesson-section" id="lesson-5">
+  <div class="lesson-header">
+    <div class="lesson-num">Phase 0 — Knowledge Check</div>
+    <div class="lesson-title">Quiz: CS Fundamentals</div>
+    <div class="lesson-desc">3 questions — pick the best answer for each.</div>
+  </div>
+
+  <div class="quiz-wrap">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizPBar" style="width:0%"></div></div>
+    <div id="quizContainer"></div>
+    <div class="quiz-score" id="quizScore">
+      <div class="score-num" id="scoreNum"></div>
+      <div class="score-msg" id="scoreMsg"></div>
+      <button class="big-btn primary" onclick="restartQuiz()">Try Again</button>
+      &nbsp;&nbsp;
+      <button class="big-btn ghost" onclick="goLesson(0)">Review Lessons</button>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(4)">← Back</button>
+    <span style="color:var(--accent);font-size:.85rem;font-weight:600">🎉 Phase 0 Complete!</span>
+  </div>
+</div>
+
+<!-- ========================================================
+     JAVASCRIPT
+     ======================================================== -->
+<script>
+/* -------- Navigation -------- */
+let currentLesson = 0;
+const totalLessons = 6;
+
+function goLesson(n) {
+  document.querySelectorAll('.lesson-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`lesson-${n}`).classList.add('active');
+  document.querySelectorAll('.lesson-tab').forEach((t,i) => t.classList.toggle('active', i===n));
+  document.querySelectorAll('.pp-step').forEach((s,i) => {
+    s.classList.remove('active','done');
+    if (i < n) s.classList.add('done');
+    else if (i === n) s.classList.add('active');
+  });
+  currentLesson = n;
+  window.scrollTo({top:0,behavior:'smooth'});
+  if (n === 5) initQuiz();
+}
+
+document.querySelectorAll('.lesson-tab').forEach(t => {
+  t.addEventListener('click', () => goLesson(+t.dataset.lesson));
+});
+document.querySelectorAll('.pp-step').forEach(s => {
+  s.addEventListener('click', () => goLesson(+s.dataset.lesson));
+});
+
+
+/* =====================================================
+   LESSON 0 — CPU CORES
+   ===================================================== */
+const coresGrid = document.getElementById('coresGrid');
+const coreInfoBox = document.getElementById('coreInfoBox');
+let gilInterval = null;
+let gilPos = 0;
+
+function buildCores() {
+  coresGrid.innerHTML = '';
+  for (let i = 0; i < 8; i++) {
+    const c = document.createElement('div');
+    c.className = 'cpu-core';
+    c.id = `core-${i}`;
+    c.innerHTML = `
+      <div class="core-label">Core ${i}</div>
+      <div class="core-icon">⬡</div>
+      <div class="thread-bar" id="tbar-${i}"></div>`;
+    coresGrid.appendChild(c);
+  }
+}
+buildCores();
+
+function clearCores() {
+  clearInterval(gilInterval);
+  for (let i = 0; i < 8; i++) {
+    const c = document.getElementById(`core-${i}`);
+    const b = document.getElementById(`tbar-${i}`);
+    const g = c.querySelector('.gil-badge');
+    c.className = 'cpu-core';
+    b.className = 'thread-bar';
+    if (g) g.remove();
+  }
+}
+
+function setMode(mode) {
+  clearCores();
+  ['btnSingle','btnThread','btnMP'].forEach(id => document.getElementById(id).classList.remove('active'));
+
+  if (mode === 'single') {
+    document.getElementById('btnSingle').classList.add('active');
+    document.getElementById('core-0').classList.add('active');
+    document.getElementById('tbar-0').classList.add('running');
+    coreInfoBox.innerHTML = '<strong style="color:var(--text)">Single Thread:</strong> One core executes your Python script. The other 7 sit completely idle. This is the default behavior of a Python script.';
+  }
+
+  else if (mode === 'threading') {
+    document.getElementById('btnThread').classList.add('active');
+    // All cores "exist" but only one has the GIL at a time
+    for (let i = 0; i < 8; i++) {
+      document.getElementById(`core-${i}`).style.opacity = '.5';
+    }
+    gilPos = 0;
+    function moveGil() {
+      for (let i = 0; i < 8; i++) {
+        const c = document.getElementById(`core-${i}`);
+        const b = document.getElementById(`tbar-${i}`);
+        const g = c.querySelector('.gil-badge');
+        if (g) g.remove();
+        c.classList.remove('gil-active');
+        c.style.opacity = '.35';
+        b.className = 'thread-bar';
+      }
+      const active = document.getElementById(`core-${gilPos}`);
+      const badge = document.createElement('div');
+      badge.className = 'gil-badge visible';
+      badge.textContent = 'GIL';
+      active.appendChild(badge);
+      active.classList.add('gil-active');
+      active.style.opacity = '1';
+      document.getElementById(`tbar-${gilPos}`).classList.add('running');
+      gilPos = (gilPos + 1) % 8;
+    }
+    moveGil();
+    gilInterval = setInterval(moveGil, 700);
+    coreInfoBox.innerHTML = '<strong style="color:var(--warning)">Python Threads (GIL):</strong> 8 threads exist but only the one holding the GIL executes Python. The lock bounces between threads — no true parallelism for CPU-bound work.';
+  }
+
+  else if (mode === 'multiprocessing') {
+    document.getElementById('btnMP').classList.add('active');
+    for (let i = 0; i < 8; i++) {
+      document.getElementById(`core-${i}`).classList.add('mp-active');
+      document.getElementById(`tbar-${i}`).classList.add('running-green');
+    }
+    coreInfoBox.innerHTML = '<strong style="color:var(--accent)">Multiprocessing:</strong> 8 separate Python processes — each with its own GIL and memory. All 8 cores run Python simultaneously. True parallelism, but higher memory use and startup cost.';
+  }
+}
+
+
+/* =====================================================
+   LESSON 1 — CACHE HIERARCHY
+   ===================================================== */
+const cacheData = [
+  { name:'Registers', size:'< 1 KB', latency:'~0.3 ns', color:'#ef4444', width:'22%',
+    desc:'Live directly inside the CPU core. Hold the values being actively computed right now. Accessing a register takes a fraction of a nanosecond — effectively zero cost.' },
+  { name:'L1 Cache', size:'32–64 KB', latency:'~1 ns', color:'#f97316', width:'35%',
+    desc:'Per-core cache. First place the CPU looks after registers. Split into L1-I (instructions) and L1-D (data). A cache miss here still keeps you close to the core.' },
+  { name:'L2 Cache', size:'256 KB – 1 MB', latency:'~4 ns', color:'#eab308', width:'50%',
+    desc:'Per-core or shared. Larger than L1 but still fast. Reduces traffic to L3. On most modern CPUs it is still private to each core.' },
+  { name:'L3 Cache', size:'8–64 MB', latency:'~10–40 ns', color:'#22c55e', width:'66%',
+    desc:'Shared across all cores. Last stop before RAM. A miss here forces a slow trip to DRAM. Modern CPUs have large L3s (e.g., AMD\'s 3D V-Cache adds 96 MB).' },
+  { name:'RAM (DRAM)', size:'GBs', latency:'~60–100 ns', color:'#3b82f6', width:'82%',
+    desc:'Your pandas DataFrame lives here. 100x slower than L1 cache. When the CPU stalls waiting on RAM it wastes hundreds of cycles — a "memory stall".' },
+  { name:'NVMe SSD', size:'TBs', latency:'~100 μs', color:'#8b5cf6', width:'100%',
+    desc:'Persistent storage. 100,000x slower than L1 cache. Parquet files, databases, and model checkpoints live here. Reading 1 GB from NVMe: ~1 second.' },
+];
+
+const cachePyramid = document.getElementById('cachePyramid');
+const cacheInfo = document.getElementById('cacheInfo');
+let selectedLayer = null;
+
+cacheData.forEach((layer, i) => {
+  const div = document.createElement('div');
+  div.className = 'cache-layer';
+  div.id = `clayer-${i}`;
+  div.style.cssText = `width:${layer.width};background:${layer.color}22;border-color:${layer.color}55;`;
+  div.innerHTML = `<span class="cache-name" style="color:${layer.color}">${layer.name}</span>&nbsp;&nbsp;<span class="cache-quick">${layer.latency}</span>`;
+  div.addEventListener('click', () => showCacheLayer(i));
+  cachePyramid.appendChild(div);
+});
+
+function showCacheLayer(i) {
+  document.querySelectorAll('.cache-layer').forEach(l => l.classList.remove('selected'));
+  document.getElementById(`clayer-${i}`).classList.add('selected');
+  const d = cacheData[i];
+  cacheInfo.innerHTML = `
+    <div class="cache-info-name" style="color:${d.color}">${d.name}</div>
+    <div class="cache-info-row">
+      <div class="ci-box"><div class="ci-label">Size</div><div class="ci-val" style="color:${d.color}">${d.size}</div></div>
+      <div class="ci-box"><div class="ci-label">Latency</div><div class="ci-val" style="color:${d.color}">${d.latency}</div></div>
+    </div>
+    <div class="cache-info-desc">${d.desc}</div>`;
+}
+
+async function animateDataFetch() {
+  const ball = document.getElementById('dataBall');
+  const layers = document.querySelectorAll('.cache-layer');
+  ball.style.display = 'block';
+
+  // Position ball at RAM layer (index 4), then move up
+  const getY = (idx) => layers[idx].offsetTop + layers[idx].offsetHeight/2 - 6;
+
+  ball.style.top = getY(4) + 'px';
+  await delay(100);
+
+  // Animate down from RAM to L3 to L2 to L1 to Registers
+  for (let i = 4; i >= 0; i--) {
+    document.querySelectorAll('.cache-layer').forEach(l => l.style.opacity='0.4');
+    layers[i].style.opacity='1';
+    layers[i].style.boxShadow=`0 0 20px ${cacheData[i].color}88`;
+    ball.style.top = getY(i) + 'px';
+    await delay(600);
+    layers[i].style.boxShadow='';
+  }
+  await delay(400);
+  document.querySelectorAll('.cache-layer').forEach(l => l.style.opacity='1');
+  ball.style.display = 'none';
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+
+/* =====================================================
+   LESSON 2 — LATENCY CHART
+   ===================================================== */
+const latencyData = [
+  { name:'Registers', ns:0.3, color:'#ef4444', analogy:'If this is 1 second, everything else below is relative to that.' },
+  { name:'L1 Cache', ns:1, color:'#f97316', analogy:'If L1 = 1 second, RAM = 1.5 minutes, SSD = 3 days.' },
+  { name:'L2 Cache', ns:4, color:'#eab308', analogy:'4x slower than L1. Still inside the core, still fast.' },
+  { name:'L3 Cache', ns:25, color:'#22c55e', analogy:'Shared across cores. 25x slower than L1. Still fast by human standards.' },
+  { name:'RAM', ns:80, color:'#3b82f6', analogy:'If L1 = 1 second, RAM ≈ 1.5 minutes. This is why caches exist.' },
+  { name:'NVMe SSD', ns:100000, color:'#8b5cf6', analogy:'If L1 = 1 second, SSD ≈ 28 hours. Your Parquet files live here.' },
+  { name:'HDD', ns:10000000, color:'#a78bfa', analogy:'If L1 = 1 second, HDD ≈ 115 days. Avoid in hot paths.' },
+  { name:'Network (LAN)', ns:500000, color:'#06b6d4', analogy:'If L1 = 1 second, LAN ≈ 5.8 days. Redis is this fast.' },
+  { name:'Network (WAN)', ns:100000000, color:'#64748b', analogy:'If L1 = 1 second, WAN ≈ 3 years. Every API call crosses this.' },
+];
+
+const logMin = Math.log10(0.3);
+const logMax = Math.log10(1e8);
+function logW(ns) { return ((Math.log10(ns) - logMin) / (logMax - logMin)) * 100; }
+
+function fmtNs(ns) {
+  if (ns < 1000) return ns + ' ns';
+  if (ns < 1e6) return (ns/1000).toFixed(0) + ' µs';
+  if (ns < 1e9) return (ns/1e6).toFixed(0) + ' ms';
+  return (ns/1e9).toFixed(2) + ' s';
+}
+
+const latChart = document.getElementById('latencyChart');
+const latTooltip = document.getElementById('latTooltip');
+
+latencyData.forEach(d => {
+  const row = document.createElement('div');
+  row.className = 'lat-row';
+  row.innerHTML = `
+    <div class="lat-label">${d.name}</div>
+    <div class="lat-bar-track">
+      <div class="lat-bar-fill" style="width:0%;background:${d.color}88" data-w="${logW(d.ns)}"></div>
+    </div>
+    <div class="lat-val">${fmtNs(d.ns)}</div>`;
+  row.addEventListener('mouseenter', () => {
+    latTooltip.innerHTML = `<strong>${d.name}</strong>: ${fmtNs(d.ns)}<br><span style="color:var(--muted);font-size:.8rem">${d.analogy}</span>`;
+  });
+  latChart.appendChild(row);
+});
+
+// Animate bars on lesson enter — trigger when lesson 2 becomes active
+function animateLatencyBars() {
+  document.querySelectorAll('.lat-bar-fill').forEach(bar => {
+    setTimeout(() => { bar.style.width = bar.dataset.w + '%'; }, 200);
+  });
+}
+// Call when switching to lesson 2
+const origGoLesson = goLesson;
+
+// Trigger bar animation when visible
+const latObserver = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) animateLatencyBars();
+}, { threshold: 0.1 });
+latObserver.observe(document.getElementById('lesson-2'));
+
+
+/* =====================================================
+   LESSON 3 — ROW vs COLUMN
+   ===================================================== */
+const tableData = [
+  { id:1, name:'Alice', city:'New York', salary:95000, date:'2024-01' },
+  { id:2, name:'Bob', city:'Los Angeles', salary:82000, date:'2024-01' },
+  { id:3, name:'Carol', city:'Chicago', salary:110000, date:'2024-02' },
+  { id:4, name:'Dave', city:'Seattle', salary:140000, date:'2024-02' },
+  { id:5, name:'Eve', city:'Austin', salary:98000, date:'2024-03' },
+  { id:6, name:'Frank', city:'Boston', salary:125000, date:'2024-03' },
+  { id:7, name:'Grace', city:'Denver', salary:115000, date:'2024-03' },
+];
+const cols = ['id','name','city','salary','date'];
+const salaryColIdx = 3; // 0-indexed
+const idRow = 2; // Carol, 0-indexed data row
+let storageMode = 'row';
+let animRunning = false;
+
+function buildTable() {
+  const t = document.getElementById('tableViz');
+  t.innerHTML = `<thead><tr>${cols.map(c=>`<th>${c.toUpperCase()}</th>`).join('')}</tr></thead>`;
+  const tbody = document.createElement('tbody');
+  tableData.forEach((row,ri) => {
+    const tr = document.createElement('tr');
+    cols.forEach((col,ci) => {
+      const td = document.createElement('td');
+      td.id = `cell-${ri}-${ci}`;
+      td.textContent = row[col].toLocaleString();
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  t.appendChild(tbody);
+}
+buildTable();
+
+function setStorageMode(mode) {
+  storageMode = mode;
+  document.getElementById('btnRowMode').classList.toggle('active', mode==='row');
+  document.getElementById('btnColMode').classList.toggle('active', mode==='col');
+  resetTable();
+}
+
+function resetTable() {
+  tableData.forEach((_,ri) => cols.forEach((_,ci) => {
+    const cell = document.getElementById(`cell-${ri}-${ci}`);
+    if (cell) { cell.className=''; }
+  }));
+  document.getElementById('cellsRead').textContent = '—';
+  document.getElementById('cellsEff').textContent = '—';
+  document.getElementById('cellsRead').className = 'stat-box-val';
+  document.getElementById('cellsEff').className = 'stat-box-val';
+  animRunning = false;
+}
+
+function updateStats(cellsRead, totalUseful, total) {
+  const eff = Math.round((totalUseful / cellsRead) * 100);
+  document.getElementById('cellsRead').textContent = cellsRead;
+  document.getElementById('cellsEff').textContent = eff + '%';
+  document.getElementById('cellsEff').className = 'stat-box-val ' + (eff >= 80 ? 'good' : eff >= 40 ? '' : 'bad');
+}
+
+async function runQuery(type) {
+  if (animRunning) return;
+  resetTable();
+  animRunning = true;
+
+  const sqlEl = document.getElementById('sqlDisplay');
+
+  if (type === 'reset') { resetTable(); return; }
+
+  if (type === 'avg_salary') {
+    sqlEl.innerHTML = `<span style="color:var(--secondary)">SELECT</span> <span style="color:var(--warning)">AVG</span>(salary) <span style="color:var(--secondary)">FROM</span> employees`;
+    let cellsRead = 0;
+
+    if (storageMode === 'row') {
+      // Row store: scans full rows to get salary
+      for (let ri = 0; ri < tableData.length; ri++) {
+        for (let ci = 0; ci < cols.length; ci++) {
+          await delay(60);
+          const cell = document.getElementById(`cell-${ri}-${ci}`);
+          cell.className = ci === salaryColIdx ? 'highlight-both' : 'highlight-row';
+          cellsRead++;
+        }
+      }
+      updateStats(cellsRead, tableData.length, tableData.length * cols.length);
+    } else {
+      // Column store: only reads salary column
+      for (let ri = 0; ri < tableData.length; ri++) {
+        await delay(120);
+        // Dim all other columns
+        cols.forEach((_,ci) => {
+          if (ci !== salaryColIdx) document.getElementById(`cell-${ri}-${ci}`).className='dim';
+        });
+        document.getElementById(`cell-${ri}-${salaryColIdx}`).className='highlight-col';
+        cellsRead++;
+      }
+      updateStats(cellsRead, tableData.length, tableData.length * cols.length);
+    }
+  }
+
+  else if (type === 'point_lookup') {
+    sqlEl.innerHTML = `<span style="color:var(--secondary)">SELECT</span> * <span style="color:var(--secondary)">FROM</span> employees <span style="color:var(--secondary)">WHERE</span> id = <span style="color:var(--warning)">3</span>`;
+
+    if (storageMode === 'row') {
+      // Row store: find row 3 — just that row
+      for (let ri = 0; ri <= idRow; ri++) {
+        for (let ci = 0; ci < cols.length; ci++) {
+          await delay(50);
+          document.getElementById(`cell-${ri}-${ci}`).className = ri === idRow ? 'highlight-row' : 'dim';
+        }
+      }
+      updateStats(cols.length, cols.length, tableData.length * cols.length);
+    } else {
+      // Column store: needs to gather from each column
+      for (let ci = 0; ci < cols.length; ci++) {
+        for (let ri = 0; ri < tableData.length; ri++) {
+          await delay(40);
+          document.getElementById(`cell-${ri}-${ci}`).className = ri === idRow ? 'highlight-both' : 'dim';
+        }
+      }
+      updateStats(tableData.length * cols.length, cols.length, tableData.length * cols.length);
+    }
+  }
+  animRunning = false;
+}
+
+
+/* =====================================================
+   LESSON 4 — CPU vs GPU
+   ===================================================== */
+const N = 128;
+let cpuDoneCount = 0;
+let gpuDoneCount = 0;
+let gpuRunning = false;
+
+// Build CPU cores
+function buildCpuDisplay() {
+  const d = document.getElementById('cpuCoresDisplay');
+  d.innerHTML = '';
+  for (let i = 0; i < 8; i++) {
+    const c = document.createElement('div');
+    c.className = 'cpu-mini-core';
+    c.id = `cpumc-${i}`;
+    c.innerHTML = `<div style="font-size:.6rem;font-weight:700">C${i}</div>`;
+    d.appendChild(c);
+  }
+}
+
+// Build GPU grid (32x32 = 1024 cores, show subset)
+function buildGpuGrid() {
+  const g = document.getElementById('gpuGrid');
+  g.innerHTML = '';
+  for (let i = 0; i < 512; i++) {
+    const c = document.createElement('div');
+    c.className = 'gpu-mini-core';
+    c.id = `gpumc-${i}`;
+    g.appendChild(c);
+  }
+}
+
+buildCpuDisplay();
+buildGpuGrid();
+
+function resetGpuDemo() {
+  gpuRunning = false;
+  cpuDoneCount = 0;
+  gpuDoneCount = 0;
+  for (let i = 0; i < 8; i++) document.getElementById(`cpumc-${i}`).className='cpu-mini-core';
+  for (let i = 0; i < 512; i++) document.getElementById(`gpumc-${i}`).className='gpu-mini-core';
+  document.getElementById('cpuDone').textContent='0';
+  document.getElementById('gpuDone').textContent='0';
+  document.getElementById('cpuFill').style.width='0%';
+  document.getElementById('gpuFill').style.width='0%';
+  document.getElementById('cpuPct').textContent='0%';
+  document.getElementById('gpuPct').textContent='0%';
+  document.getElementById('gpuNote').innerHTML='Press Run to see how CPU and GPU process 128 elements differently.';
+  document.getElementById('gpuRunBtn').disabled=false;
+}
+
+async function runGpuDemo() {
+  if (gpuRunning) return;
+  gpuRunning = true;
+  document.getElementById('gpuRunBtn').disabled = true;
+  resetGpuDemo();
+  gpuRunning = true;
+
+  // CPU: processes 8 elements at a time (one per core), takes 16 rounds
+  // GPU: processes all 128 at once (one step)
+  let cpuRound = 0;
+  let gpuDone = false;
+
+  const cpuStep = async () => {
+    if (!gpuRunning) return;
+    // Activate 8 cores
+    for (let i = 0; i < 8; i++) document.getElementById(`cpumc-${i}`).className='cpu-mini-core proc';
+    await delay(120);
+    cpuDoneCount = Math.min(N, cpuDoneCount + 8);
+    cpuRound++;
+    document.getElementById('cpuDone').textContent = cpuDoneCount;
+    const pct = Math.round(cpuDoneCount/N*100);
+    document.getElementById('cpuFill').style.width = pct+'%';
+    document.getElementById('cpuPct').textContent = pct+'%';
+    for (let i = 0; i < 8; i++) document.getElementById(`cpumc-${i}`).className='cpu-mini-core';
+    await delay(60);
+    if (cpuDoneCount < N && gpuRunning) await cpuStep();
+  };
+
+  const gpuStep = async () => {
+    if (!gpuRunning) return;
+    // GPU lights up all at once
+    for (let i = 0; i < 128; i++) document.getElementById(`gpumc-${i}`).className='gpu-mini-core proc';
+    await delay(300);
+    gpuDoneCount = N;
+    document.getElementById('gpuDone').textContent = gpuDoneCount;
+    document.getElementById('gpuFill').style.width = '100%';
+    document.getElementById('gpuPct').textContent = '100%';
+  };
+
+  // Run both in parallel
+  await Promise.all([cpuStep(), gpuStep()]);
+
+  if (gpuRunning) {
+    document.getElementById('gpuNote').innerHTML =
+      '<strong style="color:var(--accent)">GPU finished first!</strong> GPU processed all 128 elements in 1 step. CPU needed 16 rounds (8 elements/round). This is why neural network training uses GPUs — matrix operations are <em>embarrassingly parallel</em>.';
+  }
+}
+
+
+/* =====================================================
+   QUIZ
+   ===================================================== */
+const questions = [
+  {
+    q:'Your Python pandas script is slow. htop shows one CPU core at 100%, the rest near 0%. You add threading to speed it up, but it\'s still slow. Why?',
+    options:[
+      'Python\'s GIL prevents threads from running Python bytecode in parallel — only one thread executes at a time',
+      'The threading module has a bug in newer Python versions',
+      'pandas explicitly disables multithreading for stability',
+      'You need a faster CPU — more cores won\'t help with single-core code',
+    ],
+    correct:0,
+    explanation:'CPython\'s Global Interpreter Lock (GIL) ensures only one thread executes Python bytecode at a time, even on a 16-core machine. For CPU-bound work, use <code>multiprocessing</code> instead — each process has its own GIL and runs truly in parallel. pandas can release the GIL for C-level operations, but your Python logic cannot.'
+  },
+  {
+    q:'Which memory level has the lowest latency (fastest access time)?',
+    options:[
+      'L1 Cache — ~1 ns, per-core, very fast',
+      'L3 Cache — ~25 ns, shared across cores',
+      'RAM (DRAM) — ~80 ns, holds your working data',
+      'CPU Registers — ~0.3 ns, inside the core itself',
+    ],
+    correct:3,
+    explanation:'CPU registers are the fastest storage that exists — they live directly inside the core and hold the values the CPU is <em>actively computing with right now</em>. L1 cache is next (~1 ns), then L2 (~4 ns), then L3 (~25 ns), then RAM (~80 ns). The hierarchy exists because faster storage is exponentially more expensive and physically smaller.'
+  },
+  {
+    q:'You run <code>SELECT AVG(salary) FROM employees</code> on a 10-million-row table with 50 columns. DuckDB (columnar) is 40x faster than MySQL row-store. What is the primary reason?',
+    options:[
+      'DuckDB allocates more RAM and caches the entire table',
+      'DuckDB reads only the salary column — MySQL reads all 50 columns per row to get the salary value',
+      'DuckDB uses more aggressive compression so the file is smaller',
+      'MySQL doesn\'t optimize AVG() queries on large tables',
+    ],
+    correct:1,
+    explanation:'A columnar database stores all values of each column contiguously. For <code>AVG(salary)</code>, DuckDB reads only the salary column — 1/50th of the data. A row store (MySQL) must load the entire row (all 50 columns) to extract the salary value from each of the 10 million rows. It reads 50x more data than needed, filling memory bandwidth with irrelevant fields.'
+  }
+];
+
+let quizAnswers = [];
+let quizCurrent = 0;
+let quizDone = false;
+
+function initQuiz() {
+  quizAnswers = [];
+  quizCurrent = 0;
+  quizDone = false;
+  document.getElementById('quizScore').classList.remove('visible');
+  renderQuestion(0);
+  updateQuizProgress();
+}
+
+function renderQuestion(idx) {
+  const container = document.getElementById('quizContainer');
+  const q = questions[idx];
+  container.innerHTML = `
+    <div class="question-card">
+      <div class="q-num">Question ${idx+1} of ${questions.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="options-${idx}">
+        ${q.options.map((opt,oi)=>`
+          <div class="option" id="opt-${idx}-${oi}" onclick="answerQ(${idx},${oi})">${opt}</div>
+        `).join('')}
+      </div>
+      <div class="explanation" id="expl-${idx}">${q.explanation}</div>
+    </div>
+    <div class="quiz-nav" id="qnav-${idx}" style="display:none">
+      ${idx < questions.length-1
+        ? `<span></span><button class="big-btn primary" onclick="nextQuestion()">Next Question →</button>`
+        : `<span></span><button class="big-btn primary" onclick="showScore()">See Results →</button>`
+      }
+    </div>`;
+}
+
+function answerQ(qIdx, optIdx) {
+  if (quizAnswers[qIdx] !== undefined) return;
+  const q = questions[qIdx];
+  quizAnswers[qIdx] = optIdx;
+
+  // Lock all options
+  document.querySelectorAll(`#options-${qIdx} .option`).forEach((o,i) => {
+    o.classList.add('locked');
+    if (i === q.correct) o.classList.add('correct');
+    else if (i === optIdx && optIdx !== q.correct) o.classList.add('wrong');
+  });
+
+  document.getElementById(`expl-${qIdx}`).classList.add('visible');
+  document.getElementById(`qnav-${qIdx}`).style.display='flex';
+  updateQuizProgress();
+}
+
+function nextQuestion() {
+  quizCurrent++;
+  renderQuestion(quizCurrent);
+  updateQuizProgress();
+}
+
+function showScore() {
+  const correct = questions.filter((q,i)=>quizAnswers[i]===q.correct).length;
+  const total = questions.length;
+  document.getElementById('quizContainer').innerHTML='';
+  const scoreEl = document.getElementById('quizScore');
+  document.getElementById('scoreNum').textContent = `${correct}/${total}`;
+  const msgs = ['Keep reviewing the lessons — the concepts will click!', 'Good foundation! Re-read the sections you missed.', 'Excellent! You\'ve got the fundamentals down solid.'];
+  document.getElementById('scoreMsg').textContent = msgs[correct];
+  scoreEl.classList.add('visible');
+  document.getElementById('quizPBar').style.width='100%';
+}
+
+function restartQuiz() {
+  initQuiz();
+}
+
+function updateQuizProgress() {
+  const pct = (quizAnswers.length / questions.length) * 100;
+  document.getElementById('quizPBar').style.width = pct + '%';
+}
+</script>
+</body>
+</html>
