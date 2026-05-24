@@ -2014,8 +2014,18 @@ function showScore() {
   document.getElementById('scoreNum').textContent = `${correct}/${total}`;
   const msgs = ['Keep reviewing the lessons — the concepts will click!', 'Good foundation! Re-read the sections you missed.', 'Excellent! You\'ve got the fundamentals down solid.'];
   document.getElementById('scoreMsg').textContent = msgs[correct];
+  localStorage.setItem('phase0done', '1');
   scoreEl.classList.add('visible');
   document.getElementById('quizPBar').style.width='100%';
+  if (!document.getElementById('roadmapBtn')) {
+    const btn = document.createElement('a');
+    btn.id = 'roadmapBtn';
+    btn.href = 'index.html';
+    btn.className = 'big-btn primary';
+    btn.style.cssText = 'margin-top:20px;display:inline-block;text-decoration:none';
+    btn.textContent = '← Back to Roadmap';
+    scoreEl.appendChild(btn);
+  }
 }
 
 function restartQuiz() {

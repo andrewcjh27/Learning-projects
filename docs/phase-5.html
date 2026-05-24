@@ -1244,8 +1244,19 @@ function showScore() {
                            'Keep going — re-read the lessons and retry.';
   document.getElementById('scoreNum').textContent = `${score}/${questions.length}`;
   document.getElementById('scoreMsg').textContent = msg;
-  document.getElementById('quizScore').classList.add('visible');
+  localStorage.setItem('phase5done', '1');
+  const scoreEl = document.getElementById('quizScore');
+  scoreEl.classList.add('visible');
   updateQuizProgress();
+  if (!document.getElementById('roadmapBtn')) {
+    const btn = document.createElement('a');
+    btn.id = 'roadmapBtn';
+    btn.href = 'index.html';
+    btn.className = 'big-btn primary';
+    btn.style.cssText = 'margin-top:20px;display:inline-block;text-decoration:none';
+    btn.textContent = '← Back to Roadmap';
+    scoreEl.appendChild(btn);
+  }
 }
 
 function restartQuiz() {

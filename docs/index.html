@@ -73,6 +73,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(7,13,31,.9);backdrop-filte
 .phase-card.current{cursor:pointer}
 .phase-card.current:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(79,142,247,.25),inset 0 0 40px rgba(79,142,247,.05)}
 .phase-card.locked{opacity:.45}
+.phase-card.done{border-color:rgba(52,211,153,.35);cursor:pointer}
+.phase-card.done:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(52,211,153,.1)}
 
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
 .phase-num{font-size:.7rem;font-weight:700;font-family:var(--mono);color:var(--text-dim);letter-spacing:.08em}
@@ -213,8 +215,7 @@ const phases = [
     subtitle:'How LLMs actually work inside',
     duration:'2–3 weeks',
     tags:['Self-Attention','BERT','GPT','Embeddings','Tokenization'],
-    link:'phase-5.html',
-    status:'current'
+    status:'locked'
   },
   {
     num:'06', icon:'🔍',
@@ -266,6 +267,21 @@ const phases = [
   }
 ];
 
+const _p0done = localStorage.getItem('phase0done') === '1';
+const _p5done = localStorage.getItem('phase5done') === '1';
+if (_p0done) {
+  const p00 = phases.find(p => p.num === '00');
+  if (p00) p00.status = 'done';
+  const p05 = phases.find(p => p.num === '05');
+  if (p05) { p05.status = 'current'; p05.link = 'phase-5.html'; }
+}
+if (_p5done) {
+  const p05 = phases.find(p => p.num === '05');
+  if (p05) p05.status = 'done';
+  const p06 = phases.find(p => p.num === '06');
+  if (p06) { p06.status = 'current'; p06.link = 'phase-6.html'; }
+}
+
 const grid = document.getElementById('phasesGrid');
 
 phases.forEach(p => {
@@ -275,6 +291,8 @@ phases.forEach(p => {
   const badgeLabel = p.status === 'current' ? 'Current' : p.status === 'done' ? 'Done' : 'Locked';
   const btnHtml = p.status === 'current'
     ? `<a href="${p.link}" class="card-btn enabled">Start →</a>`
+    : p.status === 'done'
+    ? `<a href="${p.link}" class="card-btn enabled" style="opacity:.6">Review →</a>`
     : `<span class="card-btn disabled">🔒 Locked</span>`;
 
   card.innerHTML = `
@@ -291,7 +309,7 @@ phases.forEach(p => {
       ${btnHtml}
     </div>`;
 
-  if (p.status === 'current' && p.link) {
+  if ((p.status === 'current' || p.status === 'done') && p.link) {
     card.addEventListener('click', e => {
       if (!e.target.classList.contains('card-btn')) window.location.href = p.link;
     });
