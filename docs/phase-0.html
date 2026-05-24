@@ -1005,6 +1005,17 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <p>Tasks that are <em>not</em> embarrassingly parallel: sorting a list (each comparison changes what comes next), or gradient descent (each training step depends on the weights from the previous step).</p>
       <p style="color:var(--muted);font-size:.85rem">→ Click <strong>Run Matrix Multiply</strong> in the demo to see it: the GPU computes all 128 elements in one step while the CPU needs 16 rounds.</p>
 
+      <h3>Is GPU parallelism the same as multiprocessing?</h3>
+      <p>No — they are completely different things running on different hardware with a different model of parallelism.</p>
+      <p><strong>CPU multiprocessing</strong> (Python's <code>multiprocessing</code> module) spawns 8–16 separate OS processes, each running on a CPU core. Each process has its own memory, its own Python interpreter, and can be doing something completely different — one reading a file, one sorting a list, one making a network request. They're like 8 independent employees who can each think for themselves.</p>
+      <p><strong>GPU parallelism</strong> runs on an entirely separate chip with thousands of tiny, simple cores. All GPU cores execute the <em>same instruction on different pieces of data at the same time</em> — this is called <strong>SIMT</strong> (Single Instruction, Multiple Threads). They're like 10,000 robots on an assembly line all making the exact same weld motion simultaneously, just on different car frames.</p>
+      <p>The key differences:</p>
+      <ul>
+        <li><strong>CPU multiprocessing</strong> — 8–96 powerful cores, different tasks, OS-managed processes, good for diverse logic</li>
+        <li><strong>GPU parallelism</strong> — thousands of weak cores, same instruction on different data, CUDA-managed threads, only good for simple math repeated millions of times</li>
+      </ul>
+      <div class="callout"><p>This is why you can't just "run Python code on a GPU" — GPU cores can't handle branching, loops, or diverse logic well. You have to write code specifically designed as SIMT: same operation, applied to thousands of values at once. PyTorch and NumPy do this translation for you.</p></div>
+
       <h3>CUDA</h3>
       <p>CUDA is NVIDIA's parallel computing platform. When you run a PyTorch model on a GPU, CUDA launches thousands of threads on the GPU cores to compute matrix operations in parallel. You don't write CUDA directly — PyTorch and NumPy handle this.</p>
 
