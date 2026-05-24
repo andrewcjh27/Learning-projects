@@ -995,7 +995,15 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <p>Think CPU = a few expert surgeons. GPU = tens of thousands of factory workers doing one repetitive task in parallel.</p>
 
       <h3>Embarrassingly parallel problems</h3>
-      <p>Matrix multiplication (the core of neural networks) is embarrassingly parallel — every output element is independent. A 1024×1024 matrix multiply has ~1 million independent operations. A GPU can do them all at once.</p>
+      <p>A problem is <strong>embarrassingly parallel</strong> when it can be split into many completely independent sub-tasks — none of them need to talk to each other or wait for another to finish. The word "embarrassingly" means it's <em>embarrassingly easy</em> to parallelise: there's no coordination overhead at all.</p>
+      <p>The contrast makes it clear:</p>
+      <ul>
+        <li><strong>Dependent (not parallelisable):</strong> passing a single plate down a line of people — person 2 can't start until person 1 is done, and so on. Adding more people doesn't help.</li>
+        <li><strong>Embarrassingly parallel:</strong> handing every person their <em>own</em> plate to wash simultaneously — 1,000 people finish 1,000 plates in the same time one person washes one. No one waits for anyone else.</li>
+      </ul>
+      <p><strong>Matrix multiplication</strong> is the classic example. To compute output cell [0,0] you only need row 0 of matrix A and column 0 of matrix B. To compute [0,1] you only need row 0 of A and column 1 of B. None of the output cells depend on each other — a 1024×1024 multiply has ~1 million independent cells, all computable at the same time on separate GPU cores.</p>
+      <p>Tasks that are <em>not</em> embarrassingly parallel: sorting a list (each comparison changes what comes next), or gradient descent (each training step depends on the weights from the previous step).</p>
+      <p style="color:var(--muted);font-size:.85rem">→ Click <strong>Run Matrix Multiply</strong> in the demo to see it: the GPU computes all 128 elements in one step while the CPU needs 16 rounds.</p>
 
       <h3>CUDA</h3>
       <p>CUDA is NVIDIA's parallel computing platform. When you run a PyTorch model on a GPU, CUDA launches thousands of threads on the GPU cores to compute matrix operations in parallel. You don't write CUDA directly — PyTorch and NumPy handle this.</p>
