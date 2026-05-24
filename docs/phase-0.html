@@ -585,23 +585,42 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 
   <div class="split">
     <div class="prose">
-      <h3>Why caches exist</h3>
-      <p>RAM is <strong>100x slower</strong> than L1 cache. CPUs would stall constantly waiting on RAM. Caches store copies of recently-used data close to the core so it can be reused at near-zero cost.</p>
 
-      <h3>The hierarchy</h3>
-      <p>Data flows up (toward the core) as it's needed. The CPU checks L1 first. If not there (<strong>cache miss</strong>), it checks L2, then L3, then RAM. Each miss wastes dozens to hundreds of cycles.</p>
+      <h3>What is RAM?</h3>
+      <p><strong>RAM (Random Access Memory)</strong> is your computer's short-term working memory. When you open Python and load a CSV file, the data lives in RAM while your script runs. It's fast, but it's temporary — everything in RAM disappears when you turn off the computer.</p>
+      <p>Your laptop likely has 8–32 GB of RAM. A cloud server can have hundreds of GB. When a pandas DataFrame is "in memory", it literally means it's sitting in RAM.</p>
 
-      <h3>Why Parquet &amp; DuckDB win</h3>
-      <p><strong>Columnar formats</strong> pack all values of a column sequentially. When doing <code>AVG(salary)</code>, the CPU fetches salary values that are contiguous in memory — they fill a cache line perfectly. A row store loads entire rows (all 50 columns), most of which you didn't ask for.</p>
+      <h3>What is a Cache?</h3>
+      <p>A <strong>cache</strong> is a small, extremely fast storage layer that sits between the CPU and RAM. Its job is simple: <em>keep a copy of the data the CPU is most likely to need next</em>, so the CPU doesn't have to wait for the slower RAM every time.</p>
+      <p>Think of it like a physical desk. Your RAM is a filing cabinet across the room — slow to walk to. Your cache is the papers sitting right on your desk — instant to grab. The CPU always checks the desk first before walking to the cabinet.</p>
 
-      <div class="callout"><p>This is called <strong>cache locality</strong>. Algorithms and data structures that respect it can be 10–100x faster than ones that don't.</p></div>
+      <h3>Why does the CPU need a cache at all?</h3>
+      <p>The CPU can execute billions of operations per second. RAM can only deliver data at a fraction of that speed. Without cache, the CPU would sit idle waiting for RAM <strong>most of the time</strong>. Cache bridges that speed gap — it stores recently and frequently used data close to the core so the CPU rarely has to wait.</p>
+
+      <h3>The hierarchy — L1, L2, L3</h3>
+      <p>There isn't just one cache — there are three layers, each a different trade-off between speed and size:</p>
+      <ul>
+        <li><strong>L1</strong> — smallest (~32 KB), fastest (~1 ns), sits directly inside each core</li>
+        <li><strong>L2</strong> — medium (~256 KB–1 MB), slightly slower (~4 ns), still per-core</li>
+        <li><strong>L3</strong> — largest (~8–64 MB), slowest of the three (~25 ns), shared across all cores</li>
+      </ul>
+      <p>The CPU checks L1 first. If the data isn't there (<strong>cache miss</strong>), it checks L2, then L3, then finally RAM. Each step is slower than the last. A miss all the way to RAM wastes hundreds of CPU cycles just waiting.</p>
+
+      <h3>Cache hit vs cache miss</h3>
+      <p>A <strong>cache hit</strong> means the CPU found the data it needed in cache — fast, no waiting. A <strong>cache miss</strong> means it wasn't there — the CPU must fetch from the next level down, stalling while it waits. Writing code that causes many cache hits is called having good <strong>cache locality</strong> and is one of the biggest practical performance optimizations.</p>
+
+      <h3>Why Parquet &amp; DuckDB win at analytics</h3>
+      <p><strong>Columnar formats</strong> store all values of a column together in memory. When the CPU does <code>AVG(salary)</code>, it reads salary values that are packed next to each other — they fill a cache line perfectly and stay hot in L1/L2. A row store loads entire rows (all 50 columns) to get one salary value, flooding the cache with data you never asked for and evicting the values you actually need.</p>
+      <div class="callout"><p>This is why DuckDB, Snowflake, BigQuery, and Parquet are 10–100x faster than row stores for analytical queries — they work <em>with</em> the cache, not against it.</p></div>
 
       <div class="concepts-box">
         <h4>Key Concepts</h4>
-        <div class="concept-item"><div class="concept-key">Cache hit</div><div class="concept-val">Data found in cache — served in ~1–40 ns</div></div>
-        <div class="concept-item"><div class="concept-key">Cache miss</div><div class="concept-val">Data not in cache — must wait on RAM (~100 ns)</div></div>
-        <div class="concept-item"><div class="concept-key">Cache line</div><div class="concept-val">64 bytes fetched at once — spatial locality</div></div>
-        <div class="concept-item"><div class="concept-key">NUMA</div><div class="concept-val">Multi-socket servers: some RAM is "far" from some cores</div></div>
+        <div class="concept-item"><div class="concept-key">RAM</div><div class="concept-val">Working memory — fast, temporary. Your DataFrames live here while Python runs</div></div>
+        <div class="concept-item"><div class="concept-key">Cache</div><div class="concept-val">Tiny, ultra-fast memory inside the CPU — stores copies of recently used data so the CPU doesn't wait on RAM</div></div>
+        <div class="concept-item"><div class="concept-key">Cache hit</div><div class="concept-val">CPU found the data in cache — served in ~1–40 ns, no stall</div></div>
+        <div class="concept-item"><div class="concept-key">Cache miss</div><div class="concept-val">Data not in cache — CPU must wait on the next level down, wasting hundreds of cycles</div></div>
+        <div class="concept-item"><div class="concept-key">Cache locality</div><div class="concept-val">Accessing data that is close together in memory — fills cache lines efficiently, fewer misses</div></div>
+        <div class="concept-item"><div class="concept-key">Cache line</div><div class="concept-val">The CPU fetches 64 bytes at a time — if your next value is nearby, it's already loaded</div></div>
       </div>
     </div>
 
