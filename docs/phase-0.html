@@ -730,11 +730,30 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <li>Network (WAN) = <strong>100+ years</strong></li>
       </ul>
 
+      <h3>What is an NVMe SSD?</h3>
+      <p>An <strong>NVMe SSD</strong> (Non-Volatile Memory Express Solid State Drive) is a storage device that keeps data permanently — it survives when you turn off the computer. It stores data on flash memory chips with no moving parts.</p>
+      <p>"NVMe" is the connection type: it plugs directly into the motherboard via a slot called M.2, giving it a fast lane to the CPU. This is what most modern laptops and desktops use as their main storage drive — where your operating system, files, and databases live.</p>
+      <p>It's fast for storage (~100 microseconds), but still ~100,000× slower than RAM because data has to travel from the chip through the bus to the CPU.</p>
+
+      <h3>What is an HDD?</h3>
+      <p>An <strong>HDD</strong> (Hard Disk Drive) is an older type of storage that stores data on spinning magnetic platters. A physical read head moves across the platter to find your data — like a record player needle. That physical movement takes time: typically ~10 milliseconds per read.</p>
+      <p>HDDs are much cheaper per GB than SSDs and are still used for bulk storage (backups, data warehouses, archival), but they're ~100× slower than an NVMe SSD due to the mechanical parts.</p>
+
+      <h3>What is LAN and WAN?</h3>
+      <p>A <strong>LAN</strong> (Local Area Network) is the network inside a single location — your home WiFi, an office ethernet network, or the cables connecting servers inside a data centre. Devices on the same LAN can talk to each other in ~0.1–1 ms because the data travels a short physical distance.</p>
+      <p>A <strong>WAN</strong> (Wide Area Network) is a network that spans large distances — cities, countries, the world. The public internet is a WAN. When your Python script calls an external API, that request travels across cables and through dozens of routers before reaching the server. Each hop adds latency: a typical WAN round-trip is 10–100 ms.</p>
+      <p>The practical rule: anything that crosses a network is <strong>at least 10,000× slower</strong> than reading from RAM. Every <code>requests.get()</code>, database call to a remote server, or cloud storage fetch pays this cost.</p>
+
       <h3>Why Redis exists</h3>
-      <p>A PostgreSQL query hitting disk = milliseconds. Redis in memory = microseconds. For hot data (sessions, counters, leaderboards), the 1000x latency difference matters enormously.</p>
+      <p><strong>Redis</strong> is a database where <em>everything lives in RAM</em> — it never reads from disk during a query. It's used for data you need to access extremely fast and very frequently: user session tokens, API rate-limit counters, real-time leaderboards, cache layers.</p>
+      <p>A regular database like PostgreSQL stores its data on disk (NVMe SSD). When you query it, it reads data from disk into RAM first — even a simple lookup takes ~1–10 milliseconds. Redis skips that entirely: the data is already sitting in RAM, so a read takes ~1 microsecond — <strong>1,000–10,000× faster</strong>.</p>
+      <div class="callout"><p>The tradeoff: RAM is expensive and limited. You can't fit your entire database in RAM — only the "hot" data that needs sub-millisecond response times. Redis sits in front of your main database as a fast cache layer.</p></div>
 
       <h3>Why Spark uses RAM</h3>
-      <p>Hadoop MapReduce wrote intermediate results to disk between steps. Spark keeps them in RAM. That's why Spark is typically 100x faster than MapReduce — it avoids disk I/O entirely for iterative workloads.</p>
+      <p><strong>Apache Spark</strong> is a framework for processing very large datasets — datasets too big to fit on one machine — spread across a cluster of servers. Think: analysing 10 TB of logs, training a model on billions of rows.</p>
+      <p>Before Spark, the dominant tool was <strong>Hadoop MapReduce</strong>. MapReduce processes data in stages, and after every stage it writes the result to disk. The next stage then reads that result from disk. Every intermediate step pays the full disk I/O cost.</p>
+      <p>Spark keeps intermediate results in <strong>RAM across all the worker machines</strong>. Stage 2 reads from the previous stage's RAM output — no disk write, no disk read. For machine learning, which runs the same computation over the dataset dozens or hundreds of times, this compounds enormously.</p>
+      <div class="callout"><p>Spark is typically 10–100× faster than MapReduce for iterative workloads. The entire difference comes down to the latency gap in the chart on the right: RAM (~100 ns) vs disk (~100 µs to 10 ms).</p></div>
 
     </div>
 
@@ -750,11 +769,13 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
   <div class="concepts-box" style="margin-top:32px">
     <h4>Key Concepts</h4>
     <div class="concept-item"><div class="concept-key">Latency</div><div class="concept-val">Delay before data starts arriving — the bottleneck for interactive systems</div></div>
-    <div class="concept-item"><div class="concept-key">Bandwidth</div><div class="concept-val">How much data arrives per second — matters for bulk transfers</div></div>
-    <div class="concept-item"><div class="concept-key">L1 cache</div><div class="concept-val">~1 ns — fastest storage, lives inside the core</div></div>
-    <div class="concept-item"><div class="concept-key">RAM</div><div class="concept-val">~60–100 ns — 100× slower than L1, where your DataFrames live</div></div>
-    <div class="concept-item"><div class="concept-key">NVMe SSD</div><div class="concept-val">~100 μs — 100,000× slower than L1, where your files live</div></div>
-    <div class="concept-item"><div class="concept-key">Network</div><div class="concept-val">~1–100 ms — every API call crosses this boundary</div></div>
+    <div class="concept-item"><div class="concept-key">RAM</div><div class="concept-val">~60–100 ns — temporary working memory, cleared on power-off, where DataFrames live</div></div>
+    <div class="concept-item"><div class="concept-key">NVMe SSD</div><div class="concept-val">~100 µs — flash storage, permanent, direct motherboard connection — where your files live</div></div>
+    <div class="concept-item"><div class="concept-key">HDD</div><div class="concept-val">~10 ms — spinning magnetic disk, cheap & slow, used for bulk/archival storage</div></div>
+    <div class="concept-item"><div class="concept-key">LAN</div><div class="concept-val">Local Area Network — your home/office/data-centre network, ~0.1–1 ms round-trip</div></div>
+    <div class="concept-item"><div class="concept-key">WAN</div><div class="concept-val">Wide Area Network — the public internet, ~10–100 ms, every API call crosses this</div></div>
+    <div class="concept-item"><div class="concept-key">Redis</div><div class="concept-val">RAM-only database — 1,000× faster than disk-backed DBs for hot data like sessions and counters</div></div>
+    <div class="concept-item"><div class="concept-key">Spark</div><div class="concept-val">Big-data framework that keeps intermediate results in RAM — 10–100× faster than MapReduce</div></div>
   </div>
 
   <div class="lesson-nav">
