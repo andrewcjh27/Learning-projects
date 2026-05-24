@@ -323,6 +323,31 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
   .anat-row{grid-template-columns:1fr 1fr}
   .pipe-thread-label{min-width:70px;font-size:.6rem}
 }
+
+/* Redis demo */
+.redis-flow{display:flex;align-items:center;gap:6px;margin:14px 0;padding:14px;background:var(--surface);border-radius:var(--r-sm)}
+.redis-node{flex:1;text-align:center;padding:10px 6px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);transition:box-shadow .25s,border-color .25s}
+.redis-node.node-active{border-color:var(--primary);box-shadow:0 0 12px rgba(99,102,241,.35)}
+.redis-node.node-hit{border-color:#4ade80;box-shadow:0 0 12px rgba(74,222,128,.3)}
+.redis-node.node-miss{border-color:#f87171;box-shadow:0 0 12px rgba(248,113,113,.3)}
+.redis-node-icon{font-size:1.2rem}
+.redis-node-label{font-size:.78rem;font-weight:600;color:var(--text);margin-top:4px}
+.redis-node-sub{font-size:.68rem;color:var(--muted);margin-top:2px}
+.redis-arrow{color:var(--dim);font-size:1.1rem;flex-shrink:0}
+.redis-log{max-height:110px;overflow-y:auto;background:var(--surface);border-radius:var(--r-sm);padding:6px}
+.redis-log-entry{font-size:.72rem;padding:3px 6px;border-radius:3px;margin-bottom:2px;font-family:var(--mono)}
+.redis-log-entry.log-hit{background:rgba(74,222,128,.1);color:#4ade80}
+.redis-log-entry.log-miss{background:rgba(248,113,113,.1);color:#f87171}
+
+/* Spark demo */
+.spark-pipeline{display:flex;flex-direction:column;gap:4px}
+.spark-stage{padding:8px 10px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);font-size:.75rem;font-weight:600;color:var(--text);text-align:center;transition:border-color .3s,box-shadow .3s,background .3s}
+.spark-stage.stage-running{border-color:var(--primary);box-shadow:0 0 10px rgba(99,102,241,.3);background:rgba(99,102,241,.08)}
+.spark-stage.stage-done{border-color:#4ade80;background:rgba(74,222,128,.06)}
+.spark-storage{font-size:.72rem;text-align:center;padding:3px;opacity:.35;transition:opacity .3s}
+.spark-storage.storage-lit{opacity:1}
+.spark-disk{color:#f87171}
+.spark-ram{color:#4ade80}
 </style>
 </head>
 <body>
@@ -714,6 +739,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
     <div class="lesson-desc">Visualize why in-memory databases exist, why Redis is fast, and why network calls are expensive.</div>
   </div>
 
+  <!-- Split 1: latency basics + chart -->
   <div class="split">
     <div class="prose">
       <h3>Latency vs. bandwidth</h3>
@@ -743,18 +769,6 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <p>A <strong>LAN</strong> (Local Area Network) is the network inside a single location — your home WiFi, an office ethernet network, or the cables connecting servers inside a data centre. Devices on the same LAN can talk to each other in ~0.1–1 ms because the data travels a short physical distance.</p>
       <p>A <strong>WAN</strong> (Wide Area Network) is a network that spans large distances — cities, countries, the world. The public internet is a WAN. When your Python script calls an external API, that request travels across cables and through dozens of routers before reaching the server. Each hop adds latency: a typical WAN round-trip is 10–100 ms.</p>
       <p>The practical rule: anything that crosses a network is <strong>at least 10,000× slower</strong> than reading from RAM. Every <code>requests.get()</code>, database call to a remote server, or cloud storage fetch pays this cost.</p>
-
-      <h3>Why Redis exists</h3>
-      <p><strong>Redis</strong> is a database where <em>everything lives in RAM</em> — it never reads from disk during a query. It's used for data you need to access extremely fast and very frequently: user session tokens, API rate-limit counters, real-time leaderboards, cache layers.</p>
-      <p>A regular database like PostgreSQL stores its data on disk (NVMe SSD). When you query it, it reads data from disk into RAM first — even a simple lookup takes ~1–10 milliseconds. Redis skips that entirely: the data is already sitting in RAM, so a read takes ~1 microsecond — <strong>1,000–10,000× faster</strong>.</p>
-      <div class="callout"><p>The tradeoff: RAM is expensive and limited. You can't fit your entire database in RAM — only the "hot" data that needs sub-millisecond response times. Redis sits in front of your main database as a fast cache layer.</p></div>
-
-      <h3>Why Spark uses RAM</h3>
-      <p><strong>Apache Spark</strong> is a framework for processing very large datasets — datasets too big to fit on one machine — spread across a cluster of servers. Think: analysing 10 TB of logs, training a model on billions of rows.</p>
-      <p>Before Spark, the dominant tool was <strong>Hadoop MapReduce</strong>. MapReduce processes data in stages, and after every stage it writes the result to disk. The next stage then reads that result from disk. Every intermediate step pays the full disk I/O cost.</p>
-      <p>Spark keeps intermediate results in <strong>RAM across all the worker machines</strong>. Stage 2 reads from the previous stage's RAM output — no disk write, no disk read. For machine learning, which runs the same computation over the dataset dozens or hundreds of times, this compounds enormously.</p>
-      <div class="callout"><p>Spark is typically 10–100× faster than MapReduce for iterative workloads. The entire difference comes down to the latency gap in the chart on the right: RAM (~100 ns) vs disk (~100 µs to 10 ms).</p></div>
-
     </div>
 
     <div>
@@ -762,6 +776,97 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <div class="demo-title">Latency Visualizer <span>Log scale — hover to compare</span></div>
         <div class="latency-chart" id="latencyChart"></div>
         <div class="lat-tooltip" id="latTooltip">Hover a bar to see the latency and a human-scale analogy.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Split 2: Redis concept + Redis cache demo -->
+  <div class="split" style="margin-top:28px">
+    <div class="prose">
+      <h3>Why Redis exists</h3>
+      <p><strong>Redis</strong> is a database where <em>everything lives in RAM</em> — it never reads from disk during a query. It's used for data you need to access extremely fast and very frequently: user session tokens, API rate-limit counters, real-time leaderboards, cache layers.</p>
+      <p>A regular database like PostgreSQL stores its data on disk (NVMe SSD). When you query it, it reads data from disk into RAM first — even a simple lookup takes ~1–10 milliseconds. Redis skips that entirely: the data is already sitting in RAM, so a read takes ~1 microsecond — <strong>1,000–10,000× faster</strong>.</p>
+      <div class="callout"><p>The tradeoff: RAM is expensive and limited. You can't fit your entire database in RAM — only the "hot" data that needs sub-millisecond response times. Redis sits in front of your main database as a fast cache layer.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Redis Cache Simulator <span>Cache hits vs misses</span></div>
+        <div class="btn-group">
+          <button class="btn primary" onclick="runRedisDemo()">▶ Send Requests</button>
+          <button class="btn" onclick="resetRedisDemo()">Reset</button>
+        </div>
+        <div class="redis-flow">
+          <div class="redis-node" id="redisClientNode">
+            <div class="redis-node-icon">🌐</div>
+            <div class="redis-node-label">Web Request</div>
+            <div class="redis-node-sub">client</div>
+          </div>
+          <div class="redis-arrow">→</div>
+          <div class="redis-node" id="redisCacheNode">
+            <div class="redis-node-icon">⚡</div>
+            <div class="redis-node-label">Redis</div>
+            <div class="redis-node-sub">RAM · ~0.1 ms</div>
+          </div>
+          <div class="redis-arrow">→</div>
+          <div class="redis-node" id="redisDbNode">
+            <div class="redis-node-icon">🗄</div>
+            <div class="redis-node-label">PostgreSQL</div>
+            <div class="redis-node-sub">disk · ~5 ms</div>
+          </div>
+        </div>
+        <div style="font-size:.72rem;color:var(--dim);margin-bottom:4px">Request log</div>
+        <div class="redis-log" id="redisLog"></div>
+        <div class="layout-stats" style="margin-top:12px">
+          <div class="stat-box"><div class="stat-box-label">Cache hits</div><div class="stat-box-val" id="redisHits">0</div></div>
+          <div class="stat-box"><div class="stat-box-label">Cache misses</div><div class="stat-box-val" id="redisMisses">0</div></div>
+          <div class="stat-box"><div class="stat-box-label">Avg latency</div><div class="stat-box-val" id="redisAvgLat">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Split 3: Spark concept + MapReduce vs Spark pipeline demo -->
+  <div class="split" style="margin-top:28px">
+    <div class="prose">
+      <h3>Why Spark uses RAM</h3>
+      <p><strong>Apache Spark</strong> is a framework for processing very large datasets — datasets too big to fit on one machine — spread across a cluster of servers. Think: analysing 10 TB of logs, training a model on billions of rows.</p>
+      <p>Before Spark, the dominant tool was <strong>Hadoop MapReduce</strong>. MapReduce processes data in stages, and after every stage it writes the result to disk. The next stage then reads that result from disk. Every intermediate step pays the full disk I/O cost.</p>
+      <p>Spark keeps intermediate results in <strong>RAM across all the worker machines</strong>. Stage 2 reads from the previous stage's RAM output — no disk write, no disk read. For machine learning, which runs the same computation over the dataset dozens or hundreds of times, this compounds enormously.</p>
+      <div class="callout"><p>Spark is typically 10–100× faster than MapReduce for iterative workloads. The entire difference comes down to the latency gap: RAM (~100 ns) vs disk (~100 µs to 10 ms).</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">MapReduce vs Spark <span>3-stage pipeline</span></div>
+        <div class="btn-group">
+          <button class="btn danger" onclick="runSparkDemo('mapreduce')">▶ Run MapReduce</button>
+          <button class="btn primary" onclick="runSparkDemo('spark')">▶ Run Spark</button>
+          <button class="btn" onclick="resetSparkDemo()">Reset</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+          <div>
+            <div style="font-size:.72rem;color:#f87171;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px">MapReduce</div>
+            <div class="spark-pipeline">
+              <div class="spark-stage" id="mrStage1">Stage 1<br><span style="font-size:.68rem;color:var(--muted)">read CSV → filter</span></div>
+              <div class="spark-storage spark-disk" id="mrStorage1">💿 write to disk</div>
+              <div class="spark-stage" id="mrStage2">Stage 2<br><span style="font-size:.68rem;color:var(--muted)">read disk → sort</span></div>
+              <div class="spark-storage spark-disk" id="mrStorage2">💿 write to disk</div>
+              <div class="spark-stage" id="mrStage3">Stage 3<br><span style="font-size:.68rem;color:var(--muted)">read disk → aggregate</span></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:.72rem;color:#4ade80;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px">Spark</div>
+            <div class="spark-pipeline">
+              <div class="spark-stage" id="sparkStage1">Stage 1<br><span style="font-size:.68rem;color:var(--muted)">read CSV → filter</span></div>
+              <div class="spark-storage spark-ram" id="sparkStorage1">🟢 keep in RAM</div>
+              <div class="spark-stage" id="sparkStage2">Stage 2<br><span style="font-size:.68rem;color:var(--muted)">from RAM → sort</span></div>
+              <div class="spark-storage spark-ram" id="sparkStorage2">🟢 keep in RAM</div>
+              <div class="spark-stage" id="sparkStage3">Stage 3<br><span style="font-size:.68rem;color:var(--muted)">from RAM → aggregate</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="race-result" id="sparkResult" style="margin-top:14px;font-size:.8rem;min-height:20px"></div>
       </div>
     </div>
   </div>
@@ -1875,6 +1980,127 @@ function restartQuiz() {
 function updateQuizProgress() {
   const pct = (quizAnswers.length / questions.length) * 100;
   document.getElementById('quizPBar').style.width = pct + '%';
+}
+
+// ============================================================
+// REDIS CACHE DEMO
+// ============================================================
+const redisRequests = [
+  'user:42', 'session:abc', 'user:42', 'product:7',
+  'session:abc', 'user:99', 'user:42', 'product:7'
+];
+let redisCache = new Set();
+let redisRunning = false;
+let redisHitCount = 0, redisMissCount = 0, redisTotalMs = 0;
+
+function setRedisNode(id, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'redis-node' + (cls ? ' ' + cls : '');
+}
+
+async function runRedisDemo() {
+  if (redisRunning) return;
+  redisRunning = true;
+  for (const key of redisRequests) {
+    const isHit = redisCache.has(key);
+    setRedisNode('redisClientNode', 'node-active');
+    await delay(250);
+    setRedisNode('redisClientNode', '');
+    setRedisNode('redisCacheNode', isHit ? 'node-hit' : 'node-miss');
+    await delay(350);
+    if (!isHit) {
+      setRedisNode('redisCacheNode', '');
+      setRedisNode('redisDbNode', 'node-active');
+      await delay(500);
+      setRedisNode('redisDbNode', '');
+      redisCache.add(key);
+      setRedisNode('redisCacheNode', 'node-hit');
+      await delay(200);
+      redisMissCount++;
+      redisTotalMs += 5;
+    } else {
+      redisTotalMs += 0.1;
+      redisHitCount++;
+    }
+    setRedisNode('redisCacheNode', '');
+    const log = document.getElementById('redisLog');
+    if (log) {
+      const e = document.createElement('div');
+      e.className = 'redis-log-entry ' + (isHit ? 'log-hit' : 'log-miss');
+      e.textContent = isHit
+        ? `✓ HIT  "${key}" — 0.1 ms (RAM)`
+        : `✗ MISS "${key}" — 5 ms (disk read, now cached)`;
+      log.appendChild(e);
+      log.scrollTop = log.scrollHeight;
+    }
+    const total = redisHitCount + redisMissCount;
+    document.getElementById('redisHits').textContent = redisHitCount;
+    document.getElementById('redisMisses').textContent = redisMissCount;
+    document.getElementById('redisAvgLat').textContent = (redisTotalMs / total).toFixed(1) + ' ms';
+    await delay(250);
+  }
+  redisRunning = false;
+}
+
+function resetRedisDemo() {
+  redisCache = new Set();
+  redisRunning = false;
+  redisHitCount = 0; redisMissCount = 0; redisTotalMs = 0;
+  const log = document.getElementById('redisLog');
+  if (log) log.innerHTML = '';
+  ['redisHits','redisMisses'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '0'; });
+  const avg = document.getElementById('redisAvgLat'); if (avg) avg.textContent = '—';
+  ['redisClientNode','redisCacheNode','redisDbNode'].forEach(id => setRedisNode(id, ''));
+}
+
+// ============================================================
+// SPARK / MAPREDUCE PIPELINE DEMO
+// ============================================================
+let sparkRunning = false;
+
+async function runSparkDemo(mode) {
+  if (sparkRunning) return;
+  sparkRunning = true;
+  resetSparkDemo();
+  await delay(100);
+  const isMR = mode === 'mapreduce';
+  const prefix = isMR ? 'mr' : 'spark';
+  const stageTimes = isMR ? [600, 600, 600] : [300, 300, 300];
+  const storageTime = isMR ? 700 : 150;
+  for (let i = 0; i < 3; i++) {
+    const stageEl = document.getElementById(prefix + 'Stage' + (i + 1));
+    if (stageEl) { stageEl.classList.add('stage-running'); }
+    await delay(stageTimes[i]);
+    if (stageEl) { stageEl.classList.remove('stage-running'); stageEl.classList.add('stage-done'); }
+    if (i < 2) {
+      const storageEl = document.getElementById(prefix + 'Storage' + (i + 1));
+      if (storageEl) { storageEl.classList.add('storage-lit'); }
+      await delay(storageTime);
+    }
+  }
+  const result = document.getElementById('sparkResult');
+  if (result) {
+    result.style.color = isMR ? '#f87171' : '#4ade80';
+    result.textContent = isMR
+      ? '⏱ MapReduce: 3× disk writes + 2× disk reads between stages — slow, compounds with iterations'
+      : '⚡ Spark: intermediate data stays in RAM — ~10–100× faster for multi-stage & iterative jobs';
+  }
+  sparkRunning = false;
+}
+
+function resetSparkDemo() {
+  sparkRunning = false;
+  ['mrStage1','mrStage2','mrStage3','sparkStage1','sparkStage2','sparkStage3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('stage-running','stage-done'); }
+  });
+  ['mrStorage1','mrStorage2','sparkStorage1','sparkStorage2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('storage-lit');
+  });
+  const result = document.getElementById('sparkResult');
+  if (result) result.textContent = '';
 }
 </script>
 </body>
