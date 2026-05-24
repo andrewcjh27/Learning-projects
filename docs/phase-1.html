@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 01 — Linux &amp; Git</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1f;--surface:#0e1628;--card:#121c30;--border:#1e2d47;--border-b:#2d4470;
+  --primary:#4f8ef7;--primary-dim:rgba(79,142,247,.12);--primary-glow:rgba(79,142,247,.3);
+  --secondary:#a78bfa;--accent:#34d399;--warning:#fbbf24;--danger:#f87171;--orange:#fb923c;
+  --text:#dde8f5;--muted:#7a8faa;--dim:#3d5070;
+  --font:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;--r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-back{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-back:hover{color:var(--primary)}
+.nav-sep{color:var(--dim)}
+.nav-title{font-weight:600;font-size:.9rem}
+.lesson-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0}
+.lesson-tab{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;white-space:nowrap;background:transparent;color:var(--muted)}
+.lesson-tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.lesson-tab.active{background:var(--primary-dim);color:var(--primary);border:1px solid var(--primary-glow)}
+@media(max-width:640px){nav{flex-direction:column;height:auto;padding:10px 16px;gap:6px}.lesson-tabs{width:100%}}
+
+.phase-hero{padding:48px 32px 32px;max-width:1100px;margin:0 auto}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.phase-hero h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;letter-spacing:-.04em;margin-bottom:8px;background:linear-gradient(135deg,#fff 40%,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.phase-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+.phase-progress{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.pp-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.pp-step.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.pp-step.done{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.pp-step:not(.active):not(.done){color:var(--dim)}
+.pp-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.lesson-section{display:none;max-width:1100px;margin:0 auto;padding:32px 32px 80px}
+.lesson-section.active{display:block}
+.lesson-header{margin-bottom:32px}
+.lesson-num{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-family:var(--mono)}
+.lesson-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.lesson-desc{color:var(--muted);max-width:680px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.split-wide{grid-template-columns:2fr 3fr}
+
+.prose h3{font-size:1rem;font-weight:600;margin:20px 0 8px;color:var(--text)}
+.prose h3:first-child{margin-top:0}
+.prose p{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.prose ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.prose li{font-size:.9rem;color:var(--muted);padding-left:16px;position:relative}
+.prose li::before{content:'›';position:absolute;left:0;color:var(--primary)}
+.prose strong{color:var(--text);font-weight:600}
+.prose .callout{background:var(--primary-dim);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 16px;margin:12px 0}
+.prose .callout p{color:var(--text);margin:0}
+.prose code{font-family:var(--mono);font-size:.82rem;background:rgba(79,142,247,.1);padding:2px 6px;border-radius:4px;color:var(--primary)}
+
+.concepts-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:20px}
+.concepts-box h4{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.concept-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.concept-item:last-child{border-bottom:none}
+.concept-key{font-family:var(--mono);font-size:.75rem;color:var(--primary);font-weight:500;white-space:nowrap;min-width:120px}
+.concept-val{font-size:.8rem;color:var(--muted)}
+
+.demo-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:relative}
+.demo-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.demo-title span{color:var(--accent);font-size:.7rem;font-weight:600}
+
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.btn:hover{border-color:var(--border-b);color:var(--text)}
+.btn.active,.btn.primary{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.btn.accent{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.btn.secondary{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:var(--secondary)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+.lesson-nav{display:flex;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.big-btn{padding:12px 24px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font)}
+.big-btn.primary{background:var(--primary);color:#fff}
+.big-btn.primary:hover{background:#6fa2ff;box-shadow:0 4px 20px rgba(79,142,247,.4)}
+.big-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.big-btn.ghost:hover{color:var(--text);border-color:var(--border-b)}
+
+/* QUIZ */
+.quiz-wrap{max-width:720px;margin:0 auto}
+.quiz-progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:32px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary));border-radius:2px;transition:width .4s ease}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.q-text{font-size:1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:12px 16px;border-radius:var(--r-sm);border:1px solid var(--border);cursor:pointer;font-size:.88rem;transition:all .2s;background:var(--surface)}
+.option:hover:not(.locked){border-color:var(--border-b);background:rgba(255,255,255,.03)}
+.option.correct{border-color:var(--accent)!important;background:rgba(52,211,153,.1)!important;color:var(--accent)}
+.option.wrong{border-color:var(--danger)!important;background:rgba(248,113,113,.1)!important;color:var(--danger)}
+.option.locked{cursor:default}
+.explanation{margin-top:16px;padding:14px 16px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:var(--r-sm);font-size:.84rem;color:var(--text);line-height:1.6;display:none}
+.explanation.visible{display:block;animation:slideUp .3s ease}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.quiz-score{text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);display:none}
+.quiz-score.visible{display:block;animation:slideUp .4s ease}
+.score-num{font-size:4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-msg{font-size:1.1rem;color:var(--muted);margin-bottom:24px}
+
+/* Light mode */
+[data-theme="light"]{
+  --bg:#f4f6fc;--surface:#eaecf5;--card:#ffffff;--border:#cdd5e4;--border-b:#aab5cc;
+  --primary:#3a6fd8;--primary-dim:rgba(58,111,216,.1);--primary-glow:rgba(58,111,216,.25);
+  --secondary:#6d28d9;--accent:#059669;--warning:#d97706;--danger:#dc2626;--orange:#ea580c;
+  --text:#111827;--muted:#475569;--dim:#94a3b8;
+}
+[data-theme="light"] body{background:var(--bg)}
+[data-theme="light"] nav{background:rgba(244,246,252,.95)}
+[data-theme="light"] .phase-hero h1{background:linear-gradient(135deg,#111827 40%,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="light"] .callout{background:rgba(58,111,216,.07);border-color:rgba(58,111,216,.3)}
+[data-theme="light"] code{background:rgba(0,0,0,.07);color:#1e3a8a}
+.theme-toggle{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 13px;color:var(--muted);cursor:pointer;font-size:.8rem;font-family:var(--font);transition:all .2s;white-space:nowrap;flex-shrink:0}
+.theme-toggle:hover{color:var(--text);border-color:var(--primary)}
+@media(max-width:640px){.phase-hero,.lesson-section{padding-left:20px;padding-right:20px}}
+
+/* =============================================
+   TERMINAL SIMULATOR
+   ============================================= */
+.terminal-wrap{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);font-family:var(--mono);font-size:.82rem;overflow:hidden}
+.terminal-bar{background:#1a2540;padding:8px 14px;display:flex;align-items:center;gap:6px}
+.term-dot{width:10px;height:10px;border-radius:50%}
+.terminal-output{padding:14px;min-height:220px;max-height:280px;overflow-y:auto;color:#cde;line-height:1.8}
+.term-line{display:flex;flex-direction:column;margin-bottom:2px}
+.term-prompt-line{color:#4ade80;white-space:pre}
+.term-out-line{color:#a8c0d8;white-space:pre-wrap;word-break:break-all}
+.term-err-line{color:#f87171;white-space:pre-wrap}
+.terminal-input-row{display:flex;align-items:center;padding:8px 14px;border-top:1px solid var(--border);gap:6px}
+.term-ps1{color:#4ade80;white-space:nowrap;flex-shrink:0;font-family:var(--mono);font-size:.82rem}
+.terminal-input{background:transparent;border:none;outline:none;color:#cde;font-family:var(--mono);font-size:.82rem;flex:1;caret-color:#4ade80}
+.term-cmds{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.term-cmd-chip{padding:3px 9px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:.72rem;font-family:var(--mono);cursor:pointer;transition:all .15s}
+.term-cmd-chip:hover{border-color:var(--primary-glow);color:var(--primary)}
+
+/* =============================================
+   SCRIPT STEPPER
+   ============================================= */
+.script-block{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;font-family:var(--mono);font-size:.8rem}
+.script-header{background:#1a2540;padding:8px 14px;font-size:.7rem;color:var(--muted);display:flex;justify-content:space-between}
+.script-body{padding:8px 0}
+.script-line{display:flex;padding:3px 14px;gap:12px;transition:background .2s}
+.script-line:hover{background:rgba(255,255,255,.02)}
+.script-line.sl-active{background:rgba(79,142,247,.12);border-left:2px solid var(--primary)}
+.script-line.sl-done{background:rgba(52,211,153,.05)}
+.sl-num{color:var(--dim);min-width:20px;text-align:right;user-select:none;flex-shrink:0}
+.sl-text{color:#cde;white-space:pre}
+.sl-comment{color:#4a6280}
+.sl-keyword{color:#a78bfa}
+.sl-string{color:#34d399}
+.sl-var{color:#fbbf24}
+.script-output-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-top:12px;font-family:var(--mono);font-size:.78rem;min-height:80px}
+.script-output-line{color:#4ade80;animation:slideUp .25s ease}
+.script-output-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:8px}
+
+/* =============================================
+   TMUX DIAGRAM
+   ============================================= */
+.tmux-window{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;user-select:none}
+.tmux-statusbar{background:#1a3a1a;padding:5px 14px;font-family:var(--mono);font-size:.72rem;color:#4ade80;display:flex;justify-content:space-between}
+.tmux-tabs{display:flex;gap:4px;padding:4px 8px;background:#0d1a0d;border-bottom:1px solid #1a3a1a}
+.tmux-tab{padding:2px 10px;font-family:var(--mono);font-size:.7rem;color:var(--muted);cursor:pointer;border-radius:3px}
+.tmux-tab.active-win{background:#1a3a1a;color:#4ade80}
+.tmux-panes{display:flex;height:180px;gap:1px;background:#1a2540;padding:1px}
+.tmux-pane{flex:1;background:#0a0f1a;padding:8px 10px;font-family:var(--mono);font-size:.72rem;color:#7a9ab8;display:flex;flex-direction:column;gap:4px;overflow:hidden;position:relative}
+.tmux-pane.pane-active{border:1px solid #4ade8055}
+.pane-title{color:#4ade80;font-size:.65rem;position:absolute;top:4px;right:6px;opacity:.6}
+.pane-line{color:#7a9ab8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pane-line.pane-cmd{color:#cde}
+.pane-line.pane-prompt{color:#4ade80}
+.tmux-info{font-size:.75rem;color:var(--muted);margin-top:8px}
+
+/* =============================================
+   GIT GRAPH
+   ============================================= */
+.git-graph-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;overflow-x:auto}
+.git-graph-wrap svg{min-width:420px;width:100%;overflow:visible}
+.git-step-desc{font-size:.8rem;color:var(--muted);padding:10px 12px;background:var(--card);border-radius:var(--r-sm);border:1px solid var(--border);min-height:44px;margin-top:10px;line-height:1.5}
+.git-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
+.git-legend-item{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)}
+.git-legend-dot{width:10px;height:10px;border-radius:50%}
+
+/* =============================================
+   CRON BUILDER
+   ============================================= */
+.cron-fields{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+.cron-field{display:flex;flex-direction:column;gap:4px}
+.cron-field label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);text-align:center}
+.cron-field input{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 4px;text-align:center;font-family:var(--mono);font-size:.88rem;color:var(--text);outline:none;transition:border-color .2s;width:100%}
+.cron-field input:focus{border-color:var(--primary-glow)}
+.cron-preview{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;font-family:var(--mono);font-size:1rem;color:#4ade80;letter-spacing:.05em;margin-bottom:10px;text-align:center}
+.cron-desc{font-size:.82rem;color:var(--text);padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);min-height:40px;line-height:1.5}
+.cron-presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.cron-preset{padding:4px 10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:.72rem;font-family:var(--mono);cursor:pointer;transition:all .15s}
+.cron-preset:hover{border-color:var(--accent);color:var(--accent)}
+</style>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← Roadmap</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Phase 01 — Linux &amp; Git</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="lesson-tabs" id="lessonTabs">
+      <button class="lesson-tab active" onclick="goLesson(0)">1. The Shell</button>
+      <button class="lesson-tab" onclick="goLesson(1)">2. Shell Scripts</button>
+      <button class="lesson-tab" onclick="goLesson(2)">3. SSH &amp; tmux</button>
+      <button class="lesson-tab" onclick="goLesson(3)">4. Git</button>
+      <button class="lesson-tab" onclick="goLesson(4)">5. Cron</button>
+      <button class="lesson-tab" onclick="goLesson(5)">✦ Quiz</button>
+    </div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
+  </div>
+</nav>
+
+<div class="phase-hero">
+  <div class="breadcrumb"><a href="index.html">Roadmap</a> › Phase 01</div>
+  <h1>Linux &amp; Git</h1>
+  <p>Master the terminal, automate with scripts, collaborate with Git, and keep jobs running with cron — the foundation every developer needs before touching a cloud server.</p>
+  <div class="phase-progress" id="phaseProgress">
+    <div class="pp-step active" onclick="goLesson(0)"><div class="pp-dot"></div>The Shell</div>
+    <div class="pp-step" onclick="goLesson(1)"><div class="pp-dot"></div>Shell Scripts</div>
+    <div class="pp-step" onclick="goLesson(2)"><div class="pp-dot"></div>SSH &amp; tmux</div>
+    <div class="pp-step" onclick="goLesson(3)"><div class="pp-dot"></div>Git</div>
+    <div class="pp-step" onclick="goLesson(4)"><div class="pp-dot"></div>Cron</div>
+    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>Quiz</div>
+  </div>
+</div>
+
+<!-- ==================== LESSON 0: THE SHELL ==================== -->
+<section class="lesson-section active" id="lesson-0">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 01</div>
+    <div class="lesson-title">The Shell</div>
+    <div class="lesson-desc">How your commands become system calls, and the pipes and redirects that let you chain tools together.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>What is a shell?</h3>
+      <p>A <strong>shell</strong> is a program that reads your text commands and asks the OS kernel to execute them. <code>bash</code> and <code>zsh</code> are both shells — they differ in features but share 95% of syntax. The <strong>terminal</strong> is just the window that hosts the shell.</p>
+      <h3>stdin, stdout, stderr</h3>
+      <p>Every Unix process has three data streams: <strong>stdin</strong> (0) for input, <strong>stdout</strong> (1) for normal output, <strong>stderr</strong> (2) for error messages. By default all three connect to your terminal, but you can redirect them anywhere.</p>
+      <h3>Pipes and redirects</h3>
+      <ul>
+        <li><code>cmd1 | cmd2</code> — stdout of cmd1 becomes stdin of cmd2</li>
+        <li><code>cmd &gt; file.txt</code> — overwrite file with stdout</li>
+        <li><code>cmd &gt;&gt; file.txt</code> — append stdout to file</li>
+        <li><code>cmd 2&gt; err.log</code> — redirect stderr to file</li>
+        <li><code>cmd 2&gt;&amp;1</code> — merge stderr into stdout</li>
+      </ul>
+      <div class="callout"><p>Pipes are the Unix philosophy in action: small programs that do one thing well, chained together. <code>cat access.log | grep "404" | sort | uniq -c | sort -rn | head -10</code> finds your top 404-producing URLs — no custom code needed.</p></div>
+    </div>
+    <div class="demo-panel">
+      <div class="demo-title">Terminal Simulator <span>try it</span></div>
+      <div class="terminal-wrap">
+        <div class="terminal-bar">
+          <div class="term-dot" style="background:#f87171"></div>
+          <div class="term-dot" style="background:#fbbf24"></div>
+          <div class="term-dot" style="background:#4ade80"></div>
+          <span style="margin-left:8px;font-family:var(--mono);font-size:.7rem;color:#4a6280">bash — user@server:~</span>
+        </div>
+        <div class="terminal-output" id="termOutput"></div>
+        <div class="terminal-input-row">
+          <span class="term-ps1" id="termPS1">user@server:~$</span>
+          <input class="terminal-input" id="termInput" type="text" autocomplete="off" spellcheck="false" placeholder="type a command…" onkeydown="termKeydown(event)">
+        </div>
+      </div>
+      <div class="term-cmds" id="termChips"></div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Essential Commands</h4>
+    <div class="concept-item"><div class="concept-key">ls / ls -la</div><div class="concept-val">List directory contents / long format including hidden files</div></div>
+    <div class="concept-item"><div class="concept-key">cd / pwd</div><div class="concept-val">Change directory / print working directory</div></div>
+    <div class="concept-item"><div class="concept-key">mkdir / rm -r</div><div class="concept-val">Make directory / remove recursively</div></div>
+    <div class="concept-item"><div class="concept-key">cp / mv</div><div class="concept-val">Copy file or directory / move (also used to rename)</div></div>
+    <div class="concept-item"><div class="concept-key">cat / head / tail</div><div class="concept-val">Print file / first N lines / last N lines (tail -f streams live)</div></div>
+    <div class="concept-item"><div class="concept-key">grep -r "pattern"</div><div class="concept-val">Search for pattern recursively; -i for case-insensitive</div></div>
+    <div class="concept-item"><div class="concept-key">find . -name "*.py"</div><div class="concept-val">Find files matching a pattern under current directory</div></div>
+    <div class="concept-item"><div class="concept-key">wc -l / wc -w</div><div class="concept-val">Count lines / words in a file or stdin</div></div>
+    <div class="concept-item"><div class="concept-key">chmod +x file</div><div class="concept-val">Make file executable; permissions: r=4, w=2, x=1</div></div>
+    <div class="concept-item"><div class="concept-key">sudo</div><div class="concept-val">Run command as root (superuser) — use with care</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <span></span>
+    <button class="big-btn primary" onclick="goLesson(1)">Next: Shell Scripts →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 1: SHELL SCRIPTS ==================== -->
+<section class="lesson-section" id="lesson-1">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 02</div>
+    <div class="lesson-title">Shell Scripts</div>
+    <div class="lesson-desc">Automate repetitive tasks by writing bash scripts — variables, loops, conditionals, and functions.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>Shebang and variables</h3>
+      <p>The first line <code>#!/bin/bash</code> tells the OS which interpreter to use. Variables are set with <code>NAME="Alice"</code> (no spaces around <code>=</code>) and read with <code>$NAME</code> or <code>${NAME}</code>. Positional arguments arrive as <code>$1</code>, <code>$2</code>, etc.; <code>$#</code> is the count, <code>$@</code> is all args.</p>
+      <h3>Command substitution</h3>
+      <p>Capture a command's output into a variable: <code>DATE=$(date +%Y-%m-%d)</code> or older syntax <code>`date`</code>. You can use this inline: <code>echo "Today is $(date +%A)"</code>.</p>
+      <h3>Conditionals</h3>
+      <p><code>if [ condition ]; then … elif …; else …; fi</code>. Common tests: <code>-f file</code> (file exists), <code>-d dir</code> (is directory), <code>-z "$var"</code> (empty string), <code>-eq / -lt / -gt</code> for numbers, <code>== / !=</code> for strings.</p>
+      <h3>Loops</h3>
+      <ul>
+        <li><code>for f in *.log; do echo "$f"; done</code></li>
+        <li><code>for i in $(seq 1 10); do …; done</code></li>
+        <li><code>while read line; do echo "$line"; done &lt; file.txt</code></li>
+      </ul>
+      <h3>Exit codes</h3>
+      <p><code>$?</code> holds the exit code of the last command (0 = success, non-zero = failure). Add <code>set -e</code> at the top of a script to abort on any error — a safety net for automation.</p>
+      <div class="callout"><p>Always quote variables: <code>"$var"</code> not <code>$var</code>. Unquoted variables break when they contain spaces, which causes subtle bugs that only appear in production.</p></div>
+    </div>
+    <div class="demo-panel">
+      <div class="demo-title">Script Stepper <span>line by line</span></div>
+      <div class="script-block">
+        <div class="script-header"><span>backup.sh</span><span id="scriptProgress">line 0 / 0</span></div>
+        <div class="script-body" id="scriptBody"></div>
+      </div>
+      <div class="script-output-box">
+        <div class="script-output-label">Output</div>
+        <div id="scriptOutput"></div>
+      </div>
+      <div class="btn-group" style="margin-top:12px;margin-bottom:0">
+        <button class="btn primary" onclick="scriptNext()" id="scriptNextBtn">▶ Run Next Line</button>
+        <button class="btn" onclick="scriptReset()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(0)">← Previous</button>
+    <button class="big-btn primary" onclick="goLesson(2)">Next: SSH &amp; tmux →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 2: SSH & TMUX ==================== -->
+<section class="lesson-section" id="lesson-2">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 03</div>
+    <div class="lesson-title">SSH &amp; tmux</div>
+    <div class="lesson-desc">Connect to remote servers securely and keep your work alive even when your connection drops.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>SSH — Secure Shell</h3>
+      <p>SSH creates an encrypted tunnel between your machine and a remote server. <code>ssh user@host</code> connects interactively. The first connection asks you to verify the server's fingerprint — say yes, and it's saved in <code>~/.ssh/known_hosts</code>.</p>
+      <h3>Key-based authentication</h3>
+      <p>Passwords over SSH are weak. Key pairs are better: <code>ssh-keygen -t ed25519 -C "you@email"</code> creates a private key (<code>~/.ssh/id_ed25519</code>) and a public key (<code>.pub</code>). Copy the public key to the server with <code>ssh-copy-id user@host</code> — it lands in the server's <code>~/.ssh/authorized_keys</code>.</p>
+      <h3>~/.ssh/config</h3>
+      <p>Stop typing long hostnames. Add an alias:</p>
+      <p><code>Host prod</code><br><code>&nbsp;&nbsp;HostName 12.34.56.78</code><br><code>&nbsp;&nbsp;User ubuntu</code><br><code>&nbsp;&nbsp;IdentityFile ~/.ssh/id_ed25519</code></p>
+      <p>Now <code>ssh prod</code> is all you need. <code>scp file.txt prod:/tmp/</code> copies files.</p>
+      <h3>tmux — Terminal Multiplexer</h3>
+      <p>tmux runs sessions on the server that outlive your SSH connection. Disconnect, reconnect, reattach — your processes keep running. One session can hold multiple <strong>windows</strong> (like browser tabs) each split into <strong>panes</strong>.</p>
+      <ul>
+        <li><code>tmux new -s work</code> — create named session</li>
+        <li><code>Ctrl+b d</code> — detach (session stays alive)</li>
+        <li><code>tmux attach -t work</code> — reattach</li>
+        <li><code>Ctrl+b %</code> — split pane vertically</li>
+        <li><code>Ctrl+b "</code> — split pane horizontally</li>
+        <li><code>Ctrl+b →</code> — move between panes</li>
+        <li><code>Ctrl+b c</code> — new window, <code>Ctrl+b n</code> next</li>
+      </ul>
+    </div>
+    <div class="demo-panel">
+      <div class="demo-title">tmux Session Visualiser <span>interactive</span></div>
+      <div class="tmux-window" id="tmuxWindow">
+        <div class="tmux-statusbar">
+          <span id="tmuxSessionName">[work] 0:bash</span>
+          <span id="tmuxClock">12:34</span>
+        </div>
+        <div class="tmux-tabs" id="tmuxTabs"></div>
+        <div class="tmux-panes" id="tmuxPanes"></div>
+      </div>
+      <div class="tmux-info" id="tmuxInfo">A fresh tmux session with one window and one pane. Use the buttons below to interact.</div>
+      <div class="btn-group" style="margin-top:12px;margin-bottom:0">
+        <button class="btn" onclick="tmuxAction('vsplit')">Ctrl+b % (split right)</button>
+        <button class="btn" onclick="tmuxAction('hsplit')">Ctrl+b " (split down)</button>
+        <button class="btn" onclick="tmuxAction('newwin')">Ctrl+b c (new window)</button>
+        <button class="btn" onclick="tmuxAction('detach')">Ctrl+b d (detach)</button>
+        <button class="btn accent" onclick="tmuxAction('reset')">↺ New session</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(1)">← Previous</button>
+    <button class="big-btn primary" onclick="goLesson(3)">Next: Git →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 3: GIT ==================== -->
+<section class="lesson-section" id="lesson-3">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 04</div>
+    <div class="lesson-title">Git</div>
+    <div class="lesson-desc">Track every change, branch without risk, and collaborate through pull requests — the version control system used by virtually all software teams.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>Three areas</h3>
+      <p>Git tracks files across three areas: the <strong>working directory</strong> (your actual files), the <strong>staging area / index</strong> (changes you've selected for the next commit), and the <strong>repository</strong> (permanent snapshot history). <code>git add</code> moves changes to staging; <code>git commit</code> saves staging to the repository.</p>
+      <h3>Branches</h3>
+      <p>A branch is just a pointer to a commit. Create one with <code>git checkout -b feature/login</code> (or <code>git switch -c</code>). Work on your branch independently — main stays clean. Merge back with <code>git merge feature/login</code> or rebase with <code>git rebase main</code> for a linear history.</p>
+      <h3>Remote workflow</h3>
+      <ul>
+        <li><code>git remote add origin URL</code> — link to GitHub</li>
+        <li><code>git push -u origin main</code> — push + set upstream</li>
+        <li><code>git pull</code> — fetch + merge remote changes</li>
+        <li><code>git fetch</code> — download without merging</li>
+        <li><code>git stash</code> — temporarily shelve uncommitted changes</li>
+      </ul>
+      <h3>Good commit messages</h3>
+      <p>Use the imperative mood ("Add login page", not "Added"). Keep the subject under 72 chars. Explain the <em>why</em> not the <em>what</em> — the diff shows what changed, the message should say why.</p>
+      <div class="callout"><p><code>.gitignore</code> lists patterns to never track: <code>__pycache__/</code>, <code>.env</code>, <code>*.pyc</code>, <code>node_modules/</code>. Commit it early — cleaning up accidentally-tracked secrets is painful.</p></div>
+    </div>
+    <div class="demo-panel">
+      <div class="demo-title">Git Branch Graph <span>step through</span></div>
+      <div class="git-graph-wrap">
+        <svg id="gitSvg" viewBox="0 0 480 200" height="200"></svg>
+      </div>
+      <div class="git-step-desc" id="gitDesc">Press "Next Step" to walk through a typical feature branch workflow.</div>
+      <div class="git-legend">
+        <div class="git-legend-item"><div class="git-legend-dot" style="background:#4f8ef7"></div>main branch</div>
+        <div class="git-legend-item"><div class="git-legend-dot" style="background:#a78bfa"></div>feature branch</div>
+        <div class="git-legend-item"><div class="git-legend-dot" style="background:#34d399"></div>merge commit</div>
+      </div>
+      <div class="btn-group" style="margin-top:12px;margin-bottom:0">
+        <button class="btn primary" onclick="gitNext()" id="gitNextBtn">Next Step →</button>
+        <button class="btn" onclick="gitReset()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(2)">← Previous</button>
+    <button class="big-btn primary" onclick="goLesson(4)">Next: Cron →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 4: CRON ==================== -->
+<section class="lesson-section" id="lesson-4">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 05</div>
+    <div class="lesson-title">Cron &amp; Automation</div>
+    <div class="lesson-desc">Schedule scripts to run automatically — daily backups, hourly reports, recurring cleanups.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>What is cron?</h3>
+      <p>The <strong>cron daemon</strong> is a background process that wakes up every minute and runs any scheduled jobs whose time has come. You manage your jobs with <code>crontab -e</code> (edit) and <code>crontab -l</code> (list).</p>
+      <h3>The five fields</h3>
+      <p>Each cron line: <code>minute  hour  day  month  weekday  command</code></p>
+      <ul>
+        <li><strong>minute</strong> — 0–59</li>
+        <li><strong>hour</strong> — 0–23</li>
+        <li><strong>day of month</strong> — 1–31</li>
+        <li><strong>month</strong> — 1–12</li>
+        <li><strong>weekday</strong> — 0–6 (Sunday = 0 or 7)</li>
+      </ul>
+      <p>Special values: <code>*</code> = every, <code>*/5</code> = every 5, <code>1-5</code> = range Mon–Fri, <code>1,3,5</code> = specific values.</p>
+      <h3>Common patterns</h3>
+      <ul>
+        <li><code>0 * * * *</code> — every hour on the hour</li>
+        <li><code>0 0 * * *</code> — daily at midnight</li>
+        <li><code>0 9 * * 1-5</code> — weekdays at 9 am</li>
+        <li><code>*/15 * * * *</code> — every 15 minutes</li>
+        <li><code>@reboot command</code> — run once at system start</li>
+      </ul>
+      <h3>Logging output</h3>
+      <p>Cron jobs have no terminal by default — always redirect output: <code>0 0 * * * /scripts/backup.sh &gt;&gt; /var/log/backup.log 2&gt;&amp;1</code>. The <code>2&gt;&amp;1</code> merges stderr into stdout so errors are captured too.</p>
+      <div class="callout"><p>Set the <code>MAILTO=""</code> variable at the top of your crontab to suppress the default email-on-output behaviour, which can flood your system mailbox.</p></div>
+    </div>
+    <div class="demo-panel">
+      <div class="demo-title">Cron Expression Builder <span>live preview</span></div>
+      <div class="cron-fields">
+        <div class="cron-field"><label>Minute</label><input id="cronMin" value="0" oninput="updateCron()"></div>
+        <div class="cron-field"><label>Hour</label><input id="cronHour" value="9" oninput="updateCron()"></div>
+        <div class="cron-field"><label>Day</label><input id="cronDay" value="*" oninput="updateCron()"></div>
+        <div class="cron-field"><label>Month</label><input id="cronMonth" value="*" oninput="updateCron()"></div>
+        <div class="cron-field"><label>Weekday</label><input id="cronDow" value="1-5" oninput="updateCron()"></div>
+      </div>
+      <div class="cron-preview" id="cronPreview">0 9 * * 1-5</div>
+      <div class="cron-desc" id="cronDesc"></div>
+      <div class="cron-presets">
+        <span class="cron-preset" onclick="setCron('0','*','*','*','*')">Every hour</span>
+        <span class="cron-preset" onclick="setCron('0','0','*','*','*')">Daily midnight</span>
+        <span class="cron-preset" onclick="setCron('0','9','*','*','1-5')">Weekdays 9am</span>
+        <span class="cron-preset" onclick="setCron('*/15','*','*','*','*')">Every 15 min</span>
+        <span class="cron-preset" onclick="setCron('0','0','1','*','*')">1st of month</span>
+        <span class="cron-preset" onclick="setCron('0','0','*','*','0')">Every Sunday</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(3)">← Previous</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 5: QUIZ ==================== -->
+<section class="lesson-section" id="lesson-5">
+  <div class="lesson-header">
+    <div class="lesson-num">Quiz</div>
+    <div class="lesson-title">Test Your Knowledge</div>
+    <div class="lesson-desc">Four questions covering everything from this phase.</div>
+  </div>
+  <div class="quiz-wrap">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizPBar" style="width:0%"></div></div>
+    <div id="quizContent"></div>
+    <div class="quiz-score" id="quizScore">
+      <div class="score-num" id="scoreNum"></div>
+      <div class="score-msg" id="scoreMsg"></div>
+      <button class="big-btn ghost" onclick="restartQuiz()" style="margin-top:16px">Try Again</button>
+    </div>
+  </div>
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(4)">← Previous</button>
+    <span></span>
+  </div>
+</section>
+
+<script>
+/* ============================================================
+   NAV / LESSON SYSTEM
+   ============================================================ */
+function goLesson(n) {
+  document.querySelectorAll('.lesson-section').forEach((s,i)=>{
+    s.classList.toggle('active', i===n);
+  });
+  document.querySelectorAll('.lesson-tab').forEach((t,i)=>{
+    t.classList.toggle('active', i===n);
+  });
+  document.querySelectorAll('.pp-step').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if(i<n) s.classList.add('done');
+    if(i===n) s.classList.add('active');
+  });
+  localStorage.setItem('phase1lesson', n);
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===5 && !quizInit) initQuiz();
+  if(n===3) initGitGraph();
+  if(n===4) updateCron();
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('theme','dark');
+    document.getElementById('themeToggle').textContent='☀ Light';
+  } else {
+    document.documentElement.setAttribute('data-theme','light');
+    localStorage.setItem('theme','light');
+    document.getElementById('themeToggle').textContent='🌙 Dark';
+  }
+}
+(function(){
+  const t = localStorage.getItem('theme');
+  document.getElementById('themeToggle').textContent = t==='light' ? '🌙 Dark' : '☀ Light';
+})();
+
+/* ============================================================
+   TERMINAL SIMULATOR
+   ============================================================ */
+const fakeFS = {
+  home: {
+    'notes.md': {type:'file', content:'# My Notes\nLearning Linux is useful.\nTodo: practice pipes and redirects.\nLast updated: today'},
+    'projects': {type:'dir', children:{
+      'app.py': {type:'file', content:'print("Hello, World!")\n# A simple Python app'},
+      'README.md': {type:'file', content:'# My Project\nA data engineering app.\nRun: python app.py'},
+      'data': {type:'dir', children:{}}
+    }},
+    'scripts': {type:'dir', children:{
+      'backup.sh': {type:'file', content:'#!/bin/bash\nset -e\necho "Backing up..."\ncp -r ~/projects ~/backup_$(date +%Y%m%d)\necho "Done!"'}
+    }}
+  }
+};
+
+let termCwd = 'home';
+let termHistory = [];
+let termHistIdx = -1;
+
+function termPS1() {
+  const dir = termCwd === 'home' ? '~' : '~/' + termCwd.replace('home/', '');
+  return `user@server:${dir}$`;
+}
+
+function getNode(path) {
+  if (path === 'home') return fakeFS.home;
+  const parts = path.split('/').filter(Boolean);
+  let node = fakeFS;
+  for (const p of parts) { node = node[p]?.children ?? node[p]; if(!node) return null; }
+  return node;
+}
+
+function termPrint(lines) {
+  const out = document.getElementById('termOutput');
+  lines.forEach(l => {
+    const d = document.createElement('div');
+    d.className = l.cls || 'term-out-line';
+    d.textContent = l.text;
+    out.appendChild(d);
+  });
+  out.scrollTop = out.scrollHeight;
+}
+
+function termRun(raw) {
+  const out = document.getElementById('termOutput');
+  const cmdDiv = document.createElement('div');
+  cmdDiv.className = 'term-prompt-line';
+  cmdDiv.textContent = `${termPS1()} ${raw}`;
+  out.appendChild(cmdDiv);
+
+  const parts = raw.trim().split(/\s+/);
+  const cmd = parts[0];
+  const args = parts.slice(1);
+
+  const node = getNode(termCwd);
+  let output = [];
+
+  if (!cmd) { out.scrollTop = out.scrollHeight; return; }
+
+  if (cmd === 'pwd') {
+    const dir = termCwd === 'home' ? '/home/user' : '/home/user/' + termCwd.replace('home/','').replace('home','');
+    output = [{text: dir}];
+  } else if (cmd === 'ls') {
+    const target = node;
+    if (!target) { output = [{text:'ls: no such directory',cls:'term-err-line'}]; }
+    else {
+      const long = args.includes('-la') || args.includes('-l');
+      const all = args.includes('-la') || args.includes('-a');
+      const entries = Object.entries(target);
+      if (all) entries.unshift(['.',{type:'dir'}],['..',{type:'dir'}]);
+      if (long) {
+        if (all) output.push({text:'total ' + entries.length});
+        entries.forEach(([name,n])=>{
+          const isDir = n.type==='dir';
+          const perm = isDir ? 'drwxr-xr-x' : '-rw-r--r--';
+          const size = isDir ? '4096' : String((n.content||'').length).padStart(5);
+          output.push({text:`${perm}  1 user user ${size} May 24 12:00 ${name}${isDir?'/':''}`});
+        });
+      } else {
+        const names = entries.map(([n,v])=>n+(v.type==='dir'?'/':'')).join('  ');
+        output = [{text: names || '(empty)'}];
+      }
+    }
+  } else if (cmd === 'cd') {
+    const dest = args[0] || 'home';
+    if (dest === '~' || dest === '') { termCwd = 'home'; }
+    else if (dest === '..') {
+      const parts = termCwd.split('/');
+      parts.pop();
+      termCwd = parts.join('/') || 'home';
+    } else {
+      const candidate = termCwd + '/' + dest;
+      const n = getNode(candidate);
+      if (n && n.type==='dir') { termCwd = candidate; }
+      else if (n && !n.type) { termCwd = candidate; }
+      else { output = [{text:`cd: ${dest}: No such file or directory`,cls:'term-err-line'}]; }
+    }
+  } else if (cmd === 'cat') {
+    const fname = args[0];
+    if (!fname) { output = [{text:'cat: missing operand',cls:'term-err-line'}]; }
+    else {
+      const f = node[fname];
+      if (!f || f.type==='dir') { output = [{text:`cat: ${fname}: No such file`,cls:'term-err-line'}]; }
+      else { f.content.split('\n').forEach(l=>output.push({text:l})); }
+    }
+  } else if (cmd === 'echo') {
+    const text = args.join(' ').replace(/["']/g,'');
+    const expanded = text.replace('$HOME','/home/user').replace('$USER','user').replace('$PWD', termPS1().split(':')[1].replace('$',''));
+    output = [{text: expanded}];
+  } else if (cmd === 'grep') {
+    if (args.length < 2) { output = [{text:'Usage: grep pattern file',cls:'term-err-line'}]; }
+    else {
+      const pat = args[0].replace(/["']/g,'');
+      const fname = args[args.length-1];
+      const f = node[fname];
+      if (!f || f.type==='dir') { output = [{text:`grep: ${fname}: No such file`,cls:'term-err-line'}]; }
+      else {
+        const matches = f.content.split('\n').filter(l=>l.toLowerCase().includes(pat.toLowerCase()));
+        if (matches.length) matches.forEach(l=>output.push({text:l}));
+        else output = [{text:'(no matches)'}];
+      }
+    }
+  } else if (cmd === 'wc') {
+    const flag = args[0];
+    const fname = args[args.length-1];
+    const f = node[fname];
+    if (!f || f.type==='dir') { output = [{text:`wc: ${fname}: No such file`,cls:'term-err-line'}]; }
+    else {
+      const lines = f.content.split('\n').length;
+      const words = f.content.split(/\s+/).filter(Boolean).length;
+      const bytes = f.content.length;
+      if (flag==='-l') output = [{text:`${lines} ${fname}`}];
+      else if (flag==='-w') output = [{text:`${words} ${fname}`}];
+      else output = [{text:`${lines} ${words} ${bytes} ${fname}`}];
+    }
+  } else if (cmd === 'mkdir') {
+    if (!args[0]) { output = [{text:'mkdir: missing operand',cls:'term-err-line'}]; }
+    else { node[args[0]] = {type:'dir',children:{}}; output = []; }
+  } else if (cmd === 'rm') {
+    const fname = args.filter(a=>!a.startsWith('-'))[0];
+    if (!fname) { output = [{text:'rm: missing operand',cls:'term-err-line'}]; }
+    else if (!node[fname]) { output = [{text:`rm: cannot remove '${fname}': No such file`,cls:'term-err-line'}]; }
+    else { delete node[fname]; output = []; }
+  } else if (cmd === 'clear') {
+    document.getElementById('termOutput').innerHTML = '';
+    document.getElementById('termInput').value = '';
+    document.getElementById('termPS1').textContent = termPS1();
+    return;
+  } else if (cmd === 'help') {
+    output = [
+      {text:'Available commands:'},
+      {text:'  pwd, ls, ls -la, cd <dir>, cat <file>'},
+      {text:'  echo <text>, grep <pat> <file>, wc -l <file>'},
+      {text:'  mkdir <dir>, rm <file>, clear'}
+    ];
+  } else {
+    output = [{text:`${cmd}: command not found`,cls:'term-err-line'}];
+  }
+
+  termPrint(output);
+  document.getElementById('termPS1').textContent = termPS1();
+  out.scrollTop = out.scrollHeight;
+}
+
+function termKeydown(e) {
+  const input = document.getElementById('termInput');
+  if (e.key === 'Enter') {
+    const val = input.value.trim();
+    if (val) { termHistory.unshift(val); termHistIdx = -1; }
+    termRun(val);
+    input.value = '';
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (termHistIdx < termHistory.length - 1) { termHistIdx++; input.value = termHistory[termHistIdx]; }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (termHistIdx > 0) { termHistIdx--; input.value = termHistory[termHistIdx]; }
+    else { termHistIdx = -1; input.value = ''; }
+  }
+}
+
+(function initTerminal() {
+  termPrint([
+    {text:'Welcome! Try: ls, pwd, cat notes.md, grep "Linux" notes.md'},
+    {text:'Type "help" to see all available commands.'},
+    {text:''},
+  ]);
+  document.getElementById('termPS1').textContent = termPS1();
+  const chips = ['pwd','ls','ls -la','cat notes.md','grep "Linux" notes.md','cd projects','ls','wc -l notes.md','echo $HOME'];
+  const wrap = document.getElementById('termChips');
+  chips.forEach(c => {
+    const el = document.createElement('span');
+    el.className = 'term-cmd-chip';
+    el.textContent = c;
+    el.onclick = () => { document.getElementById('termInput').value = c; document.getElementById('termInput').focus(); termRun(c); document.getElementById('termInput').value=''; };
+    wrap.appendChild(el);
+  });
+})();
+
+/* ============================================================
+   SCRIPT STEPPER
+   ============================================================ */
+const scriptLines = [
+  { text:'#!/bin/bash', tokens:[{t:'#!/bin/bash',c:'sl-comment'}] },
+  { text:'set -e  # exit on any error', tokens:[{t:'set -e  ',c:'sl-keyword'},{t:'# exit on any error',c:'sl-comment'}] },
+  { text:'', tokens:[{t:'',c:''}] },
+  { text:'BACKUP_DIR=~/backups', tokens:[{t:'BACKUP_DIR',c:'sl-var'},{t:'=',c:''},{t:'"~/backups"',c:'sl-string'}], out:null },
+  { text:'DATE=$(date +%Y-%m-%d)', tokens:[{t:'DATE',c:'sl-var'},{t:'=$(date +%Y-%m-%d)',c:''}], out:'DATE=2026-05-24' },
+  { text:'', tokens:[{t:'',c:''}] },
+  { text:'echo "Starting backup: $DATE"', tokens:[{t:'echo ',c:'sl-keyword'},{t:'"Starting backup: $DATE"',c:'sl-string'}], out:'Starting backup: 2026-05-24' },
+  { text:'', tokens:[{t:'',c:''}] },
+  { text:'if [ ! -d "$BACKUP_DIR" ]; then', tokens:[{t:'if ',c:'sl-keyword'},{t:'[ ! -d "$BACKUP_DIR" ]',c:''},{t:'; then',c:'sl-keyword'}] },
+  { text:'    mkdir -p "$BACKUP_DIR"', tokens:[{t:'    mkdir -p ',c:''},{t:'"$BACKUP_DIR"',c:'sl-string'}], out:'created ~/backups' },
+  { text:'fi', tokens:[{t:'fi',c:'sl-keyword'}] },
+  { text:'', tokens:[{t:'',c:''}] },
+  { text:'for f in ~/projects/*.py; do', tokens:[{t:'for ',c:'sl-keyword'},{t:'f',c:'sl-var'},{t:' in ~/projects/*.py; do',c:''}] },
+  { text:'    cp "$f" "$BACKUP_DIR/"', tokens:[{t:'    cp ',c:''},{t:'"$f" "$BACKUP_DIR/"',c:'sl-string'}], out:'copied app.py → ~/backups/\ncopied pipeline.py → ~/backups/' },
+  { text:'done', tokens:[{t:'done',c:'sl-keyword'}] },
+  { text:'', tokens:[{t:'',c:''}] },
+  { text:'echo "Backup complete. $(ls $BACKUP_DIR | wc -l) files saved."', tokens:[{t:'echo ',c:'sl-keyword'},{t:'"Backup complete. $(ls $BACKUP_DIR | wc -l) files saved."',c:'sl-string'}], out:'Backup complete. 2 files saved.' },
+];
+
+let scriptCurrent = -1;
+
+function scriptReset() {
+  scriptCurrent = -1;
+  document.getElementById('scriptOutput').innerHTML = '';
+  document.getElementById('scriptProgress').textContent = `line 0 / ${scriptLines.length}`;
+  const btn = document.getElementById('scriptNextBtn');
+  btn.textContent = '▶ Run Next Line';
+  btn.disabled = false;
+  renderScript();
+}
+
+function renderScript() {
+  const body = document.getElementById('scriptBody');
+  body.innerHTML = '';
+  scriptLines.forEach((line, i) => {
+    const row = document.createElement('div');
+    row.className = 'script-line' + (i===scriptCurrent?' sl-active':i<scriptCurrent?' sl-done':'');
+    const num = document.createElement('span');
+    num.className = 'sl-num';
+    num.textContent = i+1;
+    const text = document.createElement('span');
+    if (line.tokens && line.tokens.length) {
+      line.tokens.forEach(tok => {
+        if (!tok.t) return;
+        const s = document.createElement('span');
+        s.className = tok.c;
+        s.textContent = tok.t;
+        text.appendChild(s);
+      });
+    } else {
+      text.textContent = line.text;
+    }
+    row.appendChild(num);
+    row.appendChild(text);
+    body.appendChild(row);
+  });
+}
+
+function scriptNext() {
+  if (scriptCurrent >= scriptLines.length - 1) return;
+  scriptCurrent++;
+  renderScript();
+  document.getElementById('scriptProgress').textContent = `line ${scriptCurrent+1} / ${scriptLines.length}`;
+  const line = scriptLines[scriptCurrent];
+  if (line.out) {
+    const out = document.getElementById('scriptOutput');
+    line.out.split('\n').forEach(l => {
+      const d = document.createElement('div');
+      d.className = 'script-output-line';
+      d.textContent = `$ ${l}`;
+      out.appendChild(d);
+    });
+  }
+  if (scriptCurrent >= scriptLines.length - 1) {
+    const btn = document.getElementById('scriptNextBtn');
+    btn.textContent = '✓ Done';
+    btn.disabled = true;
+  }
+  const body = document.getElementById('scriptBody');
+  const active = body.querySelector('.sl-active');
+  if (active) active.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+scriptReset();
+
+/* ============================================================
+   TMUX VISUALISER
+   ============================================================ */
+let tmuxState = { windows:[{name:'bash',panes:[{content:['$ python train.py','Epoch 1/10...']}]}], activeWin:0, detached:false };
+
+function tmuxRender() {
+  const s = tmuxState;
+  const tabs = document.getElementById('tmuxTabs');
+  const panesEl = document.getElementById('tmuxPanes');
+  const sessionEl = document.getElementById('tmuxSessionName');
+
+  if (s.detached) {
+    document.getElementById('tmuxWindow').style.opacity = '0.4';
+    document.getElementById('tmuxInfo').textContent = 'Session detached — processes still running on the server. Reconnect with: tmux attach -t work';
+    return;
+  }
+  document.getElementById('tmuxWindow').style.opacity = '1';
+
+  const win = s.windows[s.activeWin];
+  sessionEl.textContent = `[work] ${s.windows.map((w,i)=>`${i}:${w.name}`).join(' ')}`;
+
+  tabs.innerHTML = '';
+  s.windows.forEach((w,i) => {
+    const t = document.createElement('div');
+    t.className = 'tmux-tab' + (i===s.activeWin?' active-win':'');
+    t.textContent = `${i}: ${w.name}`;
+    t.onclick = () => { s.activeWin=i; tmuxRender(); };
+    tabs.appendChild(t);
+  });
+
+  panesEl.innerHTML = '';
+  win.panes.forEach((p,i) => {
+    const el = document.createElement('div');
+    el.className = 'tmux-pane' + (i===0?' pane-active':'');
+    const title = document.createElement('div');
+    title.className = 'pane-title';
+    title.textContent = i===0?'[active]':'';
+    el.appendChild(title);
+    (p.content||[]).forEach(line => {
+      const ld = document.createElement('div');
+      ld.className = 'pane-line' + (line.startsWith('$')?' pane-cmd':'');
+      ld.textContent = line;
+      el.appendChild(ld);
+    });
+    panesEl.appendChild(el);
+  });
+
+  const paneCount = win.panes.length;
+  const winCount = s.windows.length;
+  document.getElementById('tmuxInfo').textContent = `Window "${win.name}": ${paneCount} pane${paneCount>1?'s':''} | ${winCount} window${winCount>1?'s':''} in session.`;
+}
+
+const paneContents = [
+  ['$ top','  PID  CPU%  MEM%  COMMAND','12334  45.2  2.1   python'],
+  ['$ tail -f app.log','[INFO] request: /api/data','[INFO] 200 OK in 12ms'],
+  ['$ vim config.yaml','"config.yaml" 14 lines','  host: localhost'],
+  ['$ htop','Tasks: 84 total','Load avg: 1.2 0.8 0.6'],
+];
+let paneContentIdx = 0;
+
+function tmuxAction(action) {
+  const s = tmuxState;
+  if (action === 'reset') {
+    tmuxState = { windows:[{name:'bash',panes:[{content:['$ python train.py','Epoch 1/10...']}]}], activeWin:0, detached:false };
+    paneContentIdx = 0;
+    tmuxRender(); return;
+  }
+  if (action === 'detach') { s.detached=true; tmuxRender(); return; }
+  s.detached = false;
+  const win = s.windows[s.activeWin];
+  if (action === 'vsplit') {
+    if (win.panes.length >= 3) { document.getElementById('tmuxInfo').textContent='Maximum 3 panes shown in this demo.'; return; }
+    win.panes.push({content: paneContents[paneContentIdx++ % paneContents.length]});
+    win.panes.forEach((p,i)=>{ p.style='flex:1'; });
+  } else if (action === 'hsplit') {
+    if (win.panes.length >= 3) { document.getElementById('tmuxInfo').textContent='Maximum 3 panes shown in this demo.'; return; }
+    win.panes.push({content: paneContents[paneContentIdx++ % paneContents.length]});
+  } else if (action === 'newwin') {
+    const names = ['vim','git','bash','python','ssh'];
+    s.windows.push({name: names[s.windows.length % names.length], panes:[{content:['$ ' + names[s.windows.length % names.length],'...']}]});
+    s.activeWin = s.windows.length - 1;
+  }
+  tmuxRender();
+}
+
+tmuxRender();
+
+/* ============================================================
+   GIT GRAPH
+   ============================================================ */
+let gitStep = 0;
+const gitSteps = [
+  { desc:'git init — initialise empty repository. One branch (main) exists but has no commits yet.' },
+  { desc:'git commit — first commit "Initial project setup" on main. SHA: a1b2c3. HEAD points here.' },
+  { desc:'git checkout -b feature/login — new branch created at the same commit. Changes on this branch won\'t affect main.' },
+  { desc:'git commit — "Add login form" on feature/login. The feature branch moves forward; main stays put.' },
+  { desc:'git commit — "Add JWT auth" on feature/login. Feature branch is now 2 commits ahead of main.' },
+  { desc:'git checkout main && git merge feature/login — fast-forward merge. main moves up to match the feature branch. Feature can now be deleted.' },
+];
+
+function initGitGraph() {
+  gitStep = 0;
+  renderGitGraph();
+}
+
+function gitReset() {
+  gitStep = 0;
+  renderGitGraph();
+  document.getElementById('gitNextBtn').disabled = false;
+  document.getElementById('gitNextBtn').textContent = 'Next Step →';
+}
+
+function gitNext() {
+  if (gitStep < gitSteps.length - 1) {
+    gitStep++;
+    renderGitGraph();
+    if (gitStep === gitSteps.length - 1) {
+      document.getElementById('gitNextBtn').textContent = '✓ Done';
+      document.getElementById('gitNextBtn').disabled = true;
+    }
+  }
+}
+
+function renderGitGraph() {
+  const svg = document.getElementById('gitSvg');
+  svg.innerHTML = '';
+  const desc = document.getElementById('gitDesc');
+  desc.textContent = gitSteps[gitStep].desc;
+
+  const mainY = 70, featY = 140;
+  const xs = [60, 160, 220, 300, 380, 460];
+  const mainColor = '#4f8ef7', featColor = '#a78bfa', mergeColor = '#34d399';
+
+  function circle(x, y, color, label, sha) {
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x); c.setAttribute('cy',y); c.setAttribute('r','14');
+    c.setAttribute('fill',color+'33'); c.setAttribute('stroke',color); c.setAttribute('stroke-width','2');
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x); t.setAttribute('y',y+4); t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-family','JetBrains Mono,monospace'); t.setAttribute('font-size','9');
+    t.setAttribute('fill',color); t.textContent = sha;
+    const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('x',x); lbl.setAttribute('y',y-22); lbl.setAttribute('text-anchor','middle');
+    lbl.setAttribute('font-family','Inter,sans-serif'); lbl.setAttribute('font-size','10');
+    lbl.setAttribute('fill','#dde8f5'); lbl.textContent = label;
+    g.appendChild(c); g.appendChild(t); g.appendChild(lbl);
+    return g;
+  }
+
+  function line(x1,y1,x2,y2,color,dashed) {
+    const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',x1); l.setAttribute('y1',y1); l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+    l.setAttribute('stroke',color); l.setAttribute('stroke-width','2');
+    if(dashed) l.setAttribute('stroke-dasharray','4,3');
+    return l;
+  }
+
+  function tag(x,y,text,color) {
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r.setAttribute('x',x-22); r.setAttribute('y',y+18); r.setAttribute('width','44'); r.setAttribute('height','16');
+    r.setAttribute('rx','4'); r.setAttribute('fill',color+'22'); r.setAttribute('stroke',color); r.setAttribute('stroke-width','1');
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',x); t.setAttribute('y',y+30); t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-family','JetBrains Mono,monospace'); t.setAttribute('font-size','9');
+    t.setAttribute('fill',color); t.textContent = text;
+    g.appendChild(r); g.appendChild(t);
+    return g;
+  }
+
+  // Step 0: just labels
+  if (gitStep >= 0) {
+    const ml = document.createElementNS('http://www.w3.org/2000/svg','text');
+    ml.setAttribute('x','20'); ml.setAttribute('y',mainY+4); ml.setAttribute('font-family','JetBrains Mono,monospace');
+    ml.setAttribute('font-size','10'); ml.setAttribute('fill',mainColor); ml.textContent='main';
+    svg.appendChild(ml);
+  }
+
+  // Step 1+: first commit on main
+  if (gitStep >= 1) {
+    svg.appendChild(circle(xs[1], mainY, mainColor, 'Initial setup', 'a1b'));
+    svg.appendChild(tag(xs[1], mainY, 'HEAD', mainColor));
+  }
+
+  // Step 2+: feature branch label
+  if (gitStep >= 2) {
+    const fl = document.createElementNS('http://www.w3.org/2000/svg','text');
+    fl.setAttribute('x','20'); fl.setAttribute('y',featY+4); fl.setAttribute('font-family','JetBrains Mono,monospace');
+    fl.setAttribute('font-size','9'); fl.setAttribute('fill',featColor); fl.textContent='feature/login';
+    svg.appendChild(fl);
+    // branch line from a1b
+    svg.appendChild(line(xs[1], mainY+14, xs[2], featY-14, featColor, true));
+    svg.appendChild(circle(xs[2], featY, featColor, 'branch point', 'a1b'));
+  }
+
+  // Step 3+: first feature commit
+  if (gitStep >= 3) {
+    svg.appendChild(line(xs[2], featY, xs[3], featY, featColor));
+    svg.appendChild(circle(xs[3], featY, featColor, 'Add login form', 'c4d'));
+    svg.appendChild(tag(xs[3], featY, 'HEAD', featColor));
+  }
+
+  // Step 4+: second feature commit
+  if (gitStep >= 4) {
+    svg.appendChild(line(xs[3], featY, xs[4], featY, featColor));
+    svg.appendChild(circle(xs[4], featY, featColor, 'Add JWT auth', 'e5f'));
+    svg.appendChild(tag(xs[4], featY, 'HEAD', featColor));
+  }
+
+  // Step 5: merge back to main
+  if (gitStep >= 5) {
+    svg.appendChild(line(xs[1], mainY, xs[5], mainY, mainColor));
+    svg.appendChild(line(xs[4], featY-14, xs[5], mainY+14, mergeColor, false));
+    svg.appendChild(circle(xs[5], mainY, mergeColor, 'Merge feature', 'g7h'));
+    svg.appendChild(tag(xs[5], mainY, 'HEAD', mergeColor));
+  }
+}
+
+initGitGraph();
+
+/* ============================================================
+   CRON BUILDER
+   ============================================================ */
+function setCron(m,h,d,mo,dow) {
+  document.getElementById('cronMin').value=m;
+  document.getElementById('cronHour').value=h;
+  document.getElementById('cronDay').value=d;
+  document.getElementById('cronMonth').value=mo;
+  document.getElementById('cronDow').value=dow;
+  updateCron();
+}
+
+function updateCron() {
+  const m=document.getElementById('cronMin').value||'*';
+  const h=document.getElementById('cronHour').value||'*';
+  const d=document.getElementById('cronDay').value||'*';
+  const mo=document.getElementById('cronMonth').value||'*';
+  const dow=document.getElementById('cronDow').value||'*';
+  document.getElementById('cronPreview').textContent=`${m} ${h} ${d} ${mo} ${dow}`;
+  document.getElementById('cronDesc').textContent = describeCron(m,h,d,mo,dow);
+}
+
+function descField(val, unit, singular, vals) {
+  if (val==='*') return `every ${unit}`;
+  if (val.startsWith('*/')) return `every ${val.slice(2)} ${unit}s`;
+  if (val.includes('-')) {
+    const [a,b]=val.split('-');
+    if (unit==='weekday') {
+      const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      return `${days[a]||a}–${days[b]||b}`;
+    }
+    return `${unit}s ${a}–${b}`;
+  }
+  if (val.includes(',')) return `${unit}s ${val}`;
+  if (unit==='weekday') { const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat']; return days[parseInt(val)]||val; }
+  if (unit==='hour') return `${val.padStart(2,'0')}:00`;
+  return `${unit} ${val}`;
+}
+
+function describeCron(m,h,d,mo,dow) {
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let parts = [];
+
+  // minute
+  if (m==='*') parts.push('every minute');
+  else if (m.startsWith('*/')) parts.push(`every ${m.slice(2)} minutes`);
+  else parts.push(`at minute ${m}`);
+
+  // hour
+  if (h==='*') { if (m!=='*' && !m.startsWith('*/')) parts[0] = `at :${m.padStart(2,'0')} of every hour`; }
+  else if (h.startsWith('*/')) parts.push(`every ${h.slice(2)} hours`);
+  else if (h.includes('-')) { const [a,b]=h.split('-'); parts.push(`between ${a}:00 and ${b}:59`); }
+  else {
+    const hr = parseInt(h);
+    const min = m==='*'?'00':m.includes('/')?'00':m;
+    const ampm = hr>=12 ? (hr===12?'12':''+((hr-12)||12))+':'+min.padStart(2,'0')+' pm' : (hr===0?'12':hr)+':'+min.padStart(2,'0')+' am';
+    parts = [`at ${ampm}`];
+  }
+
+  // weekday
+  if (dow!=='*') {
+    if (dow==='1-5') parts.push('Monday to Friday');
+    else if (dow==='0,6'||dow==='6,0') parts.push('on weekends');
+    else if (dow.includes('-')) { const [a,b]=dow.split('-'); parts.push(`${days[a]||a} to ${days[b]||b}`); }
+    else if (dow.includes(',')) parts.push('on selected days');
+    else parts.push(`on ${days[parseInt(dow)]||'day '+dow}`);
+  }
+
+  // day
+  if (d!=='*' && dow==='*') {
+    if (d==='1') parts.push('on the 1st of the month');
+    else parts.push(`on day ${d} of the month`);
+  }
+
+  // month
+  if (mo!=='*') {
+    const mIdx = parseInt(mo)-1;
+    parts.push(`in ${months[mIdx]||'month '+mo}`);
+  }
+
+  return parts.join(', ').replace(/^./, c=>c.toUpperCase()) + '.';
+}
+
+updateCron();
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+const questions = [
+  {
+    q: 'What does the command `ls -la | grep "^d"` output?',
+    opts: [
+      'All hidden files in the current directory',
+      'All directories in the current directory',
+      'All files modified today',
+      'An error — grep cannot process ls output'
+    ],
+    ans: 1,
+    exp: 'ls -la lists all files in long format. grep "^d" filters lines starting with "d" — which is exactly how directory entries appear in long format (drwxr-xr-x). Pipes work because ls writes to stdout and grep reads from stdin.'
+  },
+  {
+    q: 'Which command stages all changes in the current directory for the next commit?',
+    opts: [
+      'git commit -a',
+      'git stage .',
+      'git add .',
+      'git push'
+    ],
+    ans: 2,
+    exp: 'git add . stages all modified and new files in the current directory. git commit -a only stages already-tracked files (misses new ones). git stage is not a real command. git push sends commits to a remote — staging must happen first.'
+  },
+  {
+    q: 'In tmux, how do you detach from a session without killing it?',
+    opts: [
+      'Ctrl+C (sends interrupt signal)',
+      'Type "exit" and press Enter',
+      'Ctrl+b then d',
+      'Close the terminal window'
+    ],
+    ans: 2,
+    exp: 'Ctrl+b is the tmux prefix key — it tells tmux to interpret the next keystroke as a tmux command rather than passing it to the shell. "d" means detach. The session keeps running on the server; reconnect with: tmux attach -t <session-name>.'
+  },
+  {
+    q: 'What does the cron expression `*/10 6-18 * * 1-5` mean?',
+    opts: [
+      'Every 10 hours, on weekdays only',
+      'Every 10 minutes between 6am and 6pm, Monday to Friday',
+      'At 6:10am and 6:18pm, Monday to Friday',
+      '10 times a day, Monday through Friday'
+    ],
+    ans: 1,
+    exp: '*/10 means "every 10 minutes". 6-18 means hours 6 through 18 (6am to 6pm). * * means every day of the month and every month. 1-5 means Monday (1) through Friday (5). Combined: every 10 minutes during business hours on weekdays.'
+  }
+];
+
+let quizAnswers = [], quizCurrent = 0, quizInit = false;
+
+function initQuiz() {
+  if (quizInit) return;
+  quizInit = true;
+  quizAnswers = [];
+  quizCurrent = 0;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[quizCurrent];
+  document.getElementById('quizContent').innerHTML = `
+    <div class="question-card">
+      <div class="q-num">Question ${quizCurrent+1} of ${questions.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="optionsList">
+        ${q.opts.map((o,i)=>`<div class="option" data-idx="${i}" onclick="answerQ(${i})">${o}</div>`).join('')}
+      </div>
+      <div class="explanation" id="explBox">${q.exp}</div>
+    </div>
+    <div class="quiz-nav">
+      <span style="font-size:.8rem;color:var(--muted)">${quizCurrent+1} / ${questions.length}</span>
+      <button class="big-btn primary" id="nextBtn" onclick="nextQuestion()" style="display:none">
+        ${quizCurrent < questions.length-1 ? 'Next Question →' : 'See Results'}
+      </button>
+    </div>`;
+  updateQuizProgress();
+}
+
+function answerQ(idx) {
+  const q = questions[quizCurrent];
+  document.querySelectorAll('.option').forEach(o=>o.classList.add('locked'));
+  document.querySelectorAll('.option').forEach(o=>{
+    const i = parseInt(o.dataset.idx);
+    if (i===q.ans) o.classList.add('correct');
+    else if (i===idx) o.classList.add('wrong');
+  });
+  document.getElementById('explBox').classList.add('visible');
+  quizAnswers.push(idx===q.ans);
+  document.getElementById('nextBtn').style.display='block';
+  updateQuizProgress();
+}
+
+function nextQuestion() {
+  quizCurrent++;
+  if (quizCurrent < questions.length) renderQuestion();
+  else showScore();
+}
+
+function showScore() {
+  document.getElementById('quizContent').innerHTML = '';
+  const score = quizAnswers.filter(Boolean).length;
+  const pct = Math.round(score/questions.length*100);
+  const msg = pct===100 ? 'Perfect! You know your Linux fundamentals cold.' :
+              pct>=75  ? 'Great work — solid grasp of the shell and Git.' :
+              pct>=50  ? 'Good start — review the lessons and try again.' :
+                         'Keep going — re-read the lessons and retry.';
+  document.getElementById('scoreNum').textContent = `${score}/${questions.length}`;
+  document.getElementById('scoreMsg').textContent = msg;
+  localStorage.setItem('phase1done','1');
+  const scoreEl = document.getElementById('quizScore');
+  scoreEl.classList.add('visible');
+  updateQuizProgress();
+  if (!document.getElementById('roadmapBtn')) {
+    const btn = document.createElement('a');
+    btn.id = 'roadmapBtn';
+    btn.href = 'index.html';
+    btn.className = 'big-btn primary';
+    btn.style.cssText = 'margin-top:20px;display:inline-block;text-decoration:none';
+    btn.textContent = '← Back to Roadmap';
+    scoreEl.appendChild(btn);
+  }
+}
+
+function restartQuiz() {
+  quizInit = false;
+  document.getElementById('quizScore').classList.remove('visible');
+  initQuiz();
+}
+
+function updateQuizProgress() {
+  const pct = (quizAnswers.length / questions.length) * 100;
+  document.getElementById('quizPBar').style.width = pct + '%';
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+(function(){
+  const saved = parseInt(localStorage.getItem('phase1lesson') || '0', 10);
+  if (saved > 0 && saved <= 5) goLesson(saved);
+})();
+</script>
+</body>
+</html>

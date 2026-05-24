@@ -267,20 +267,27 @@ const phases = [
   }
 ];
 
-const _p0done = localStorage.getItem('phase0done') === '1';
-const _p5done = localStorage.getItem('phase5done') === '1';
-if (_p0done) {
-  const p00 = phases.find(p => p.num === '00');
-  if (p00) p00.status = 'done';
-  const p05 = phases.find(p => p.num === '05');
-  if (p05) { p05.status = 'current'; p05.link = 'phase-5.html'; }
-}
-if (_p5done) {
-  const p05 = phases.find(p => p.num === '05');
-  if (p05) p05.status = 'done';
-  const p06 = phases.find(p => p.num === '06');
-  if (p06) { p06.status = 'current'; p06.link = 'phase-6.html'; }
-}
+const unlockChain = [
+  ['phase0done',  '00', '01', 'phase-1.html'],
+  ['phase1done',  '01', '02', 'phase-2.html'],
+  ['phase2done',  '02', '03', 'phase-3.html'],
+  ['phase3done',  '03', '04', 'phase-4.html'],
+  ['phase4done',  '04', '05', 'phase-5.html'],
+  ['phase5done',  '05', '06', 'phase-6.html'],
+  ['phase6done',  '06', '07', 'phase-7.html'],
+  ['phase7done',  '07', '08', 'phase-8.html'],
+  ['phase8done',  '08', '09', 'phase-9.html'],
+  ['phase9done',  '09', '10', 'phase-10.html'],
+  ['phase10done', '10', '11', 'phase-11.html'],
+];
+unlockChain.forEach(([key, doneNum, nextNum, nextLink]) => {
+  if (localStorage.getItem(key) === '1') {
+    const done = phases.find(p => p.num === doneNum);
+    if (done) done.status = 'done';
+    const next = phases.find(p => p.num === nextNum);
+    if (next) { next.status = 'current'; next.link = nextLink; }
+  }
+});
 
 const grid = document.getElementById('phasesGrid');
 
