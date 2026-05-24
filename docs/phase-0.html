@@ -594,22 +594,14 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
   </div>
 
   <!-- ===== FULL-WIDTH KEY CONCEPTS ===== -->
-  <div class="concepts-grid-full">
-    <div class="cg-header">Key Concepts — Lesson 1</div>
-    <div class="cg-grid">
-      <div class="cg-item"><div class="cg-key">CPU</div><div class="cg-val">The chip on the motherboard that executes all your code</div></div>
-      <div class="cg-item"><div class="cg-key">Core</div><div class="cg-val">Independent processor inside the CPU — modern laptops have 8–16</div></div>
-      <div class="cg-item"><div class="cg-key">ALU</div><div class="cg-val">Arithmetic Logic Unit — the part of a core that does math and comparisons</div></div>
-      <div class="cg-item"><div class="cg-key">Hyper-threading</div><div class="cg-val">One core runs 2 threads by filling idle units during memory waits — ~20–30% more throughput</div></div>
-      <div class="cg-item"><div class="cg-key">Thread</div><div class="cg-val">Lightweight execution unit — shares memory with other threads in the same process</div></div>
-      <div class="cg-item"><div class="cg-key">Ref counting</div><div class="cg-val">How Python tracks if an object is still in use — every object has a counter</div></div>
-      <div class="cg-item"><div class="cg-key">Race condition</div><div class="cg-val">Two threads read/write the same value simultaneously — result is unpredictably wrong</div></div>
-      <div class="cg-item"><div class="cg-key">GIL</div><div class="cg-val">Global Interpreter Lock — only 1 thread runs Python bytecode at a time</div></div>
-      <div class="cg-item"><div class="cg-key">C extension</div><div class="cg-val">Library code written in C (numpy, pandas internals) — releases the GIL, can use multiple cores</div></div>
-      <div class="cg-item"><div class="cg-key">Multiprocessing</div><div class="cg-val">Separate processes, each with own memory + own GIL — true parallelism, higher RAM cost</div></div>
-      <div class="cg-item"><div class="cg-key">CPU-bound</div><div class="cg-val">Bottleneck is computation — use multiprocessing or numpy, not threading</div></div>
-      <div class="cg-item"><div class="cg-key">I/O-bound</div><div class="cg-val">Bottleneck is waiting on network/disk — use async/await, threads are fine here</div></div>
-    </div>
+  <div class="concepts-box" style="margin-top:32px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">Core</div><div class="concept-val">An independent processor inside the CPU chip — one CPU can have 8–96 cores</div></div>
+    <div class="concept-item"><div class="concept-key">Thread</div><div class="concept-val">A stream of instructions running inside a process — shares memory with other threads</div></div>
+    <div class="concept-item"><div class="concept-key">GIL</div><div class="concept-val">Global Interpreter Lock — only 1 thread runs Python bytecode at a time, even on multi-core machines</div></div>
+    <div class="concept-item"><div class="concept-key">Race condition</div><div class="concept-val">Two threads read/write the same value simultaneously — result is corrupted unpredictably</div></div>
+    <div class="concept-item"><div class="concept-key">Multiprocessing</div><div class="concept-val">Spawns separate processes each with their own memory and GIL — true parallelism, higher RAM cost</div></div>
+    <div class="concept-item"><div class="concept-key">C extension</div><div class="concept-val">Library code in C (numpy, pandas) that releases the GIL during computation — can use multiple cores</div></div>
   </div>
 
   <div class="lesson-nav">
