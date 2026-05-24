@@ -494,19 +494,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <div class="pipe-note" style="margin-top:10px">Thread 1 uses idle ALU while Thread 0 waits on memory. Other cores remain idle.</div>
       </div>
 
-      <!-- Demo 3: Reference counting example -->
-      <div class="demo-panel">
-        <div class="demo-title">Reference Counting <span>How Python tracks memory</span></div>
-        <div style="font-family:var(--mono);font-size:.8rem;line-height:2;background:var(--surface);border-radius:var(--r-sm);padding:14px 16px;border:1px solid var(--border)">
-          <div><span style="color:var(--accent)">x</span> = [1,2,3] &nbsp;&nbsp;<span style="color:var(--dim)"># list ref count = 1</span></div>
-          <div><span style="color:var(--accent)">y</span> = x &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--dim)"># list ref count = 2</span></div>
-          <div><span style="color:var(--danger)">del</span> x &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--dim)"># list ref count = 1</span></div>
-          <div><span style="color:var(--danger)">del</span> y &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--dim)"># ref count = 0 → deleted ✓</span></div>
-        </div>
-        <div class="pipe-note" style="margin-top:10px">Works perfectly on one thread. The problem starts when two threads try to update the same counter at the same time.</div>
-      </div>
-
-      <!-- Demo 4: Race condition pipeline -->
+      <!-- Demo 3: Race condition pipeline -->
       <div class="demo-panel">
         <div class="demo-title">Race Condition — Without GIL <span>Both threads corrupt the count</span></div>
         <div class="pipe-label" style="margin-bottom:10px">Two threads, same object, no lock</div>
