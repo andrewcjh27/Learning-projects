@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 5 — Transformers &amp; Attention</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1f;--surface:#0e1628;--card:#121c30;--border:#1e2d47;--border-b:#2d4470;
+  --primary:#4f8ef7;--primary-dim:rgba(79,142,247,.12);--primary-glow:rgba(79,142,247,.3);
+  --secondary:#a78bfa;--accent:#34d399;--warning:#fbbf24;--danger:#f87171;--orange:#fb923c;
+  --text:#dde8f5;--muted:#7a8faa;--dim:#3d5070;
+  --font:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;--r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-back{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-back:hover{color:var(--primary)}
+.nav-sep{color:var(--dim)}
+.nav-title{font-weight:600;font-size:.9rem}
+.lesson-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0}
+.lesson-tab{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;white-space:nowrap;background:transparent;color:var(--muted)}
+.lesson-tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.lesson-tab.active{background:var(--primary-dim);color:var(--primary);border:1px solid var(--primary-glow)}
+@media(max-width:640px){nav{flex-direction:column;height:auto;padding:10px 16px;gap:6px}.lesson-tabs{width:100%}}
+
+.phase-hero{padding:48px 32px 32px;max-width:1100px;margin:0 auto}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.phase-hero h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;letter-spacing:-.04em;margin-bottom:8px;background:linear-gradient(135deg,#fff 40%,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.phase-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+.phase-progress{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.pp-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.pp-step.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.pp-step.done{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.pp-step:not(.active):not(.done){color:var(--dim)}
+.pp-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.lesson-section{display:none;max-width:1100px;margin:0 auto;padding:32px 32px 80px}
+.lesson-section.active{display:block}
+.lesson-header{margin-bottom:32px}
+.lesson-num{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-family:var(--mono)}
+.lesson-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.lesson-desc{color:var(--muted);max-width:680px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.split-wide{grid-template-columns:2fr 3fr}
+
+.prose h3{font-size:1rem;font-weight:600;margin:20px 0 8px;color:var(--text)}
+.prose h3:first-child{margin-top:0}
+.prose p{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.prose ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.prose li{font-size:.9rem;color:var(--muted);padding-left:16px;position:relative}
+.prose li::before{content:'›';position:absolute;left:0;color:var(--primary)}
+.prose strong{color:var(--text);font-weight:600}
+.prose .callout{background:var(--primary-dim);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 16px;margin:12px 0}
+.prose .callout p{color:var(--text);margin:0}
+.prose code{font-family:var(--mono);font-size:.82rem;background:rgba(79,142,247,.1);padding:2px 6px;border-radius:4px;color:var(--primary)}
+
+.concepts-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:20px}
+.concepts-box h4{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.concept-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.concept-item:last-child{border-bottom:none}
+.concept-key{font-family:var(--mono);font-size:.75rem;color:var(--primary);font-weight:500;white-space:nowrap;min-width:110px}
+.concept-val{font-size:.8rem;color:var(--muted)}
+
+.demo-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:relative}
+.demo-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.demo-title span{color:var(--accent);font-size:.7rem;font-weight:600}
+
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.btn:hover{border-color:var(--border-b);color:var(--text)}
+.btn.active,.btn.primary{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.btn.accent{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.btn.secondary{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:var(--secondary)}
+
+.lesson-nav{display:flex;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.big-btn{padding:12px 24px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font)}
+.big-btn.primary{background:var(--primary);color:#fff}
+.big-btn.primary:hover{background:#6fa2ff;box-shadow:0 4px 20px rgba(79,142,247,.4)}
+.big-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.big-btn.ghost:hover{color:var(--text);border-color:var(--border-b)}
+
+/* QUIZ */
+.quiz-wrap{max-width:720px;margin:0 auto}
+.quiz-progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:32px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary));border-radius:2px;transition:width .4s ease}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.q-text{font-size:1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:12px 16px;border-radius:var(--r-sm);border:1px solid var(--border);cursor:pointer;font-size:.88rem;transition:all .2s;background:var(--surface)}
+.option:hover:not(.locked){border-color:var(--border-b);background:rgba(255,255,255,.03)}
+.option.correct{border-color:var(--accent)!important;background:rgba(52,211,153,.1)!important;color:var(--accent)}
+.option.wrong{border-color:var(--danger)!important;background:rgba(248,113,113,.1)!important;color:var(--danger)}
+.option.locked{cursor:default}
+.explanation{margin-top:16px;padding:14px 16px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:var(--r-sm);font-size:.84rem;color:var(--text);line-height:1.6;display:none}
+.explanation.visible{display:block;animation:slideUp .3s ease}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.quiz-score{text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);display:none}
+.quiz-score.visible{display:block;animation:slideUp .4s ease}
+.score-num{font-size:4rem;font-weight:800;background:linear-gradient(135deg,var(--secondary),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-msg{font-size:1.1rem;color:var(--muted);margin-bottom:24px}
+
+/* Light mode */
+[data-theme="light"]{
+  --bg:#f4f6fc;--surface:#eaecf5;--card:#ffffff;--border:#cdd5e4;--border-b:#aab5cc;
+  --primary:#3a6fd8;--primary-dim:rgba(58,111,216,.1);--primary-glow:rgba(58,111,216,.25);
+  --secondary:#6d28d9;--accent:#059669;--warning:#d97706;--danger:#dc2626;--orange:#ea580c;
+  --text:#111827;--muted:#475569;--dim:#94a3b8;
+}
+[data-theme="light"] body{background:var(--bg)}
+[data-theme="light"] nav{background:rgba(244,246,252,.95)}
+[data-theme="light"] .phase-hero h1{background:linear-gradient(135deg,#111827 40%,#6d28d9);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="light"] .callout{background:rgba(58,111,216,.07);border-color:rgba(58,111,216,.3)}
+[data-theme="light"] code{background:rgba(0,0,0,.07);color:#1e3a8a}
+.theme-toggle{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 13px;color:var(--muted);cursor:pointer;font-size:.8rem;font-family:var(--font);transition:all .2s;white-space:nowrap;flex-shrink:0}
+.theme-toggle:hover{color:var(--text);border-color:var(--primary)}
+
+@media(max-width:640px){
+  .phase-hero,.lesson-section{padding-left:20px;padding-right:20px}
+}
+
+/* STAT BOX */
+.stat-box{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px}
+.stat-box-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+.stat-box-val{font-size:1.1rem;font-weight:700;font-family:var(--mono);margin-top:2px}
+
+/* =============================================
+   EMBEDDING SCATTER
+   ============================================= */
+.embed-svg-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px;overflow:hidden}
+.embed-svg-wrap svg{width:100%;height:auto}
+.embed-word-btn{font-size:.7rem;padding:3px 8px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;transition:all .15s;font-family:var(--font)}
+.embed-word-btn:hover{border-color:var(--primary-glow);color:var(--primary)}
+.embed-word-btn.selected{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.embed-note{font-size:.75rem;color:var(--muted);min-height:32px;margin-top:8px;padding:6px 10px;background:var(--surface);border-radius:var(--r-sm)}
+
+/* =============================================
+   ATTENTION HEATMAP
+   ============================================= */
+.attn-wrap{overflow-x:auto}
+.attn-grid-container{display:inline-block;min-width:100%}
+.attn-col-headers{display:flex;gap:2px;padding-left:72px;margin-bottom:2px}
+.attn-col-hdr{width:32px;font-size:.6rem;color:var(--muted);text-align:center;font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0}
+.attn-row{display:flex;align-items:center;gap:2px;margin-bottom:2px}
+.attn-row-label{width:68px;font-size:.65rem;color:var(--muted);text-align:right;padding-right:6px;cursor:pointer;font-family:var(--mono);flex-shrink:0;transition:color .2s}
+.attn-row-label:hover,.attn-row-label.selected{color:var(--primary)}
+.attn-cell{width:32px;height:24px;border-radius:3px;flex-shrink:0;transition:opacity .2s}
+.attn-legend{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.7rem;color:var(--muted)}
+.attn-legend-bar{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(79,142,247,.05),rgba(79,142,247,1))}
+.attn-note{font-size:.75rem;color:var(--muted);margin-top:8px;padding:6px 10px;background:var(--surface);border-radius:var(--r-sm);min-height:32px}
+
+/* =============================================
+   TRANSFORMER BLOCK STEPPER
+   ============================================= */
+.tblock-wrap{display:flex;flex-direction:column;gap:4px}
+.tblock-item{border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;transition:all .3s;background:var(--surface)}
+.tblock-item.tb-active{border-color:var(--secondary);background:rgba(167,139,250,.1);box-shadow:0 0 16px rgba(167,139,250,.2)}
+.tblock-item.tb-done{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.05)}
+.tblock-arrow{text-align:center;color:var(--dim);font-size:.9rem;padding:2px 0}
+.tblock-name{font-size:.82rem;font-weight:700;color:var(--text)}
+.tblock-sub{font-size:.72rem;color:var(--muted);margin-top:2px}
+.tblock-desc{font-size:.78rem;color:var(--muted);margin-top:10px;padding:8px 12px;background:var(--card);border-radius:var(--r-sm);border:1px solid var(--border);min-height:44px;transition:all .3s}
+
+/* =============================================
+   AUTOREGRESSIVE GENERATION
+   ============================================= */
+.autogen-output{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;min-height:60px;font-family:var(--mono);font-size:.85rem;line-height:1.8;margin-bottom:12px}
+.autogen-token{display:inline;transition:all .3s}
+.autogen-token.prompt-tok{color:var(--muted)}
+.autogen-token.new-tok{color:var(--secondary);background:rgba(167,139,250,.12);border-radius:3px;padding:1px 3px;animation:fadeInTok .4s ease}
+@keyframes fadeInTok{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.causal-mask-label{font-size:.68rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.causal-mask-grid{display:inline-grid;gap:2px;margin-bottom:8px}
+.cm-cell{width:18px;height:18px;border-radius:2px;font-size:.5rem;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+.cm-cell.cm-attend{background:rgba(167,139,250,.25);color:var(--secondary)}
+.cm-cell.cm-block{background:var(--surface);color:var(--dim)}
+.cm-cell.cm-header{background:transparent;color:var(--dim);font-size:.55rem}
+.autogen-note{font-size:.75rem;color:var(--muted);min-height:28px}
+
+/* =============================================
+   SCALING CHARTS
+   ============================================= */
+.scale-chart-wrap{display:flex;flex-direction:column;gap:24px}
+.scale-chart-title{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.scale-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.scale-bar-label{font-size:.72rem;font-family:var(--mono);color:var(--muted);min-width:70px;text-align:right;flex-shrink:0}
+.scale-bar-track{flex:1;height:20px;background:var(--surface);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.scale-bar-fill{height:100%;border-radius:4px;width:0%;transition:width 1s ease}
+.scale-bar-val{font-size:.7rem;font-family:var(--mono);color:var(--muted);white-space:nowrap;min-width:50px}
+</style>
+<script>
+(function(){
+  if(localStorage.getItem('theme')==='light')
+    document.documentElement.setAttribute('data-theme','light');
+})();
+</script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← Roadmap</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Phase 5: Transformers &amp; Attention</span>
+  </div>
+  <div class="lesson-tabs" id="lessonTabs">
+    <button class="lesson-tab active" data-lesson="0">1. Words to Numbers</button>
+    <button class="lesson-tab" data-lesson="1">2. Self-Attention</button>
+    <button class="lesson-tab" data-lesson="2">3. Transformer Block</button>
+    <button class="lesson-tab" data-lesson="3">4. BERT vs GPT</button>
+    <button class="lesson-tab" data-lesson="4">5. Practical LLMs</button>
+    <button class="lesson-tab" data-lesson="5">✦ Quiz</button>
+  </div>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
+</nav>
+
+<!-- HERO -->
+<div class="phase-hero">
+  <div class="breadcrumb"><a href="index.html">Roadmap</a> / Phase 5</div>
+  <h1>Transformers &amp; Attention</h1>
+  <p>Understand how modern LLMs work from the ground up — tokens, embeddings, attention, and why transformers changed everything in AI.</p>
+  <div class="phase-progress" id="phaseProgress">
+    <div class="pp-step active" data-lesson="0"><span class="pp-dot"></span>Words to Numbers</div>
+    <div class="pp-step" data-lesson="1"><span class="pp-dot"></span>Self-Attention</div>
+    <div class="pp-step" data-lesson="2"><span class="pp-dot"></span>Transformer Block</div>
+    <div class="pp-step" data-lesson="3"><span class="pp-dot"></span>BERT vs GPT</div>
+    <div class="pp-step" data-lesson="4"><span class="pp-dot"></span>Practical LLMs</div>
+    <div class="pp-step" data-lesson="5"><span class="pp-dot"></span>Quiz</div>
+  </div>
+</div>
+
+<!-- ============================================================
+     LESSON 0 — FROM WORDS TO NUMBERS
+     ============================================================ -->
+<div class="lesson-section active" id="lesson-0">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 1 of 5</div>
+    <div class="lesson-title">From Words to Numbers</div>
+    <div class="lesson-desc">Before any model can process language, words must become numbers. Here's how that works.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>Why machines need numbers</h3>
+      <p>Neural networks — including transformers — are fundamentally <strong>mathematical functions</strong>. They can only operate on numbers, not letters or words. The first job is converting text into a numerical form the model can process.</p>
+
+      <h3>Step 1 — Tokenization</h3>
+      <p><strong>Tokenization</strong> splits raw text into small chunks called <strong>tokens</strong>. A token is not always a full word — it might be a word, a sub-word fragment, or a character, depending on the tokenizer.</p>
+      <p>Most modern LLMs use <strong>Byte-Pair Encoding (BPE)</strong>. BPE starts with individual characters and repeatedly merges the most common adjacent pairs into new tokens until it reaches a target vocabulary size (typically 50,000–100,000 tokens).</p>
+      <p>Examples of how BPE tokenizes text:</p>
+      <ul>
+        <li><code>"unhappiness"</code> → <code>["un", "happi", "ness"]</code></li>
+        <li><code>"transformer"</code> → <code>["transform", "er"]</code></li>
+        <li><code>"ChatGPT"</code> → <code>["Chat", "G", "PT"]</code></li>
+        <li><code>"hello world"</code> → <code>["hello", " world"]</code></li>
+      </ul>
+      <p>Each token is assigned an integer ID. "hello" might be token 15496. The model only ever sees these integers — never raw text.</p>
+
+      <h3>Step 2 — Embeddings</h3>
+      <p>An integer ID like 15496 doesn't carry any meaning on its own. The model converts each token ID into a <strong>dense vector</strong> — a list of hundreds or thousands of floating-point numbers. This is an <strong>embedding</strong>.</p>
+      <p>Embeddings are learned during training. The model adjusts these vectors so that words used in similar contexts end up with similar vectors. Two words are "similar" if their vectors are close — measured by the angle between them (cosine similarity).</p>
+      <p>This creates a geometric space of meaning:</p>
+      <ul>
+        <li>"dog" and "cat" end up near each other</li>
+        <li>"Paris" ends up near "France", "London", "England"</li>
+        <li>The vector offset <em>king − man</em> points in roughly the same direction as <em>queen − woman</em></li>
+      </ul>
+      <div class="callout"><p>Embeddings are the model's learned dictionary of meaning. GPT-4 uses 12,288-dimensional embeddings — each token becomes a vector with 12,288 numbers that together encode its meaning in context.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Embedding Space <span>Click a word to see its neighbours</span></div>
+        <div class="embed-svg-wrap">
+          <svg id="embedSvg" viewBox="0 0 380 280" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div style="margin-top:10px">
+          <button class="btn primary" onclick="embedArithmetic()">king − man + woman = ?</button>
+          <button class="btn" onclick="resetEmbed()">Reset</button>
+        </div>
+        <div class="embed-note" id="embedNote">Click any word to see its nearest neighbours highlighted.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:32px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">Token</div><div class="concept-val">A chunk of text (word, sub-word, or character) — the atomic unit of input to an LLM</div></div>
+    <div class="concept-item"><div class="concept-key">BPE</div><div class="concept-val">Byte-Pair Encoding — learns a vocabulary by merging frequent character pairs, handles rare words as sub-word fragments</div></div>
+    <div class="concept-item"><div class="concept-key">Embedding</div><div class="concept-val">A dense vector of numbers representing a token's meaning — learned during training so similar words are geometrically close</div></div>
+    <div class="concept-item"><div class="concept-key">Vocab size</div><div class="concept-val">Number of distinct tokens the model knows — typically 50k–100k for modern LLMs</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <span></span>
+    <button class="big-btn primary" onclick="goLesson(1)">Next: Self-Attention →</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     LESSON 1 — SELF-ATTENTION
+     ============================================================ -->
+<div class="lesson-section" id="lesson-1">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 2 of 5</div>
+    <div class="lesson-title">Self-Attention</div>
+    <div class="lesson-desc">The core innovation of transformers — letting every token look at every other token to understand context.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>The context problem</h3>
+      <p>The word "bank" means completely different things in these two sentences:</p>
+      <ul>
+        <li>"I deposited money at the <strong>bank</strong>."</li>
+        <li>"The otter swam to the river <strong>bank</strong>."</li>
+      </ul>
+      <p>A model that looks at each word in isolation can't tell the difference. It needs to understand the <em>surrounding context</em> to interpret any given word. This is what self-attention solves.</p>
+
+      <h3>What self-attention does</h3>
+      <p>Self-attention lets every token in a sequence <strong>look at every other token</strong> and decide how much to "pay attention" to each one. The result is a new, context-aware representation for each token — the word "bank" now knows from context whether it's near "river" or "money" and updates its meaning accordingly.</p>
+
+      <h3>Query, Key, Value (Q, K, V)</h3>
+      <p>Each token produces three vectors:</p>
+      <ul>
+        <li><strong>Query (Q)</strong> — "What information am I looking for?"</li>
+        <li><strong>Key (K)</strong> — "What information do I contain?"</li>
+        <li><strong>Value (V)</strong> — "What do I actually pass forward if someone attends to me?"</li>
+      </ul>
+      <p>The attention score between token A (query) and token B (key) is the dot product Q_A · K_B, divided by √d to keep numbers stable. Applying softmax to all scores gives weights that sum to 1 — a probability distribution over which tokens to attend to.</p>
+      <p>The final output for a token is the weighted sum of all Value vectors. If "it" attends 80% to "animal" and 10% to "street", its new representation is 80% the value of "animal" plus 10% the value of "street" — it literally absorbs meaning from those tokens.</p>
+      <div class="callout"><p>Self-attention is O(n²) in the sequence length — every token attends to every other. This is why longer context windows are expensive: 2× the tokens = 4× the attention computation.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Attention Heatmap <span>Click a token to see what it attends to</span></div>
+        <div class="attn-wrap">
+          <div class="attn-grid-container" id="attnGrid"></div>
+        </div>
+        <div class="attn-legend">
+          <span>low attention</span>
+          <div class="attn-legend-bar"></div>
+          <span>high attention</span>
+        </div>
+        <div class="attn-note" id="attnNote">Click any token label on the left to see its attention pattern.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:32px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">Self-attention</div><div class="concept-val">Each token attends to all others, building context-aware representations</div></div>
+    <div class="concept-item"><div class="concept-key">Q / K / V</div><div class="concept-val">Query = what I'm looking for, Key = what I advertise, Value = what I pass forward</div></div>
+    <div class="concept-item"><div class="concept-key">Attention score</div><div class="concept-val">Q · K / √d — measures how relevant one token is to another</div></div>
+    <div class="concept-item"><div class="concept-key">Softmax</div><div class="concept-val">Converts raw scores into weights summing to 1 — a probability distribution over tokens to attend to</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(0)">← Back</button>
+    <button class="big-btn primary" onclick="goLesson(2)">Next: Transformer Block →</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     LESSON 2 — THE TRANSFORMER BLOCK
+     ============================================================ -->
+<div class="lesson-section" id="lesson-2">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 3 of 5</div>
+    <div class="lesson-title">The Transformer Block</div>
+    <div class="lesson-desc">Self-attention is just one piece. Here's the full block that gets stacked to build GPT and BERT.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>Multi-head attention</h3>
+      <p>Instead of running self-attention once, transformers run it <strong>N times in parallel</strong> with different learned weight matrices. Each "head" learns to notice different kinds of relationships:</p>
+      <ul>
+        <li>One head might learn syntactic structure (subject → verb)</li>
+        <li>Another might learn coreference ("it" → "animal")</li>
+        <li>Another might learn positional relationships</li>
+      </ul>
+      <p>The N heads' outputs are concatenated and projected back to the model's dimension. This gives the model multiple simultaneous "perspectives" on the same sequence.</p>
+
+      <h3>Residual connections</h3>
+      <p>After attention, the <strong>original input is added back</strong> to the attention output: <code>output = attention(x) + x</code>. This is called a <strong>residual connection</strong>.</p>
+      <p>Why? Deep networks are hard to train — gradients vanish. By adding the input back, you ensure there's always a direct path for gradients to flow backward. The attention only needs to learn the <em>change</em>, not the full transformation.</p>
+
+      <h3>Layer normalisation</h3>
+      <p>After the residual add, the values are <strong>normalised</strong> across the feature dimension. This keeps activations in a stable range, preventing exploding or vanishing numbers as the signal passes through many layers.</p>
+
+      <h3>Feed-forward network</h3>
+      <p>After attention, each token's representation is passed through a small <strong>two-layer MLP</strong> independently. This is where the model does per-token "thinking" — storing factual knowledge and refining the representation. The hidden dimension is typically 4× wider than the embedding dimension.</p>
+
+      <h3>Stacking blocks</h3>
+      <p>One block = Multi-Head Attention + Add&amp;Norm + Feed-Forward + Add&amp;Norm. GPT-2 stacks 12 blocks. GPT-3 stacks 96. Each block builds a progressively more abstract representation — early blocks handle syntax, later blocks handle semantics and facts.</p>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Transformer Block <span>Step through each component</span></div>
+        <div class="tblock-wrap" id="tblockWrap"></div>
+        <div style="margin-top:14px">
+          <div class="tblock-desc" id="tblockDesc">Press "Next Step" to walk through the transformer block.</div>
+        </div>
+        <div class="btn-group" style="margin-top:12px">
+          <button class="btn primary" onclick="tblockNext()">Next Step →</button>
+          <button class="btn" onclick="tblockReset()">Reset</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--dim);margin-top:8px" id="tblockCounter">Step 0 of 6</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:32px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">Multi-head</div><div class="concept-val">N parallel attention heads, each learning different relationship patterns</div></div>
+    <div class="concept-item"><div class="concept-key">Residual connection</div><div class="concept-val">Add original input back after attention — keeps training stable and gradients flowing</div></div>
+    <div class="concept-item"><div class="concept-key">Layer norm</div><div class="concept-val">Normalise activations after each sub-layer — prevents values from exploding or vanishing</div></div>
+    <div class="concept-item"><div class="concept-key">Feed-forward</div><div class="concept-val">Position-wise MLP after attention — where the model stores factual knowledge</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(1)">← Back</button>
+    <button class="big-btn primary" onclick="goLesson(3)">Next: BERT vs GPT →</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     LESSON 3 — BERT vs GPT
+     ============================================================ -->
+<div class="lesson-section" id="lesson-3">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 4 of 5</div>
+    <div class="lesson-title">BERT vs GPT — Encoder vs Decoder</div>
+    <div class="lesson-desc">Same transformer blocks, but one crucial difference in how tokens are allowed to attend to each other.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>Two ways to use the transformer block</h3>
+      <p>The transformer architecture was originally designed with an <strong>encoder</strong> (reads the input) and a <strong>decoder</strong> (generates the output), like in translation. Later research found that using just one half works extremely well for different tasks.</p>
+
+      <h3>Encoder-only: BERT</h3>
+      <p>In an encoder, every token can attend to <strong>every other token</strong> — both before and after it. This is called <strong>bidirectional attention</strong>. The model sees the full sentence at once and builds rich contextual representations.</p>
+      <p>Best for tasks where you need to <em>understand</em> text:</p>
+      <ul>
+        <li>Sentiment classification — is this review positive or negative?</li>
+        <li>Named Entity Recognition — find all person/place/org names</li>
+        <li>Semantic search — embed a sentence into a vector for retrieval</li>
+        <li>Question answering — find the answer span in a passage</li>
+      </ul>
+
+      <h3>Decoder-only: GPT</h3>
+      <p>In a decoder, each token can only attend to <strong>tokens that came before it</strong> — never future tokens. This is enforced with a <strong>causal mask</strong>: a triangular mask that blocks attention to the future. The model only knows what has been generated so far.</p>
+      <p>Why? Because at generation time, future tokens literally don't exist yet. You can't "cheat" by looking at the answer when generating it. This also makes generation possible: produce one token, append it, produce the next, repeat.</p>
+      <p>Best for tasks where you need to <em>generate</em> text:</p>
+      <ul>
+        <li>Text completion and chat (GPT-4, Claude)</li>
+        <li>Code generation (GitHub Copilot)</li>
+        <li>Summarisation, translation (with a prompt)</li>
+      </ul>
+
+      <h3>Encoder-decoder: T5, BART</h3>
+      <p>The original full transformer: encoder reads the input with full bidirectional attention; decoder generates output attending to its past tokens <em>plus</em> cross-attends to the full encoder output. Used for translation, summarisation with separate input/output sequences.</p>
+      <div class="callout"><p>The practical upshot for AI engineering: use BERT-family models for embeddings and classification. Use GPT-family models (including Claude) for generation. Use T5/BART for structured input→output mappings.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Autoregressive Generation <span>GPT decoder in action</span></div>
+        <div style="font-size:.72rem;color:var(--dim);margin-bottom:6px">Output</div>
+        <div class="autogen-output" id="autogenOutput"></div>
+        <div class="causal-mask-label">Causal mask — ✓ = can attend, · = blocked</div>
+        <div id="causalMaskWrap"></div>
+        <div class="btn-group" style="margin-top:10px">
+          <button class="btn primary" onclick="autogenPlay()">▶ Auto-play</button>
+          <button class="btn" onclick="autogenStep()">Step →</button>
+          <button class="btn" onclick="autogenReset()">Reset</button>
+        </div>
+        <div class="autogen-note" id="autogenNote">Press Play or Step to watch GPT generate tokens one at a time.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:32px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">Encoder (BERT)</div><div class="concept-val">Bidirectional attention — sees all tokens, best for understanding tasks</div></div>
+    <div class="concept-item"><div class="concept-key">Decoder (GPT)</div><div class="concept-val">Causal attention — only sees past tokens, enables text generation one token at a time</div></div>
+    <div class="concept-item"><div class="concept-key">Causal mask</div><div class="concept-val">Triangular mask that blocks each token from attending to future positions during generation</div></div>
+    <div class="concept-item"><div class="concept-key">Autoregressive</div><div class="concept-val">Generating one token at a time, each conditioned on all previous tokens</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(2)">← Back</button>
+    <button class="big-btn primary" onclick="goLesson(4)">Next: Practical LLMs →</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     LESSON 4 — PRACTICAL TRANSFORMERS
+     ============================================================ -->
+<div class="lesson-section" id="lesson-4">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 5 of 5</div>
+    <div class="lesson-title">Practical Transformers</div>
+    <div class="lesson-desc">Context windows, memory costs, scaling laws — everything you need to reason about LLMs as an engineer.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>Why context windows are limited</h3>
+      <p>Self-attention is <strong>O(n²)</strong> in sequence length — every token attends to every other. Double the context, and attention cost quadruples. This is a hard computational constraint:</p>
+      <ul>
+        <li>1,024 tokens → 1× cost</li>
+        <li>2,048 tokens → 4× cost</li>
+        <li>8,192 tokens → 64× cost</li>
+        <li>32,768 tokens → 1,024× cost</li>
+      </ul>
+      <p>Modern techniques (Flash Attention, RoPE, sliding window attention) reduce this in practice, but the fundamental constraint remains: long contexts are expensive.</p>
+
+      <h3>The KV cache</h3>
+      <p>During generation, the model already computed Key and Value vectors for all past tokens. Recalculating them every step would be O(n) work per token. Instead, the model <strong>caches</strong> past K and V tensors and reuses them — only computing attention for the new token.</p>
+      <p>This is why generating 1,000 tokens from a 100,000-token context is feasible — the KV cache pays the per-token cost once. The downside: the KV cache lives in VRAM, so very long contexts consume enormous GPU memory.</p>
+
+      <h3>How much memory does a model need?</h3>
+      <p>Model parameters are stored as floating-point numbers. In <strong>fp16</strong> (half precision, standard for inference), each parameter takes 2 bytes:</p>
+      <ul>
+        <li>7B parameters × 2 bytes = <strong>14 GB</strong> VRAM minimum</li>
+        <li>13B parameters × 2 bytes = <strong>26 GB</strong> VRAM</li>
+        <li>70B parameters × 2 bytes = <strong>140 GB</strong> VRAM (needs multiple GPUs)</li>
+        <li>405B parameters × 2 bytes = <strong>810 GB</strong> VRAM</li>
+      </ul>
+      <p>Add the KV cache and activations on top. This is why running large models locally requires serious hardware.</p>
+
+      <h3>Scaling laws</h3>
+      <p>Kaplan et al. (2020) found that model capability improves <strong>predictably</strong> as you scale up three things: model parameters, training data, and compute. The improvement is log-linear — each doubling of scale gives a roughly constant improvement on benchmarks. This is why labs keep building bigger models.</p>
+
+      <h3>How this connects to Phase 0</h3>
+      <p>Everything you learned in Phase 0 directly applies here: <strong>GPU tensor cores</strong> compute the matrix multiplications inside every attention head. <strong>VRAM</strong> holds the model weights and KV cache. The <strong>cache hierarchy</strong> (L1/L2/L3/RAM) speeds up loading attention weights. <strong>Distributed computing</strong> (Spark, NVLink) spreads large models across multiple GPUs.</p>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Scaling Visualiser <span>Context cost &amp; model capability</span></div>
+        <div class="scale-chart-wrap" id="scaleCharts"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:32px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">Context window</div><div class="concept-val">Max tokens the model can process at once — limited by O(n²) attention cost and VRAM</div></div>
+    <div class="concept-item"><div class="concept-key">KV cache</div><div class="concept-val">Cached Key/Value tensors from past tokens — avoids recomputing attention on every generation step</div></div>
+    <div class="concept-item"><div class="concept-key">fp16</div><div class="concept-val">Half-precision floats (2 bytes/param) — standard for inference; 7B model needs ~14 GB VRAM</div></div>
+    <div class="concept-item"><div class="concept-key">Scaling laws</div><div class="concept-val">Capability improves log-linearly with parameters, data, and compute — predictable returns from scale</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(3)">← Back</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     LESSON 5 — QUIZ
+     ============================================================ -->
+<div class="lesson-section" id="lesson-5">
+  <div class="lesson-header">
+    <div class="lesson-num">Quiz</div>
+    <div class="lesson-title">Transformers &amp; Attention</div>
+    <div class="lesson-desc">4 questions covering the core ideas from this phase.</div>
+  </div>
+
+  <div class="quiz-wrap">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizPBar" style="width:0%"></div></div>
+    <div id="quizContent"></div>
+    <div class="quiz-score" id="quizScore">
+      <div class="score-num" id="scoreNum"></div>
+      <div class="score-msg" id="scoreMsg"></div>
+      <button class="big-btn primary" onclick="restartQuiz()">Try Again</button>
+      <button class="big-btn ghost" style="margin-left:12px" onclick="goLesson(0)">Review Lessons</button>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(4)">← Back</button>
+    <span style="color:var(--accent);font-size:.85rem;font-weight:600">🎉 Phase 5 Complete!</span>
+  </div>
+</div>
+
+<script>
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+let currentLesson = 0;
+
+function goLesson(n) {
+  document.querySelectorAll('.lesson-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`lesson-${n}`).classList.add('active');
+  document.querySelectorAll('.lesson-tab').forEach((t,i) => t.classList.toggle('active', i===n));
+  document.querySelectorAll('.pp-step').forEach((s,i) => {
+    s.classList.remove('active','done');
+    if (i < n) s.classList.add('done');
+    else if (i === n) s.classList.add('active');
+  });
+  currentLesson = n;
+  window.scrollTo({top:0,behavior:'smooth'});
+  localStorage.setItem('phase5lesson', n);
+  if (n === 5) initQuiz();
+}
+
+document.querySelectorAll('.lesson-tab').forEach(t => {
+  t.addEventListener('click', () => goLesson(+t.dataset.lesson));
+});
+document.querySelectorAll('.pp-step').forEach(s => {
+  s.addEventListener('click', () => goLesson(+s.dataset.lesson));
+});
+
+/* ============================================================
+   THEME TOGGLE
+   ============================================================ */
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('theme', 'dark');
+    document.getElementById('themeToggle').textContent = '☀ Light';
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
+    document.getElementById('themeToggle').textContent = '🌙 Dark';
+  }
+}
+(function(){
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '🌙 Dark' : '☀ Light';
+})();
+
+/* ============================================================
+   LESSON 0 — EMBEDDING SCATTER
+   ============================================================ */
+const embedWords = [
+  {w:'king',   x:68, y:25, group:'royal'},
+  {w:'queen',  x:68, y:55, group:'royal'},
+  {w:'man',    x:28, y:25, group:'royal'},
+  {w:'woman',  x:28, y:55, group:'royal'},
+  {w:'Paris',  x:52, y:85, group:'geo'},
+  {w:'France', x:72, y:80, group:'geo'},
+  {w:'London', x:52, y:97, group:'geo'},
+  {w:'England',x:72, y:92, group:'geo'},
+  {w:'dog',    x:18, y:75, group:'animal'},
+  {w:'cat',    x:30, y:82, group:'animal'},
+  {w:'happy',  x:86, y:30, group:'sentiment'},
+  {w:'good',   x:80, y:20, group:'sentiment'},
+  {w:'sad',    x:86, y:65, group:'sentiment'},
+  {w:'bad',    x:80, y:75, group:'sentiment'},
+];
+const embedNeighbors = {
+  'king':  ['queen','man','good'],
+  'queen': ['king','woman','good'],
+  'man':   ['king','woman','dog'],
+  'woman': ['queen','man','cat'],
+  'Paris': ['France','London','England'],
+  'France':['Paris','England','London'],
+  'London':['England','Paris','France'],
+  'England':['London','France','Paris'],
+  'dog':   ['cat','man'],
+  'cat':   ['dog','woman'],
+  'happy': ['good','sad'],
+  'good':  ['happy','king','queen'],
+  'sad':   ['bad','happy'],
+  'bad':   ['sad','good'],
+};
+const groupColors = {
+  royal:'#4f8ef7', geo:'#34d399', animal:'#fbbf24', sentiment:'#a78bfa'
+};
+const groupNames = {
+  royal:'royalty/gender', geo:'geography', animal:'animals', sentiment:'sentiment'
+};
+let embedSelected = null;
+
+function buildEmbedSvg() {
+  const svg = document.getElementById('embedSvg');
+  const W = 380, H = 280;
+  svg.innerHTML = '';
+
+  // Group labels
+  const groupPos = {royal:[48,8], geo:[62,74], animal:[20,68], sentiment:[82,12]};
+  Object.entries(groupPos).forEach(([g,[x,y]]) => {
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', x/100*W);
+    t.setAttribute('y', y/100*H);
+    t.setAttribute('fill', groupColors[g]);
+    t.setAttribute('font-size','9');
+    t.setAttribute('font-family','var(--mono)');
+    t.setAttribute('opacity','0.5');
+    t.textContent = groupNames[g];
+    svg.appendChild(t);
+  });
+
+  // Neighbor lines (hidden by default)
+  embedWords.forEach(w => {
+    (embedNeighbors[w.w]||[]).forEach(nb => {
+      const nbWord = embedWords.find(e=>e.w===nb);
+      if (!nbWord) return;
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1', w.x/100*W);
+      line.setAttribute('y1', w.y/100*H);
+      line.setAttribute('x2', nbWord.x/100*W);
+      line.setAttribute('y2', nbWord.y/100*H);
+      line.setAttribute('stroke', groupColors[w.group]);
+      line.setAttribute('stroke-width','1');
+      line.setAttribute('opacity','0');
+      line.setAttribute('id', `eline-${w.w}-${nb}`);
+      svg.appendChild(line);
+    });
+  });
+
+  // Circles + labels
+  embedWords.forEach(w => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.style.cursor = 'pointer';
+    g.setAttribute('id', `egroup-${w.w}`);
+    g.addEventListener('click', () => selectEmbedWord(w.w));
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx', w.x/100*W);
+    circle.setAttribute('cy', w.y/100*H);
+    circle.setAttribute('r','6');
+    circle.setAttribute('fill', groupColors[w.group]);
+    circle.setAttribute('opacity','0.8');
+    circle.setAttribute('id', `ecircle-${w.w}`);
+    g.appendChild(circle);
+
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', w.x/100*W + 9);
+    text.setAttribute('y', w.y/100*H + 4);
+    text.setAttribute('fill', groupColors[w.group]);
+    text.setAttribute('font-size','10');
+    text.setAttribute('font-family','var(--font)');
+    text.setAttribute('font-weight','600');
+    text.textContent = w.w;
+    g.appendChild(text);
+    svg.appendChild(g);
+  });
+}
+
+function selectEmbedWord(word) {
+  embedSelected = word;
+  // Reset all
+  embedWords.forEach(w => {
+    const c = document.getElementById(`ecircle-${w.w}`);
+    if (c) { c.setAttribute('opacity','0.3'); c.setAttribute('r','6'); }
+    (embedNeighbors[w.w]||[]).forEach(nb => {
+      const l = document.getElementById(`eline-${w.w}-${nb}`);
+      if (l) l.setAttribute('opacity','0');
+    });
+  });
+  // Highlight selected + neighbours
+  const sel = document.getElementById(`ecircle-${word}`);
+  if (sel) { sel.setAttribute('opacity','1'); sel.setAttribute('r','9'); }
+  const nb = embedNeighbors[word] || [];
+  nb.forEach(n => {
+    const nc = document.getElementById(`ecircle-${n}`);
+    if (nc) { nc.setAttribute('opacity','1'); nc.setAttribute('r','7'); }
+    const l = document.getElementById(`eline-${word}-${n}`);
+    if (l) l.setAttribute('opacity','0.6');
+  });
+  const w = embedWords.find(e=>e.w===word);
+  document.getElementById('embedNote').textContent =
+    `"${word}" (${groupNames[w.group]}) — nearest neighbours: ${nb.join(', ')}`;
+}
+
+function resetEmbed() {
+  embedSelected = null;
+  embedWords.forEach(w => {
+    const c = document.getElementById(`ecircle-${w.w}`);
+    if (c) { c.setAttribute('opacity','0.8'); c.setAttribute('r','6'); }
+    (embedNeighbors[w.w]||[]).forEach(nb => {
+      const l = document.getElementById(`eline-${w.w}-${nb}`);
+      if (l) l.setAttribute('opacity','0');
+    });
+  });
+  document.getElementById('embedNote').textContent = 'Click any word to see its nearest neighbours highlighted.';
+}
+
+async function embedArithmetic() {
+  resetEmbed();
+  await delay(200);
+  // Step 1: highlight king, man, woman
+  ['king','man','woman'].forEach(w => {
+    const c = document.getElementById(`ecircle-${w}`);
+    if (c) { c.setAttribute('opacity','1'); c.setAttribute('r','9'); }
+  });
+  document.getElementById('embedNote').textContent = 'king − man + woman … computing result vector …';
+  await delay(1200);
+  // Dim king and man
+  ['king','man'].forEach(w => {
+    const c = document.getElementById(`ecircle-${w}`);
+    if (c) { c.setAttribute('opacity','0.25'); c.setAttribute('r','6'); }
+  });
+  await delay(600);
+  // Light up queen
+  const qc = document.getElementById('ecircle-queen');
+  if (qc) { qc.setAttribute('opacity','1'); qc.setAttribute('r','12'); qc.setAttribute('fill','#34d399'); }
+  document.getElementById('embedNote').textContent = '✓ king − man + woman ≈ queen  (the result vector lands nearest to "queen" in embedding space)';
+}
+
+buildEmbedSvg();
+
+/* ============================================================
+   LESSON 1 — ATTENTION HEATMAP
+   ============================================================ */
+const attnTokens = ['The','animal','didn\'t','cross','the','street','because','it','was','tired'];
+// Pre-computed attention weights (row = attending FROM, col = attending TO)
+const attnWeights = [
+  [0.52,0.28,0.05,0.04,0.03,0.02,0.02,0.01,0.02,0.01], // The
+  [0.08,0.46,0.06,0.03,0.04,0.05,0.06,0.13,0.05,0.04], // animal
+  [0.05,0.09,0.42,0.18,0.06,0.07,0.06,0.03,0.02,0.02], // didn't
+  [0.04,0.05,0.14,0.41,0.05,0.16,0.06,0.05,0.02,0.02], // cross
+  [0.28,0.10,0.05,0.04,0.26,0.12,0.05,0.05,0.03,0.02], // the
+  [0.04,0.06,0.05,0.18,0.08,0.42,0.06,0.05,0.03,0.03], // street
+  [0.04,0.10,0.05,0.05,0.04,0.06,0.38,0.14,0.08,0.06], // because
+  [0.03,0.48,0.03,0.03,0.03,0.05,0.09,0.14,0.06,0.06], // it
+  [0.04,0.12,0.03,0.03,0.03,0.04,0.09,0.22,0.31,0.09], // was
+  [0.04,0.16,0.03,0.03,0.03,0.04,0.10,0.20,0.14,0.23], // tired
+];
+
+let attnSelectedRow = null;
+
+function buildAttnGrid() {
+  const container = document.getElementById('attnGrid');
+  container.innerHTML = '';
+
+  // Column headers
+  const colHeaders = document.createElement('div');
+  colHeaders.className = 'attn-col-headers';
+  attnTokens.forEach(t => {
+    const h = document.createElement('div');
+    h.className = 'attn-col-hdr';
+    h.textContent = t;
+    colHeaders.appendChild(h);
+  });
+  container.appendChild(colHeaders);
+
+  // Rows
+  attnWeights.forEach((row, ri) => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'attn-row';
+
+    const label = document.createElement('div');
+    label.className = 'attn-row-label';
+    label.textContent = attnTokens[ri];
+    label.addEventListener('click', () => selectAttnRow(ri));
+    rowEl.appendChild(label);
+
+    row.forEach((w, ci) => {
+      const cell = document.createElement('div');
+      cell.className = 'attn-cell';
+      cell.setAttribute('data-ri', ri);
+      cell.setAttribute('data-ci', ci);
+      const alpha = Math.pow(w, 0.6); // gamma correct for visibility
+      cell.style.background = `rgba(79,142,247,${alpha})`;
+      rowEl.appendChild(cell);
+    });
+
+    container.appendChild(rowEl);
+  });
+}
+
+function selectAttnRow(ri) {
+  attnSelectedRow = ri;
+  // Update row labels
+  document.querySelectorAll('.attn-row-label').forEach((l,i) => {
+    l.classList.toggle('selected', i === ri);
+  });
+  // Dim/highlight cells
+  document.querySelectorAll('.attn-cell').forEach(cell => {
+    const cellRi = +cell.getAttribute('data-ri');
+    const cellCi = +cell.getAttribute('data-ci');
+    if (cellRi === ri) {
+      const w = attnWeights[ri][cellCi];
+      const alpha = Math.pow(w, 0.4);
+      cell.style.background = `rgba(79,142,247,${alpha})`;
+      cell.style.opacity = '1';
+    } else {
+      cell.style.opacity = '0.15';
+    }
+  });
+  // Find top-2 attended tokens
+  const row = attnWeights[ri];
+  const sorted = row.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v);
+  const top = sorted.slice(0,3).map(x=>`"${attnTokens[x.i]}" (${(x.v*100).toFixed(0)}%)`);
+  document.getElementById('attnNote').textContent =
+    `"${attnTokens[ri]}" attends most to: ${top.join(', ')}`;
+}
+
+buildAttnGrid();
+
+/* ============================================================
+   LESSON 2 — TRANSFORMER BLOCK STEPPER
+   ============================================================ */
+const tblockSteps = [
+  {name:'Input Embeddings', sub:'token vectors + positional encoding', desc:'Each token enters as a dense vector. A positional encoding is added so the model knows the order of tokens (transformers have no built-in sense of sequence position).'},
+  {name:'Multi-Head Self-Attention', sub:'Q, K, V projections × N heads', desc:'Each token computes Query, Key, Value vectors. N heads run attention in parallel — each learns different relationship patterns (syntax, coreference, etc.). Outputs are concatenated.'},
+  {name:'Add & Normalise', sub:'residual connection + layer norm', desc:'The attention output is added to the original input (residual). Layer normalisation then stabilises the values. This shortcut keeps gradients flowing during training.'},
+  {name:'Feed-Forward Network', sub:'position-wise MLP (4× wider hidden)', desc:'A two-layer MLP is applied independently to each token position. This is where the model stores factual knowledge and refines its representation. Hidden dim is typically 4× the embedding dim.'},
+  {name:'Add & Normalise', sub:'second residual + layer norm', desc:'Same pattern: add the feed-forward output to its input, then normalise. After this, the block is complete and outputs richer representations.'},
+  {name:'Output to Next Block', sub:'(or to prediction head)', desc:'The refined token representations flow into the next transformer block. After N blocks (12 in GPT-2, 96 in GPT-3), the final layer projects to vocabulary logits for next-token prediction.'},
+];
+let tblockStep = -1;
+
+function buildTBlock() {
+  const wrap = document.getElementById('tblockWrap');
+  wrap.innerHTML = '';
+  tblockSteps.forEach((s, i) => {
+    if (i > 0) {
+      const arrow = document.createElement('div');
+      arrow.className = 'tblock-arrow';
+      arrow.textContent = '↓';
+      wrap.appendChild(arrow);
+    }
+    const item = document.createElement('div');
+    item.className = 'tblock-item';
+    item.id = `tblock-${i}`;
+    item.innerHTML = `<div class="tblock-name">${s.name}</div><div class="tblock-sub">${s.sub}</div>`;
+    wrap.appendChild(item);
+  });
+}
+
+function tblockNext() {
+  if (tblockStep > 0) {
+    document.getElementById(`tblock-${tblockStep}`).classList.remove('tb-active');
+    document.getElementById(`tblock-${tblockStep}`).classList.add('tb-done');
+  }
+  tblockStep++;
+  if (tblockStep >= tblockSteps.length) {
+    document.getElementById('tblockDesc').textContent = '✓ One full transformer block complete. Stack N of these to get GPT-2 (12) or GPT-3 (96).';
+    document.getElementById('tblockCounter').textContent = `Complete`;
+    return;
+  }
+  const item = document.getElementById(`tblock-${tblockStep}`);
+  item.classList.add('tb-active');
+  document.getElementById('tblockDesc').textContent = tblockSteps[tblockStep].desc;
+  document.getElementById('tblockCounter').textContent = `Step ${tblockStep + 1} of ${tblockSteps.length}`;
+}
+
+function tblockReset() {
+  tblockStep = -1;
+  tblockSteps.forEach((_,i) => {
+    const el = document.getElementById(`tblock-${i}`);
+    if (el) { el.classList.remove('tb-active','tb-done'); }
+  });
+  document.getElementById('tblockDesc').textContent = 'Press "Next Step" to walk through the transformer block.';
+  document.getElementById('tblockCounter').textContent = 'Step 0 of 6';
+}
+
+buildTBlock();
+
+/* ============================================================
+   LESSON 3 — AUTOREGRESSIVE GENERATION
+   ============================================================ */
+const autogenPrompt = ['The','transformer','model'];
+const autogenNew = ['processes','tokens','one','at','a','time',',','predicting','each','next'];
+let autogenIdx = 0;
+let autogenPlaying = false;
+let autogenTimer = null;
+
+function autogenReset() {
+  autogenPlaying = false;
+  if (autogenTimer) clearTimeout(autogenTimer);
+  autogenIdx = 0;
+  renderAutogen();
+  document.getElementById('autogenNote').textContent = 'Press Play or Step to watch GPT generate tokens one at a time.';
+}
+
+function renderAutogen() {
+  const out = document.getElementById('autogenOutput');
+  out.innerHTML = '';
+  autogenPrompt.forEach(t => {
+    const span = document.createElement('span');
+    span.className = 'autogen-token prompt-tok';
+    span.textContent = t + ' ';
+    out.appendChild(span);
+  });
+  for (let i = 0; i < autogenIdx; i++) {
+    const span = document.createElement('span');
+    span.className = 'autogen-token new-tok';
+    span.textContent = autogenNew[i] + ' ';
+    out.appendChild(span);
+  }
+  renderCausalMask();
+}
+
+function renderCausalMask() {
+  const total = autogenPrompt.length + autogenIdx;
+  const n = Math.min(total, 8);
+  const allTokens = [...autogenPrompt, ...autogenNew.slice(0, autogenIdx)].slice(0, n);
+  const wrap = document.getElementById('causalMaskWrap');
+  wrap.innerHTML = '';
+  const grid = document.createElement('div');
+  grid.className = 'causal-mask-grid';
+  grid.style.gridTemplateColumns = `repeat(${n+1}, 18px)`;
+
+  // Header row
+  const corner = document.createElement('div');
+  corner.className = 'cm-cell cm-header';
+  grid.appendChild(corner);
+  allTokens.forEach(t => {
+    const h = document.createElement('div');
+    h.className = 'cm-cell cm-header';
+    h.textContent = t.substring(0,2);
+    h.title = t;
+    grid.appendChild(h);
+  });
+
+  // Data rows
+  allTokens.forEach((rowTok, ri) => {
+    const rowLabel = document.createElement('div');
+    rowLabel.className = 'cm-cell cm-header';
+    rowLabel.textContent = rowTok.substring(0,2);
+    rowLabel.title = rowTok;
+    grid.appendChild(rowLabel);
+    for (let ci = 0; ci < n; ci++) {
+      const cell = document.createElement('div');
+      cell.className = `cm-cell ${ci <= ri ? 'cm-attend' : 'cm-block'}`;
+      cell.textContent = ci <= ri ? '✓' : '·';
+      grid.appendChild(cell);
+    }
+  });
+
+  wrap.appendChild(grid);
+}
+
+async function autogenStep() {
+  if (autogenIdx >= autogenNew.length) return;
+  autogenIdx++;
+  renderAutogen();
+  const tok = autogenNew[autogenIdx-1];
+  document.getElementById('autogenNote').textContent =
+    `Generated token "${tok}" — the model saw all ${autogenPrompt.length + autogenIdx - 1} previous tokens to predict this one.`;
+}
+
+async function autogenPlay() {
+  if (autogenPlaying) return;
+  autogenPlaying = true;
+  while (autogenIdx < autogenNew.length && autogenPlaying) {
+    await autogenStep();
+    await delay(700);
+  }
+  autogenPlaying = false;
+}
+
+autogenReset();
+
+/* ============================================================
+   LESSON 4 — SCALING CHARTS
+   ============================================================ */
+const contextData = [
+  {label:'1k tokens', cost:1,    costLabel:'1×'},
+  {label:'2k tokens', cost:4,    costLabel:'4×'},
+  {label:'4k tokens', cost:16,   costLabel:'16×'},
+  {label:'8k tokens', cost:64,   costLabel:'64×'},
+  {label:'16k tokens',cost:256,  costLabel:'256×'},
+  {label:'32k tokens',cost:1024, costLabel:'1,024×'},
+];
+const scaleData = [
+  {label:'1B params',  score:45},
+  {label:'7B params',  score:62},
+  {label:'13B params', score:68},
+  {label:'70B params', score:78},
+  {label:'175B params',score:85},
+  {label:'540B params',score:90},
+];
+
+function buildScaleCharts() {
+  const wrap = document.getElementById('scaleCharts');
+  wrap.innerHTML = '';
+
+  // Chart 1: context cost (log scale — cap visual at 90%)
+  const maxLog = Math.log2(contextData[contextData.length-1].cost);
+  const c1 = document.createElement('div');
+  c1.innerHTML = '<div class="scale-chart-title">Context length vs attention compute cost (O(n²))</div>';
+  contextData.forEach(d => {
+    const pct = (Math.log2(d.cost) / maxLog * 88 + 2).toFixed(1);
+    c1.innerHTML += `
+      <div class="scale-bar-row">
+        <div class="scale-bar-label">${d.label}</div>
+        <div class="scale-bar-track"><div class="scale-bar-fill" data-w="${pct}" style="background:var(--danger)"></div></div>
+        <div class="scale-bar-val">${d.costLabel}</div>
+      </div>`;
+  });
+  wrap.appendChild(c1);
+
+  // Chart 2: model size vs capability
+  const c2 = document.createElement('div');
+  c2.innerHTML = '<div class="scale-chart-title">Model size vs benchmark score (log-linear)</div>';
+  scaleData.forEach(d => {
+    const pct = ((d.score - 40) / 55 * 90 + 5).toFixed(1);
+    c2.innerHTML += `
+      <div class="scale-bar-row">
+        <div class="scale-bar-label">${d.label}</div>
+        <div class="scale-bar-track"><div class="scale-bar-fill" data-w="${pct}" style="background:var(--secondary)"></div></div>
+        <div class="scale-bar-val">${d.score}</div>
+      </div>`;
+  });
+  wrap.appendChild(c2);
+
+  // Animate bars in
+  setTimeout(() => {
+    wrap.querySelectorAll('.scale-bar-fill').forEach(b => {
+      b.style.width = b.dataset.w + '%';
+    });
+  }, 200);
+}
+
+const scaleObserver = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) buildScaleCharts();
+}, {threshold: 0.1});
+scaleObserver.observe(document.getElementById('lesson-4'));
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+const questions = [
+  {
+    q: 'What does self-attention allow each token to do?',
+    opts: [
+      'Run on a separate GPU core',
+      'Look at every other token in the sequence and build context-aware representations',
+      'Generate the next token in the sequence',
+      'Compress its embedding into a smaller vector',
+    ],
+    ans: 1,
+    exp: 'Self-attention computes attention scores between every pair of tokens, letting each token gather information from all others. "The animal ... it" — self-attention lets "it" attend strongly to "animal" and pick up its meaning.'
+  },
+  {
+    q: 'What is the key architectural difference between BERT and GPT?',
+    opts: [
+      'BERT generates text; GPT classifies text',
+      'BERT uses self-attention; GPT uses a different mechanism',
+      'BERT sees all tokens (bidirectional); GPT only sees past tokens (causal)',
+      'There is no meaningful difference — both are the same architecture',
+    ],
+    ans: 2,
+    exp: 'BERT uses bidirectional attention — every token can attend to all others. GPT uses causal (unidirectional) attention with a mask that blocks future tokens, making autoregressive generation possible.'
+  },
+  {
+    q: 'A 70B parameter model stored in fp16 (2 bytes/parameter) needs roughly how much VRAM?',
+    opts: ['7 GB', '28 GB', '140 GB', '1.4 TB'],
+    ans: 2,
+    exp: '70 billion × 2 bytes = 140 GB just for the weights. Add the KV cache and activations on top. This is why 70B models need multiple high-end GPUs (e.g., 4× A100 80GB).'
+  },
+  {
+    q: 'Why does doubling the context window roughly quadruple the attention computation cost?',
+    opts: [
+      'The model needs more layers to process longer sequences',
+      'Self-attention is O(n²) — every token attends to every other token',
+      'Embeddings grow proportionally with context length',
+      'The KV cache doubles in size, slowing down computation',
+    ],
+    ans: 1,
+    exp: 'Self-attention computes a score between every pair of tokens: n tokens = n² pairs. Double n → 4× pairs → 4× compute. This is the fundamental reason long contexts are expensive, driving research into efficient attention variants.'
+  },
+];
+
+let quizAnswers = [];
+let quizCurrent = 0;
+let quizInit = false;
+
+function initQuiz() {
+  if (quizInit) return;
+  quizInit = true;
+  quizAnswers = [];
+  quizCurrent = 0;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[quizCurrent];
+  const content = document.getElementById('quizContent');
+  content.innerHTML = `
+    <div class="question-card">
+      <div class="q-num">Question ${quizCurrent + 1} of ${questions.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="optionsList">
+        ${q.opts.map((o,i) => `<div class="option" data-idx="${i}" onclick="answerQ(${i})">${o}</div>`).join('')}
+      </div>
+      <div class="explanation" id="explBox">${q.exp}</div>
+    </div>
+    <div class="quiz-nav">
+      <span style="font-size:.8rem;color:var(--muted)">${quizCurrent + 1} / ${questions.length}</span>
+      <button class="big-btn primary" id="nextBtn" onclick="nextQuestion()" style="display:none">
+        ${quizCurrent < questions.length - 1 ? 'Next Question →' : 'See Results'}
+      </button>
+    </div>`;
+  updateQuizProgress();
+}
+
+function answerQ(idx) {
+  const q = questions[quizCurrent];
+  const opts = document.querySelectorAll('.option');
+  opts.forEach(o => o.classList.add('locked'));
+  opts[idx].classList.add(idx === q.ans ? 'correct' : 'wrong');
+  if (idx !== q.ans) opts[q.ans].classList.add('correct');
+  document.getElementById('explBox').classList.add('visible');
+  document.getElementById('nextBtn').style.display = 'block';
+  quizAnswers.push(idx === q.ans);
+}
+
+function nextQuestion() {
+  quizCurrent++;
+  if (quizCurrent >= questions.length) {
+    showScore();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showScore() {
+  document.getElementById('quizContent').innerHTML = '';
+  const score = quizAnswers.filter(Boolean).length;
+  const pct = Math.round(score / questions.length * 100);
+  const msg = pct === 100 ? 'Perfect! You understand transformers deeply.' :
+              pct >= 75  ? 'Great work — solid grasp of the fundamentals.' :
+              pct >= 50  ? 'Good start — review the lessons and try again.' :
+                           'Keep going — re-read the lessons and retry.';
+  document.getElementById('scoreNum').textContent = `${score}/${questions.length}`;
+  document.getElementById('scoreMsg').textContent = msg;
+  document.getElementById('quizScore').classList.add('visible');
+  updateQuizProgress();
+}
+
+function restartQuiz() {
+  quizInit = false;
+  document.getElementById('quizScore').classList.remove('visible');
+  initQuiz();
+}
+
+function updateQuizProgress() {
+  const pct = (quizAnswers.length / questions.length) * 100;
+  document.getElementById('quizPBar').style.width = pct + '%';
+}
+
+/* ============================================================
+   RESTORE LESSON ON LOAD
+   ============================================================ */
+(function(){
+  const saved = parseInt(localStorage.getItem('phase5lesson') || '0', 10);
+  if (saved > 0 && saved <= 5) goLesson(saved);
+})();
+</script>
+</body>
+</html>

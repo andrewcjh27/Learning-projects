@@ -58,7 +58,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(7,13,31,.9);backdrop-filte
 .progress-pct{font-size:.85rem;color:var(--primary);font-weight:600}
 .progress-bar-wrap{height:6px;background:var(--border);border-radius:4px;overflow:hidden}
 .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:4px;width:0%;transition:width 1s ease;animation:fillBar 1.5s ease forwards .5s}
-@keyframes fillBar{to{width:9%}} /* 1/11 phases unlocked */
+@keyframes fillBar{to{width:18%}} /* 2/11 phases unlocked */
 
 /* GRID */
 .grid-section{max-width:1100px;margin:0 auto;padding:0 32px 80px}
@@ -149,7 +149,7 @@ footer a{color:var(--primary);text-decoration:none}
 
 <div class="progress-section">
   <div class="progress-header">
-    <span class="progress-title">Overall Progress — 1 of 11 phases unlocked</span>
+    <span class="progress-title">Overall Progress — 2 of 11 phases unlocked</span>
     <span class="progress-pct">9%</span>
   </div>
   <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
@@ -209,11 +209,12 @@ const phases = [
   },
   {
     num:'05', icon:'🧠',
-    title:'Tokenization & Embeddings',
-    subtitle:'Bridge to modern AI',
+    title:'Transformers & Attention',
+    subtitle:'How LLMs actually work inside',
     duration:'2–3 weeks',
-    tags:['BPE Tokenizers','Vector DBs','Semantic Search','ANN','tiktoken'],
-    status:'locked'
+    tags:['Self-Attention','BERT','GPT','Embeddings','Tokenization'],
+    link:'phase-5.html',
+    status:'current'
   },
   {
     num:'06', icon:'🔍',
