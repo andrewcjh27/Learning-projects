@@ -245,12 +245,26 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .anat-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:#1a2640;border:1px solid var(--border-b);border-radius:var(--r-sm);padding:8px 12px;font-size:.75rem;color:var(--text);white-space:nowrap;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:20}
 .anat-flow-label{font-size:.65rem;color:var(--dim);text-align:center;margin-top:4px}
 
+/* PIPELINE DIAGRAM */
+.pipeline-diagram{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;margin:16px 0}
+.pipe-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.pipe-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pipe-thread-label{font-size:.7rem;font-weight:700;font-family:var(--mono);min-width:100px;flex-shrink:0}
+.pipe-cells{display:flex;gap:4px;flex:1}
+.pipe-cell{flex:1;padding:5px 4px;border-radius:4px;font-size:.62rem;font-weight:600;text-align:center;white-space:nowrap}
+.active-p{background:rgba(79,142,247,.2);color:var(--primary);border:1px solid rgba(79,142,247,.3)}
+.mem-p{background:rgba(248,113,113,.12);color:var(--danger);border:1px solid rgba(248,113,113,.2)}
+.ht-p{background:rgba(167,139,250,.2);color:var(--secondary);border:1px solid rgba(167,139,250,.3)}
+.idle-p{background:rgba(255,255,255,.03);color:var(--dim);border:1px solid var(--border)}
+.pipe-note{font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.4}
+
 @media(max-width:640px){
   .phase-hero,.lesson-section{padding-left:20px;padding-right:20px}
   .cores-grid{grid-template-columns:repeat(4,1fr);gap:6px}
   .cpu-cores-display{grid-template-columns:repeat(4,1fr)}
   .gpu-grid{grid-template-columns:repeat(20,1fr)}
   .anat-row{grid-template-columns:1fr 1fr}
+  .pipe-thread-label{min-width:70px;font-size:.6rem}
 }
 </style>
 </head>
@@ -344,9 +358,45 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <h3>What is a CPU Core?</h3>
       <p>A <strong>core</strong> is a complete, independent processor inside your CPU. Each core can execute one stream of instructions at a time. A modern laptop has 8–16 cores; a cloud server might have 96.</p>
 
+      <h3>What's inside a core — Units</h3>
+      <p>A core isn't just one thing. It contains several <strong>units</strong>, each doing a different job:</p>
+      <ul>
+        <li><strong>Fetch Unit</strong> — grabs the next instruction from memory</li>
+        <li><strong>Decode Unit</strong> — figures out what that instruction means</li>
+        <li><strong>ALU</strong> (Arithmetic Logic Unit) — does the actual math: +, −, ×, comparisons</li>
+        <li><strong>Memory Unit</strong> — reads and writes data to/from RAM</li>
+        <li><strong>Branch Predictor</strong> — guesses which way an if/else will go, pre-fetches early</li>
+      </ul>
+      <p>These units run in a <strong>pipeline</strong> — while the ALU executes instruction 3, the Decode Unit is already decoding instruction 4, and the Fetch Unit is already grabbing instruction 5. They all work simultaneously on different instructions.</p>
+
       <h3>Hyper-threading</h3>
-      <p>You're right that a CPU <em>contains</em> cores — one chip, multiple cores inside it. The extra twist is <strong>hyper-threading</strong>: each physical core has some spare internal hardware that sits idle while a thread is waiting on memory. Intel/AMD exploit this by letting each core run <strong>2 threads simultaneously</strong>, so the OS sees it as 2 logical processors instead of 1.</p>
-      <p>Example: 1 CPU chip → 8 physical cores → 16 logical CPUs (what you see in htop). The 16 aren't real independent cores — they're 8 cores each handling 2 threads. It helps throughput but does <em>not</em> double performance.</p>
+      <p>When your thread sends a request to the Memory Unit (e.g. load a value from RAM), the Memory Unit is busy waiting ~80 ns for the data to arrive. During that wait, the <strong>ALU, Fetch, and Decode units are all sitting idle</strong> — they have nothing to do.</p>
+      <p>Hyper-threading lets a <strong>second thread on the same core</strong> use those idle units during the wait. The other physical cores (Core 1, 2, 3…) stay completely idle — this is purely a within-one-core optimization.</p>
+      <div class="pipeline-diagram">
+        <div class="pipe-label">Core 0 — time →</div>
+        <div class="pipe-row">
+          <div class="pipe-thread-label" style="color:var(--primary)">Thread 0</div>
+          <div class="pipe-cells">
+            <div class="pipe-cell active-p">ALU busy</div>
+            <div class="pipe-cell mem-p">Mem waiting…</div>
+            <div class="pipe-cell mem-p">Mem waiting…</div>
+            <div class="pipe-cell mem-p">Mem waiting…</div>
+            <div class="pipe-cell active-p">ALU busy</div>
+          </div>
+        </div>
+        <div class="pipe-row">
+          <div class="pipe-thread-label" style="color:var(--secondary)">Thread 1 (HT)</div>
+          <div class="pipe-cells">
+            <div class="pipe-cell idle-p">idle</div>
+            <div class="pipe-cell ht-p">ALU busy</div>
+            <div class="pipe-cell ht-p">Decode</div>
+            <div class="pipe-cell idle-p">idle</div>
+            <div class="pipe-cell idle-p">idle</div>
+          </div>
+        </div>
+        <div class="pipe-note">Thread 1 uses the ALU while Thread 0 waits on memory — same core, filling idle hardware</div>
+      </div>
+      <p>Result: ~20–30% more work done per unit time. Not 2× faster — the two threads still share the same core's resources.</p>
 
       <h3>Python's GIL — The Crucial Catch</h3>
       <p>CPython (the standard Python) has a <strong>Global Interpreter Lock</strong>. Only <strong>one thread</strong> can execute Python bytecode at a time — even on a 16-core machine.</p>
