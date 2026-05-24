@@ -345,7 +345,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <p>A <strong>core</strong> is a complete, independent processor inside your CPU. Each core can execute one stream of instructions at a time. A modern laptop has 8–16 cores; a cloud server might have 96.</p>
 
       <h3>Hyper-threading</h3>
-      <p>Each physical core can appear as <strong>2 logical CPUs</strong> to the OS. The hardware shares some execution units between the two logical threads. This helps when one thread stalls waiting on memory — the other can use the idle hardware. It does <em>not</em> double performance.</p>
+      <p>You're right that a CPU <em>contains</em> cores — one chip, multiple cores inside it. The extra twist is <strong>hyper-threading</strong>: each physical core has some spare internal hardware that sits idle while a thread is waiting on memory. Intel/AMD exploit this by letting each core run <strong>2 threads simultaneously</strong>, so the OS sees it as 2 logical processors instead of 1.</p>
+      <p>Example: 1 CPU chip → 8 physical cores → 16 logical CPUs (what you see in htop). The 16 aren't real independent cores — they're 8 cores each handling 2 threads. It helps throughput but does <em>not</em> double performance.</p>
 
       <h3>Python's GIL — The Crucial Catch</h3>
       <p>CPython (the standard Python) has a <strong>Global Interpreter Lock</strong>. Only <strong>one thread</strong> can execute Python bytecode at a time — even on a 16-core machine.</p>
