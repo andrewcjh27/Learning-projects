@@ -107,13 +107,32 @@ footer a{color:var(--primary);text-decoration:none}
   nav{padding:0 20px}
   .hero-stats{gap:20px}
 }
+[data-theme="light"]{
+  --bg:#f4f6fc;--surface:#eaecf5;--card:#ffffff;--card-hover:#f0f3fb;--border:#cdd5e4;--border-bright:#aab5cc;
+  --primary:#3a6fd8;--primary-dim:rgba(58,111,216,.1);--primary-glow:rgba(58,111,216,.25);
+  --secondary:#6d28d9;--accent:#059669;--warning:#d97706;--danger:#dc2626;
+  --text:#111827;--text-muted:#475569;--text-dim:#94a3b8;
+}
+[data-theme="light"] body{background:var(--bg)}
+[data-theme="light"] nav{background:rgba(244,246,252,.95)}
+.theme-toggle{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 13px;color:var(--text-muted);cursor:pointer;font-size:.8rem;font-family:var(--font);transition:all .2s;white-space:nowrap}
+.theme-toggle:hover{color:var(--text);border-color:var(--primary)}
 </style>
+<script>
+  (function(){
+    if(localStorage.getItem('theme')==='light')
+      document.documentElement.setAttribute('data-theme','light');
+  })();
+</script>
 </head>
 <body>
 
 <nav>
   <div class="nav-logo">DS/DE <span>Learning Path</span></div>
-  <div class="nav-badge">Phase 0 Active</div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="nav-badge">Phase 0 Active</div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
+  </div>
 </nav>
 
 <div class="hero">
@@ -279,6 +298,24 @@ phases.forEach(p => {
 
   grid.appendChild(card);
 });
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('theme', 'dark');
+    document.getElementById('themeToggle').textContent = '☀ Light';
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
+    document.getElementById('themeToggle').textContent = '🌙 Dark';
+  }
+}
+(function(){
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = document.documentElement.getAttribute('data-theme') === 'light'
+    ? '🌙 Dark' : '☀ Light';
+})();
 </script>
 </body>
 </html>
