@@ -245,6 +245,30 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .anat-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:#1a2640;border:1px solid var(--border-b);border-radius:var(--r-sm);padding:8px 12px;font-size:.75rem;color:var(--text);white-space:nowrap;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:20}
 .anat-flow-label{font-size:.65rem;color:var(--dim);text-align:center;margin-top:4px}
 
+/* RACE CONDITION DEMO */
+.race-object-box{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-sm);padding:14px 18px;margin-bottom:12px;transition:border-color .3s}
+.race-object-box.corrupt{border-color:var(--danger);box-shadow:0 0 16px rgba(248,113,113,.2)}
+.race-object-box.safe{border-color:var(--accent);box-shadow:0 0 16px rgba(52,211,153,.15)}
+.race-obj-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.race-counter-row{display:flex;align-items:center;gap:10px}
+.race-counter-label{font-size:.82rem;color:var(--muted)}
+.race-counter-val{font-size:2rem;font-weight:800;font-family:var(--mono);color:var(--text);min-width:48px;transition:color .3s}
+.race-counter-val.corrupt{color:var(--danger)}
+.race-counter-val.safe-c{color:var(--accent)}
+.race-counter-expected{font-size:.75rem;color:var(--muted);font-family:var(--mono)}
+.race-threads{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.race-thread{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;min-height:70px;transition:border-color .3s}
+.race-thread.active{border-color:var(--primary)}
+.race-thread.active-b{border-color:var(--secondary)}
+.race-thread.has-gil{border-color:var(--warning);box-shadow:0 0 12px rgba(251,191,36,.2)}
+.race-thread-title{font-size:.75rem;font-weight:700;margin-bottom:6px}
+.race-thread-step{font-size:.78rem;color:var(--muted);font-family:var(--mono);min-height:20px;transition:color .3s}
+.race-thread-step.running{color:var(--text)}
+.race-thread-step.gil-held{color:var(--warning)}
+.race-result{font-size:.84rem;padding:10px 14px;border-radius:var(--r-sm);min-height:36px;transition:all .3s}
+.race-result.bad{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--danger)}
+.race-result.good{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--accent)}
+
 /* PIPELINE DIAGRAM */
 .pipeline-diagram{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;margin:16px 0}
 .pipe-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
@@ -398,24 +422,61 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       </div>
       <p>Result: ~20–30% more work done per unit time. Not 2× faster — the two threads still share the same core's resources.</p>
 
-      <h3>Python's GIL — The Crucial Catch</h3>
-      <p>CPython (the standard Python) has a <strong>Global Interpreter Lock</strong>. Only <strong>one thread</strong> can execute Python bytecode at a time — even on a 16-core machine.</p>
+      <h3>Python's GIL — Why it exists</h3>
+      <p>Python tracks whether an object in memory is still being used via <strong>reference counting</strong> — every object has a counter of how many variables point to it. When the count hits 0, Python deletes it.</p>
+      <div class="pipeline-diagram">
+        <div class="pipe-label">Reference counting example</div>
+        <div style="font-family:var(--mono);font-size:.78rem;line-height:1.9;color:var(--muted)">
+          <span style="color:var(--accent)">x</span> = [1,2,3] &nbsp;<span style="color:var(--dim)">← list ref count = 1</span><br>
+          <span style="color:var(--accent)">y</span> = x &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--dim)">← list ref count = 2</span><br>
+          <span style="color:var(--danger)">del</span> x &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--dim)">← list ref count = 1</span><br>
+          <span style="color:var(--danger)">del</span> y &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--dim)">← list ref count = 0 → deleted ✓</span>
+        </div>
+      </div>
+      <p>This works fine on one thread. The problem is <strong>two threads updating the same counter simultaneously</strong> — a race condition:</p>
+      <div class="pipeline-diagram">
+        <div class="pipe-label">Race condition — WITHOUT the GIL</div>
+        <div class="pipe-row">
+          <div class="pipe-thread-label" style="color:var(--primary)">Thread A</div>
+          <div class="pipe-cells">
+            <div class="pipe-cell active-p">reads count=5</div>
+            <div class="pipe-cell idle-p"></div>
+            <div class="pipe-cell active-p">writes count=6</div>
+            <div class="pipe-cell idle-p"></div>
+          </div>
+        </div>
+        <div class="pipe-row">
+          <div class="pipe-thread-label" style="color:var(--secondary)">Thread B</div>
+          <div class="pipe-cells">
+            <div class="pipe-cell idle-p"></div>
+            <div class="pipe-cell ht-p">reads count=5</div>
+            <div class="pipe-cell idle-p"></div>
+            <div class="pipe-cell ht-p">writes count=6</div>
+          </div>
+        </div>
+        <div class="pipe-note" style="color:var(--danger)">Both read 5 before either wrote back — result is 6, should be 7. Memory leak. Or worse: Thread A deletes an object Thread B is still using → crash.</div>
+      </div>
+      <p>Python was built in 1991 when multi-core CPUs barely existed. The simplest fix: <strong>one lock, one thread at a time.</strong> No two threads can corrupt the same counter because only one thread runs Python at a time. That lock is the GIL.</p>
 
-      <div class="callout"><p>This is why threading your pandas code doesn't make it faster. Use <code>multiprocessing</code> instead — each process gets its own GIL.</p></div>
+      <div class="callout"><p>This is why threading your pandas code doesn't make it faster. Use <code>multiprocessing</code> instead — each process has its own separate memory and its own GIL.</p></div>
 
-      <h3>NumPy & pandas release the GIL</h3>
-      <p>When numpy/pandas call into C-level code (array math, sort, etc.), they release the GIL. So threads <em>can</em> help if most of your time is in C extensions, not Python logic.</p>
+      <h3>Why hasn't it been removed?</h3>
+      <p>The entire CPython internals — and every C extension ever written (numpy, pandas…) — assumes the GIL exists. Removing it safely took decades. <strong>Python 3.13 (2024)</strong> shipped an experimental "free-threaded" build with no GIL. It's opt-in and still early.</p>
+
+      <h3>NumPy &amp; pandas can still use threads</h3>
+      <p>When numpy calls into its C code for array math, it <em>releases</em> the GIL. So threads can overlap on C-level work. This is why <code>np.dot()</code> on large arrays can use multiple cores — the actual math runs in C, not Python.</p>
 
       <div class="concepts-box">
         <h4>Key Concepts</h4>
-        <div class="concept-item"><div class="concept-key">Core</div><div class="concept-val">Independent processor — can run 1 instruction stream</div></div>
-        <div class="concept-item"><div class="concept-key">Thread</div><div class="concept-val">Lightweight execution unit within a process</div></div>
-        <div class="concept-item"><div class="concept-key">GIL</div><div class="concept-val">Python lock — only 1 thread runs Python at a time</div></div>
-        <div class="concept-item"><div class="concept-key">Process</div><div class="concept-val">Independent memory space + its own GIL — true parallelism</div></div>
+        <div class="concept-item"><div class="concept-key">Ref count</div><div class="concept-val">How Python tracks if an object is still in use</div></div>
+        <div class="concept-item"><div class="concept-key">Race condition</div><div class="concept-val">Two threads read/write the same value simultaneously → corrupt result</div></div>
+        <div class="concept-item"><div class="concept-key">GIL</div><div class="concept-val">One lock that ensures only 1 thread touches Python objects at a time</div></div>
+        <div class="concept-item"><div class="concept-key">Multiprocessing</div><div class="concept-val">Separate processes — own memory + own GIL — true parallelism, higher RAM cost</div></div>
+        <div class="concept-item"><div class="concept-key">Thread</div><div class="concept-val">Lightweight, shared memory — blocked by GIL for CPU-bound Python</div></div>
       </div>
     </div>
 
-    <div>
+    <div style="display:flex;flex-direction:column;gap:20px">
       <div class="demo-panel">
         <div class="demo-title">Interactive — 8-Core CPU <span>Click a mode to see how threads run</span></div>
         <div class="btn-group">
@@ -427,6 +488,34 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <div class="core-info-box" id="coreInfoBox">
           <strong style="color:var(--text)">Single Thread:</strong> One core is running your Python script. The other 7 sit completely idle. This is the default.
         </div>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-title">Race Condition Simulator <span>See why the GIL exists</span></div>
+        <div class="btn-group">
+          <button class="btn danger" onclick="runRaceDemo('unsafe')">▶ Run WITHOUT GIL</button>
+          <button class="btn accent" onclick="runRaceDemo('safe')">▶ Run WITH GIL</button>
+          <button class="btn" onclick="resetRaceDemo()">Reset</button>
+        </div>
+        <div class="race-object-box">
+          <div class="race-obj-label">Python List Object in Memory</div>
+          <div class="race-counter-row">
+            <span class="race-counter-label">Reference Count:</span>
+            <span class="race-counter-val" id="raceCount">5</span>
+            <span class="race-counter-expected" id="raceExpected"></span>
+          </div>
+        </div>
+        <div class="race-threads">
+          <div class="race-thread" id="raceThreadA">
+            <div class="race-thread-title" style="color:var(--primary)">Thread A</div>
+            <div class="race-thread-step" id="raceStepA">waiting…</div>
+          </div>
+          <div class="race-thread" id="raceThreadB">
+            <div class="race-thread-title" style="color:var(--secondary)">Thread B</div>
+            <div class="race-thread-step" id="raceStepB">waiting…</div>
+          </div>
+        </div>
+        <div class="race-result" id="raceResult"></div>
       </div>
     </div>
   </div>
@@ -837,6 +926,122 @@ function setMode(mode) {
   }
 }
 
+
+/* =====================================================
+   RACE CONDITION DEMO
+   ===================================================== */
+let raceRunning = false;
+
+function resetRaceDemo() {
+  raceRunning = false;
+  document.getElementById('raceCount').textContent = '5';
+  document.getElementById('raceCount').className = 'race-counter-val';
+  document.getElementById('raceExpected').textContent = '';
+  document.getElementById('raceStepA').textContent = 'waiting…';
+  document.getElementById('raceStepA').className = 'race-thread-step';
+  document.getElementById('raceStepB').textContent = 'waiting…';
+  document.getElementById('raceStepB').className = 'race-thread-step';
+  document.getElementById('raceThreadA').className = 'race-thread';
+  document.getElementById('raceThreadB').className = 'race-thread';
+  document.getElementById('raceResult').textContent = '';
+  document.getElementById('raceResult').className = 'race-result';
+  document.querySelector('.race-object-box').className = 'race-object-box';
+}
+
+async function runRaceDemo(mode) {
+  if (raceRunning) return;
+  resetRaceDemo();
+  raceRunning = true;
+  const countEl = document.getElementById('raceCount');
+  const expectedEl = document.getElementById('raceExpected');
+  const stepA = document.getElementById('raceStepA');
+  const stepB = document.getElementById('raceStepB');
+  const tA = document.getElementById('raceThreadA');
+  const tB = document.getElementById('raceThreadB');
+  const result = document.getElementById('raceResult');
+  const box = document.querySelector('.race-object-box');
+
+  if (mode === 'unsafe') {
+    // Both threads read simultaneously before either writes → race condition
+    expectedEl.textContent = '(should reach 7)';
+    await delay(400);
+
+    // Both read count = 5 at the same time
+    tA.className = 'race-thread active';
+    tB.className = 'race-thread active-b';
+    stepA.className = 'race-thread-step running';
+    stepB.className = 'race-thread-step running';
+    stepA.textContent = 'reads count → 5';
+    stepB.textContent = 'reads count → 5';
+    await delay(900);
+
+    // Thread A increments and writes 6
+    stepA.textContent = 'count + 1 = 6';
+    await delay(700);
+    stepA.textContent = 'writes count = 6';
+    countEl.textContent = '6';
+    await delay(700);
+
+    // Thread B also increments from its stale read of 5, writes 6 again
+    stepB.textContent = 'count + 1 = 6  ← stale read!';
+    await delay(700);
+    stepB.textContent = 'writes count = 6  ← overwrites!';
+    countEl.textContent = '6';
+    countEl.className = 'race-counter-val corrupt';
+    box.className = 'race-object-box corrupt';
+    await delay(500);
+
+    stepA.textContent = 'done';
+    stepB.textContent = 'done';
+    result.className = 'race-result bad';
+    result.innerHTML = '❌ <strong>Race condition:</strong> Count is 6, should be 7. Both threads read the old value before either wrote back. This causes memory leaks or crashes — exactly why the GIL exists.';
+
+  } else {
+    // WITH GIL — threads take turns, count stays correct
+    expectedEl.textContent = '(should reach 7)';
+    await delay(400);
+
+    // Thread A gets the GIL
+    tA.className = 'race-thread has-gil';
+    tB.className = 'race-thread';
+    stepA.className = 'race-thread-step gil-held';
+    stepB.className = 'race-thread-step';
+    stepA.textContent = '🔒 holds GIL — reads count → 5';
+    stepB.textContent = 'blocked, waiting for GIL…';
+    await delay(900);
+
+    stepA.textContent = '🔒 count + 1 = 6';
+    await delay(600);
+    stepA.textContent = '🔒 writes count = 6';
+    countEl.textContent = '6';
+    await delay(600);
+
+    // Thread A releases GIL, Thread B gets it
+    stepA.textContent = 'releases GIL';
+    tA.className = 'race-thread';
+    stepA.className = 'race-thread-step';
+    await delay(400);
+
+    tB.className = 'race-thread has-gil';
+    stepB.className = 'race-thread-step gil-held';
+    stepB.textContent = '🔒 holds GIL — reads count → 6';
+    await delay(900);
+
+    stepB.textContent = '🔒 count + 1 = 7';
+    await delay(600);
+    stepB.textContent = '🔒 writes count = 7';
+    countEl.textContent = '7';
+    countEl.className = 'race-counter-val safe-c';
+    box.className = 'race-object-box safe';
+    await delay(400);
+
+    stepB.textContent = 'releases GIL';
+    tB.className = 'race-thread';
+    result.className = 'race-result good';
+    result.innerHTML = '✓ <strong>Correct:</strong> Count reached 7. The GIL forced threads to take turns — Thread B only read the count <em>after</em> Thread A had written its update. Safe, but sequential.';
+  }
+  raceRunning = false;
+}
 
 /* =====================================================
    LESSON 1 — CACHE HIERARCHY
