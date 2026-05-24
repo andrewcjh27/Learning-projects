@@ -269,6 +269,16 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .race-result.bad{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--danger)}
 .race-result.good{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--accent)}
 
+/* MEMORY LAYOUT DEMO */
+.mem-layout{display:flex;flex-wrap:wrap;gap:2px;margin:12px 0;padding:12px;background:var(--surface);border-radius:var(--r-sm);border:1px solid var(--border);min-height:60px;align-items:flex-start}
+.mem-block{width:22px;height:22px;border-radius:3px;transition:opacity .2s,box-shadow .2s;flex-shrink:0;border:1px solid transparent}
+.mem-block.loaded{box-shadow:0 0 6px currentColor;border-color:currentColor}
+.mem-block.wasted{opacity:.15}
+.cache-line-marker{width:100%;height:1px;background:var(--border-b);margin:3px 0;flex-basis:100%}
+.layout-desc{font-size:.75rem;color:var(--muted);margin-bottom:4px}
+.layout-stats{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.layout-stats .stat-box{flex:1;min-width:80px}
+
 /* FULL-WIDTH KEY CONCEPTS GRID */
 .concepts-grid-full{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-top:32px}
 .cg-header{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
@@ -609,22 +619,32 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <h3>Cache hit vs cache miss</h3>
       <p>A <strong>cache hit</strong> means the CPU found the data it needed in cache — fast, no waiting. A <strong>cache miss</strong> means it wasn't there — the CPU must fetch from the next level down, stalling while it waits. Writing code that causes many cache hits is called having good <strong>cache locality</strong> and is one of the biggest practical performance optimizations.</p>
 
+      <h3>What is a cache line?</h3>
+      <p>When the CPU needs one value from RAM, it doesn't fetch just that one value — it always grabs <strong>64 bytes at a time</strong>. That 64-byte chunk is called a <strong>cache line</strong>.</p>
+      <p>Why 64 bytes? Because if you needed the value at position 10 in an array, you'll almost certainly need position 11, 12, 13 next. So the CPU pre-loads the whole neighbourhood. If your next values are within the same 64 bytes — they're <strong>already in cache, free</strong>. If your data is scattered all over memory — every access triggers a new 64-byte RAM trip.</p>
+
       <h3>Why Parquet &amp; DuckDB win at analytics</h3>
-      <p><strong>Columnar formats</strong> store all values of a column together in memory. When the CPU does <code>AVG(salary)</code>, it reads salary values that are packed next to each other — they fill a cache line perfectly and stay hot in L1/L2. A row store loads entire rows (all 50 columns) to get one salary value, flooding the cache with data you never asked for and evicting the values you actually need.</p>
-      <div class="callout"><p>This is why DuckDB, Snowflake, BigQuery, and Parquet are 10–100x faster than row stores for analytical queries — they work <em>with</em> the cache, not against it.</p></div>
+      <p>The connection to cache lines is direct. Imagine a table with 5 columns: id, name, city, <strong>salary</strong>, date.</p>
+      <p>A <strong>row store</strong> (MySQL) keeps all columns of each row packed together in memory:<br>
+      <code style="font-size:.75rem">[id][name][city][salary][date] [id][name][city][salary][date]…</code><br>
+      One 64-byte cache line loads parts of a row — mostly id, name, city, date — columns you never asked for. The salary values are scattered, each one forcing a new cache line load.</p>
+      <p>A <strong>column store</strong> (DuckDB, Parquet) keeps all values of each column together:<br>
+      <code style="font-size:.75rem">[salary][salary][salary][salary][salary][salary][salary][salary]…</code><br>
+      One 64-byte cache line loads <strong>8 salary values at once</strong> (8 bytes each). Every byte loaded is exactly what you asked for — zero waste.</p>
+      <div class="callout"><p>For <code>AVG(salary)</code> across 1 million rows: the column store loads ~50× less data and keeps the cache full of only the values it needs. That's why DuckDB, Snowflake, BigQuery, and Parquet are 10–100× faster for analytics.</p></div>
 
       <div class="concepts-box">
         <h4>Key Concepts</h4>
         <div class="concept-item"><div class="concept-key">RAM</div><div class="concept-val">Working memory — fast, temporary. Your DataFrames live here while Python runs</div></div>
-        <div class="concept-item"><div class="concept-key">Cache</div><div class="concept-val">Tiny, ultra-fast memory inside the CPU — stores copies of recently used data so the CPU doesn't wait on RAM</div></div>
-        <div class="concept-item"><div class="concept-key">Cache hit</div><div class="concept-val">CPU found the data in cache — served in ~1–40 ns, no stall</div></div>
-        <div class="concept-item"><div class="concept-key">Cache miss</div><div class="concept-val">Data not in cache — CPU must wait on the next level down, wasting hundreds of cycles</div></div>
-        <div class="concept-item"><div class="concept-key">Cache locality</div><div class="concept-val">Accessing data that is close together in memory — fills cache lines efficiently, fewer misses</div></div>
-        <div class="concept-item"><div class="concept-key">Cache line</div><div class="concept-val">The CPU fetches 64 bytes at a time — if your next value is nearby, it's already loaded</div></div>
+        <div class="concept-item"><div class="concept-key">Cache</div><div class="concept-val">Tiny ultra-fast memory inside the CPU — stores recently used data so the CPU doesn't wait on RAM</div></div>
+        <div class="concept-item"><div class="concept-key">Cache line</div><div class="concept-val">The CPU always fetches 64 bytes at a time — nearby values in memory come along for free</div></div>
+        <div class="concept-item"><div class="concept-key">Cache hit</div><div class="concept-val">CPU found the data already in cache — served in ~1–40 ns, no stall</div></div>
+        <div class="concept-item"><div class="concept-key">Cache miss</div><div class="concept-val">Data not in cache — CPU stalls waiting on the next level down</div></div>
+        <div class="concept-item"><div class="concept-key">Cache locality</div><div class="concept-val">Storing values you'll access together close in memory — fills cache lines with zero waste</div></div>
       </div>
     </div>
 
-    <div>
+    <div style="display:flex;flex-direction:column;gap:20px">
       <div class="demo-panel">
         <div class="demo-title">Cache Pyramid <span>Click a layer to explore</span></div>
         <button class="btn cache-animate-btn" onclick="animateDataFetch()">▶ Simulate Data Fetch from RAM</button>
@@ -634,6 +654,25 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         </div>
         <div class="cache-info" id="cacheInfo">
           <div style="color:var(--muted);font-size:.85rem">← Click any layer to see details</div>
+        </div>
+      </div>
+
+      <div class="demo-panel">
+        <div class="demo-title">Row vs Column Memory Layout <span>See how cache lines load</span></div>
+        <div class="btn-group">
+          <button class="btn active" id="btnRowLayout" onclick="setLayoutMode('row')">Row Store</button>
+          <button class="btn" id="btnColLayout" onclick="setLayoutMode('col')">Column Store</button>
+        </div>
+        <div class="layout-desc" id="layoutDesc">Each coloured block = one column value. A bracket groups 8 blocks = one 64-byte cache line.</div>
+        <div class="mem-layout" id="memLayout"></div>
+        <div class="btn-group" style="margin-top:12px">
+          <button class="btn primary" onclick="runLayoutAnim()">▶ Run AVG(salary)</button>
+          <button class="btn" onclick="resetLayoutAnim()">Reset</button>
+        </div>
+        <div class="layout-stats" id="layoutStats">
+          <div class="stat-box"><div class="stat-box-label">Cache lines loaded</div><div class="stat-box-val" id="linesLoaded">—</div></div>
+          <div class="stat-box"><div class="stat-box-label">Useful bytes</div><div class="stat-box-val" id="usefulBytes" >—</div></div>
+          <div class="stat-box"><div class="stat-box-label">Wasted bytes</div><div class="stat-box-val" id="wastedBytes">—</div></div>
         </div>
       </div>
     </div>
@@ -1269,6 +1308,121 @@ async function animateDataFetch() {
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+
+/* =====================================================
+   MEMORY LAYOUT DEMO (Lesson 1 right column)
+   ===================================================== */
+const colColors = ['#4f8ef7','#a78bfa','#34d399','#fbbf24','#f87171'];
+const colNames  = ['id','name','city','salary','date'];
+const ROWS = 16;
+const COLS = 5;
+const SALARY_COL = 3;
+let layoutMode = 'row';
+let layoutAnimRunning = false;
+
+function buildMemLayout() {
+  const el = document.getElementById('memLayout');
+  if (!el) return;
+  el.innerHTML = '';
+  if (layoutMode === 'row') {
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const b = document.createElement('div');
+        b.className = 'mem-block';
+        b.id = `lb-r${r}-c${c}`;
+        b.style.background = colColors[c] + '55';
+        b.title = `row${r} ${colNames[c]}`;
+        el.appendChild(b);
+      }
+      if ((r + 1) % 2 === 0) {
+        const m = document.createElement('div');
+        m.className = 'cache-line-marker';
+        el.appendChild(m);
+      }
+    }
+  } else {
+    for (let c = 0; c < COLS; c++) {
+      for (let r = 0; r < ROWS; r++) {
+        const b = document.createElement('div');
+        b.className = 'mem-block';
+        b.id = `lb-c${c}-r${r}`;
+        b.style.background = colColors[c] + '55';
+        b.title = `${colNames[c]} row${r}`;
+        el.appendChild(b);
+        if ((r + 1) % 8 === 0) {
+          const m = document.createElement('div');
+          m.className = 'cache-line-marker';
+          el.appendChild(m);
+        }
+      }
+    }
+  }
+}
+
+function setLayoutMode(mode) {
+  layoutMode = mode;
+  resetLayoutAnim();
+  document.getElementById('btnRowLayout').classList.toggle('active', mode === 'row');
+  document.getElementById('btnColLayout').classList.toggle('active', mode === 'col');
+  document.getElementById('layoutDesc').textContent = mode === 'row'
+    ? 'Row store: all 5 columns of each row packed together. A divider marks each cache line load.'
+    : 'Column store: all values of each column packed together. Salary values (yellow) are contiguous.';
+  buildMemLayout();
+}
+
+function resetLayoutAnim() {
+  layoutAnimRunning = false;
+  document.getElementById('linesLoaded').textContent = '—';
+  document.getElementById('usefulBytes').textContent = '—';
+  document.getElementById('wastedBytes').textContent = '—';
+  document.getElementById('linesLoaded').className = 'stat-box-val';
+  document.getElementById('usefulBytes').className = 'stat-box-val';
+  document.getElementById('wastedBytes').className = 'stat-box-val';
+  buildMemLayout();
+}
+
+async function runLayoutAnim() {
+  if (layoutAnimRunning) return;
+  resetLayoutAnim();
+  layoutAnimRunning = true;
+  let linesLoaded = 0, useful = 0, wasted = 0;
+
+  if (layoutMode === 'row') {
+    for (let r = 0; r < ROWS; r++) {
+      if (!layoutAnimRunning) break;
+      linesLoaded++;
+      for (let c = 0; c < COLS; c++) {
+        const b = document.getElementById(`lb-r${r}-c${c}`);
+        if (!b) continue;
+        if (c === SALARY_COL) {
+          b.classList.add('loaded'); b.style.background = colColors[c]; useful += 8;
+        } else {
+          b.classList.add('wasted'); wasted += 8;
+        }
+      }
+      document.getElementById('linesLoaded').textContent = linesLoaded;
+      document.getElementById('usefulBytes').textContent = useful + 'B';
+      document.getElementById('wastedBytes').textContent = wasted + 'B';
+      document.getElementById('wastedBytes').className = 'stat-box-val bad';
+      await delay(200);
+    }
+  } else {
+    for (let r = 0; r < ROWS; r++) {
+      if (!layoutAnimRunning) break;
+      if (r % 8 === 0) linesLoaded++;
+      const b = document.getElementById(`lb-c${SALARY_COL}-r${r}`);
+      if (b) { b.classList.add('loaded'); b.style.background = colColors[SALARY_COL]; useful += 8; }
+      document.getElementById('linesLoaded').textContent = linesLoaded;
+      document.getElementById('usefulBytes').textContent = useful + 'B';
+      document.getElementById('wastedBytes').textContent = '0B';
+      document.getElementById('usefulBytes').className = 'stat-box-val good';
+      await delay(130);
+    }
+  }
+  layoutAnimRunning = false;
+}
+
+buildMemLayout();
 
 /* =====================================================
    LESSON 2 — LATENCY CHART
