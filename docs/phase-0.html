@@ -214,11 +214,43 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .big-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
 .big-btn.ghost:hover{color:var(--text);border-color:var(--border-b)}
 
+/* CPU INTRO BLOCK */
+.cpu-intro-block{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:32px}
+@media(max-width:800px){.cpu-intro-block{grid-template-columns:1fr}}
+.cpu-intro-text h3{color:var(--text)}
+
+/* ANATOMY DIAGRAM */
+.cpu-anatomy-diagram{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;position:relative}
+.anat-label-top{font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:12px;text-align:center}
+.anat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.anat-box{border-radius:var(--r-sm);padding:14px;border:2px solid var(--border);cursor:default;position:relative;transition:border-color .2s,box-shadow .2s}
+.anat-box:hover{z-index:10}
+.anat-box:hover .anat-tooltip{opacity:1;transform:translateY(0)}
+.anat-cpu{border-color:rgba(79,142,247,.4);background:rgba(79,142,247,.06)}
+.anat-cpu:hover{border-color:var(--primary);box-shadow:0 0 20px rgba(79,142,247,.2)}
+.anat-ram{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.05)}
+.anat-ram:hover{border-color:var(--accent);box-shadow:0 0 20px rgba(52,211,153,.15)}
+.anat-gpu{border-color:rgba(167,139,250,.3);background:rgba(167,139,250,.05)}
+.anat-gpu:hover{border-color:var(--secondary);box-shadow:0 0 20px rgba(167,139,250,.15)}
+.anat-ssd{border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.05)}
+.anat-ssd:hover{border-color:var(--warning);box-shadow:0 0 20px rgba(251,191,36,.15)}
+.anat-box-label{font-size:.8rem;font-weight:700;margin-bottom:6px}
+.anat-cpu .anat-box-label{color:var(--primary)}
+.anat-ram .anat-box-label{color:var(--accent)}
+.anat-gpu .anat-box-label{color:var(--secondary)}
+.anat-ssd .anat-box-label{color:var(--warning)}
+.anat-cores-mini{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px}
+.anat-core{background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.3);border-radius:4px;padding:3px;text-align:center;font-size:.6rem;font-family:var(--mono);color:var(--primary)}
+.anat-sub{font-size:.7rem;color:var(--muted);line-height:1.4}
+.anat-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(4px);background:#1a2640;border:1px solid var(--border-b);border-radius:var(--r-sm);padding:8px 12px;font-size:.75rem;color:var(--text);white-space:nowrap;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:20}
+.anat-flow-label{font-size:.65rem;color:var(--dim);text-align:center;margin-top:4px}
+
 @media(max-width:640px){
   .phase-hero,.lesson-section{padding-left:20px;padding-right:20px}
   .cores-grid{grid-template-columns:repeat(4,1fr);gap:6px}
   .cpu-cores-display{grid-template-columns:repeat(4,1fr)}
   .gpu-grid{grid-template-columns:repeat(20,1fr)}
+  .anat-row{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
@@ -264,6 +296,47 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
     <div class="lesson-num">Lesson 1 of 5</div>
     <div class="lesson-title">CPU Cores, Threads & Python's GIL</div>
     <div class="lesson-desc">Understand why running more Python threads doesn't speed up your code — and what to do about it.</div>
+  </div>
+
+  <!-- WHAT IS A CPU — full-width intro block -->
+  <div class="cpu-intro-block">
+    <div class="cpu-intro-text">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px">What is a CPU?</h3>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:8px">The <strong style="color:var(--text)">Central Processing Unit</strong> is the brain of a computer. Every line of code you write — Python scripts, SQL queries, data pipelines — gets translated into simple instructions that the CPU executes, one at a time, billions of times per second.</p>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:8px">When you run <code>df.groupby('city').mean()</code>, the CPU is what actually does the work: loading data from memory, performing the math, and writing the result back. Understanding it explains why some code is fast and other code is slow.</p>
+      <p style="color:var(--muted);font-size:.9rem">A CPU sits on the <strong style="color:var(--text)">motherboard</strong> and connects to RAM (temporary fast storage), storage (SSD/HDD), the GPU, and all other hardware. It is the coordinator of everything.</p>
+    </div>
+    <div class="cpu-anatomy-diagram" id="cpuAnatomy">
+      <div class="anat-label-top">Your Computer</div>
+      <div class="anat-row">
+        <div class="anat-box anat-cpu" id="anatCpu">
+          <div class="anat-box-label">CPU</div>
+          <div class="anat-cores-mini">
+            <div class="anat-core">C0</div><div class="anat-core">C1</div>
+            <div class="anat-core">C2</div><div class="anat-core">C3</div>
+          </div>
+          <div class="anat-tooltip">Executes all your code — Python, SQL, everything</div>
+        </div>
+        <div class="anat-box anat-ram" id="anatRam">
+          <div class="anat-box-label">RAM</div>
+          <div class="anat-sub">Your DataFrames<br>live here while running</div>
+          <div class="anat-tooltip">Temporary fast memory — cleared when power off</div>
+        </div>
+      </div>
+      <div class="anat-row">
+        <div class="anat-box anat-gpu" id="anatGpu">
+          <div class="anat-box-label">GPU</div>
+          <div class="anat-sub">Parallel math<br>ML training</div>
+          <div class="anat-tooltip">Thousands of tiny cores — used for ML & graphics</div>
+        </div>
+        <div class="anat-box anat-ssd" id="anatSsd">
+          <div class="anat-box-label">SSD / HDD</div>
+          <div class="anat-sub">Your files &amp;<br>databases live here</div>
+          <div class="anat-tooltip">Persistent storage — survives power off</div>
+        </div>
+      </div>
+      <div class="anat-flow-label">← CPU talks to all components via the motherboard</div>
+    </div>
   </div>
 
   <div class="split split-wide">
