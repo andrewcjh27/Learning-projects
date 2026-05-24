@@ -494,32 +494,36 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <div class="pipe-note" style="margin-top:10px">Thread 1 uses idle ALU while Thread 0 waits on memory. Other cores remain idle.</div>
       </div>
 
-      <!-- Demo 3: Race condition pipeline -->
+      <!-- Demo 3: Race condition simulator -->
       <div class="demo-panel">
-        <div class="demo-title">Race Condition — Without GIL <span>Both threads corrupt the count</span></div>
-        <div class="pipe-label" style="margin-bottom:10px">Two threads, same object, no lock</div>
-        <div class="pipe-row">
-          <div class="pipe-thread-label" style="color:var(--primary)">Thread A</div>
-          <div class="pipe-cells">
-            <div class="pipe-cell active-p">reads count=5</div>
-            <div class="pipe-cell idle-p"></div>
-            <div class="pipe-cell active-p">writes count=6</div>
-            <div class="pipe-cell idle-p"></div>
+        <div class="demo-title">Race Condition Simulator <span>Why the GIL exists</span></div>
+        <div class="btn-group">
+          <button class="btn danger" onclick="runRaceDemo('unsafe')">▶ Without GIL</button>
+          <button class="btn accent" onclick="runRaceDemo('safe')">▶ With GIL</button>
+          <button class="btn" onclick="resetRaceDemo()">Reset</button>
+        </div>
+        <div class="race-object-box">
+          <div class="race-obj-label">Python List Object in Memory</div>
+          <div class="race-counter-row">
+            <span class="race-counter-label">Reference Count:</span>
+            <span class="race-counter-val" id="raceCount">5</span>
+            <span class="race-counter-expected" id="raceExpected"></span>
           </div>
         </div>
-        <div class="pipe-row" style="margin-top:6px">
-          <div class="pipe-thread-label" style="color:var(--secondary)">Thread B</div>
-          <div class="pipe-cells">
-            <div class="pipe-cell idle-p"></div>
-            <div class="pipe-cell ht-p">reads count=5</div>
-            <div class="pipe-cell idle-p"></div>
-            <div class="pipe-cell ht-p">writes count=6</div>
+        <div class="race-threads">
+          <div class="race-thread" id="raceThreadA">
+            <div class="race-thread-title" style="color:var(--primary)">Thread A</div>
+            <div class="race-thread-step" id="raceStepA">waiting…</div>
+          </div>
+          <div class="race-thread" id="raceThreadB">
+            <div class="race-thread-title" style="color:var(--secondary)">Thread B</div>
+            <div class="race-thread-step" id="raceStepB">waiting…</div>
           </div>
         </div>
-        <div class="pipe-note" style="color:var(--danger);margin-top:10px">Both read 5 before either wrote back → both write 6. Should be 7. Memory leak or crash.</div>
+        <div class="race-result" id="raceResult"></div>
       </div>
 
-      <!-- Demo 5: Python/C boundary -->
+      <!-- Demo 4: Python/C boundary -->
       <div class="demo-panel">
         <div class="demo-title">Python vs C — GIL Boundary <span>Click a snippet to run it</span></div>
         <div class="btn-group">
@@ -547,35 +551,6 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
           </div>
         </div>
         <div class="race-result" id="boundaryResult" style="margin-top:8px"></div>
-      </div>
-
-      <!-- Demo 6: Race condition simulator (next to NumPy section) -->
-      <div class="demo-panel">
-        <div class="demo-title">Race Condition Simulator <span>What "releasing the GIL" means in practice</span></div>
-        <div class="btn-group">
-          <button class="btn danger" onclick="runRaceDemo('unsafe')">▶ Without GIL</button>
-          <button class="btn accent" onclick="runRaceDemo('safe')">▶ With GIL</button>
-          <button class="btn" onclick="resetRaceDemo()">Reset</button>
-        </div>
-        <div class="race-object-box">
-          <div class="race-obj-label">Python List Object in Memory</div>
-          <div class="race-counter-row">
-            <span class="race-counter-label">Reference Count:</span>
-            <span class="race-counter-val" id="raceCount">5</span>
-            <span class="race-counter-expected" id="raceExpected"></span>
-          </div>
-        </div>
-        <div class="race-threads">
-          <div class="race-thread" id="raceThreadA">
-            <div class="race-thread-title" style="color:var(--primary)">Thread A</div>
-            <div class="race-thread-step" id="raceStepA">waiting…</div>
-          </div>
-          <div class="race-thread" id="raceThreadB">
-            <div class="race-thread-title" style="color:var(--secondary)">Thread B</div>
-            <div class="race-thread-step" id="raceStepB">waiting…</div>
-          </div>
-        </div>
-        <div class="race-result" id="raceResult"></div>
       </div>
 
     </div>
