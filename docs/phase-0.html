@@ -410,9 +410,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
     </div>
   </div>
 
+  <!-- Split 1: Core / Units / HT concepts + threading demos -->
   <div class="split split-wide">
-
-    <!-- ===== LEFT: ALL CONCEPTS ===== -->
     <div class="prose">
 
       <h3>What is a CPU Core?</h3>
@@ -433,26 +432,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <p>When a thread tells the Memory Unit to load data from RAM, the Memory Unit spends ~80 ns waiting for that data. During that wait the <strong>ALU, Fetch, and Decode units sit idle</strong> — nothing to do.</p>
       <p>Hyper-threading lets a <strong>second thread on the same core</strong> use those idle units during the wait. The other physical cores stay completely idle — this is purely a within-one-core optimization that gives ~20–30% more throughput.</p>
 
-      <h3>Python's GIL — Why it exists</h3>
-      <p>Python tracks memory via <strong>reference counting</strong> — every object has a counter of how many variables point to it. When the count hits 0, Python deletes it.</p>
-      <p>The problem: <strong>two threads can read and write the same counter simultaneously</strong> — a race condition. Both threads read count=5, both add 1, both write 6. Result should be 7. This causes memory leaks or crashes.</p>
-      <p>Python's fix in 1991: <strong>one lock, one thread at a time.</strong> The GIL ensures only one thread touches Python objects — no two threads can ever corrupt the same reference count.</p>
-      <div class="callout"><p>This is why threading your pandas code doesn't make it faster. Use <code>multiprocessing</code> instead — each process has its own separate memory and its own GIL.</p></div>
-
-      <h3>Why hasn't the GIL been removed?</h3>
-      <p>Every C extension ever written (numpy, pandas, scikit-learn…) assumes the GIL exists. Removing it safely took decades. <strong>Python 3.13 (2024)</strong> finally shipped an experimental free-threaded build — opt-in and still early.</p>
-
-      <h3>How NumPy still uses multiple cores</h3>
-      <p>CPython (the Python you install) is itself written in <strong>C</strong>. NumPy is also written in C under the hood. When you call <code>np.dot(a, b)</code>, Python hands the work to a pre-compiled C routine that works directly on raw memory buffers — no Python objects, no reference counts.</p>
-      <p>Because that C code doesn't touch Python objects, numpy <strong>releases the GIL</strong> before entering the C routine, then re-acquires it when done. While the C math is running, other threads are free to run their own C code simultaneously.</p>
-      <p>The boundary that matters:</p>
-      <ul>
-        <li><strong>Your Python code</strong> (loops, if/else, custom functions) → GIL held → one thread at a time</li>
-        <li><strong>C extension code</strong> (numpy math, pandas sort, etc.) → GIL released → multiple threads can overlap</li>
-      </ul>
     </div>
 
-    <!-- ===== RIGHT: ALL DEMOS ===== -->
     <div style="display:flex;flex-direction:column;gap:20px">
 
       <!-- Demo 1: 8-core CPU modes -->
@@ -496,6 +477,25 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <div class="pipe-note" style="margin-top:10px">Thread 1 uses idle ALU while Thread 0 waits on memory. Other cores remain idle.</div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Split 2: GIL concepts + race condition demo -->
+  <div class="split split-wide" style="margin-top:28px">
+    <div class="prose">
+
+      <h3>Python's GIL — Why it exists</h3>
+      <p>Python tracks memory via <strong>reference counting</strong> — every object has a counter of how many variables point to it. When the count hits 0, Python deletes it.</p>
+      <p>The problem: <strong>two threads can read and write the same counter simultaneously</strong> — a race condition. Both threads read count=5, both add 1, both write 6. Result should be 7. This causes memory leaks or crashes.</p>
+      <p>Python's fix in 1991: <strong>one lock, one thread at a time.</strong> The GIL ensures only one thread touches Python objects — no two threads can ever corrupt the same reference count.</p>
+      <div class="callout"><p>This is why threading your pandas code doesn't make it faster. Use <code>multiprocessing</code> instead — each process has its own separate memory and its own GIL.</p></div>
+
+      <h3>Why hasn't the GIL been removed?</h3>
+      <p>Every C extension ever written (numpy, pandas, scikit-learn…) assumes the GIL exists. Removing it safely took decades. <strong>Python 3.13 (2024)</strong> finally shipped an experimental free-threaded build — opt-in and still early.</p>
+
+    </div>
+
+    <div>
       <!-- Demo 3: Race condition simulator -->
       <div class="demo-panel">
         <div class="demo-title">Race Condition Simulator <span>Why the GIL exists</span></div>
@@ -524,7 +524,25 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         </div>
         <div class="race-result" id="raceResult"></div>
       </div>
+    </div>
+  </div>
 
+  <!-- Split 3: NumPy/C extension + boundary demo -->
+  <div class="split split-wide" style="margin-top:28px">
+    <div class="prose">
+
+      <h3>How NumPy still uses multiple cores</h3>
+      <p>CPython (the Python you install) is itself written in <strong>C</strong>. NumPy is also written in C under the hood. When you call <code>np.dot(a, b)</code>, Python hands the work to a pre-compiled C routine that works directly on raw memory buffers — no Python objects, no reference counts.</p>
+      <p>Because that C code doesn't touch Python objects, numpy <strong>releases the GIL</strong> before entering the C routine, then re-acquires it when done. While the C math is running, other threads are free to run their own C code simultaneously.</p>
+      <p>The boundary that matters:</p>
+      <ul>
+        <li><strong>Your Python code</strong> (loops, if/else, custom functions) → GIL held → one thread at a time</li>
+        <li><strong>C extension code</strong> (numpy math, pandas sort, etc.) → GIL released → multiple threads can overlap</li>
+      </ul>
+
+    </div>
+
+    <div>
       <!-- Demo 4: Python/C boundary -->
       <div class="demo-panel">
         <div class="demo-title">Python vs C — GIL Boundary <span>Click a snippet to run it</span></div>
@@ -554,7 +572,6 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         </div>
         <div class="race-result" id="boundaryResult" style="margin-top:8px"></div>
       </div>
-
     </div>
   </div>
 
@@ -585,6 +602,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
     <div class="lesson-desc">Why the same piece of data can take 0.3 ns or 10 ms to access — and how this shapes every data tool you'll use.</div>
   </div>
 
+  <!-- Split 1: RAM / cache hierarchy concepts + Cache Pyramid demo -->
   <div class="split">
     <div class="prose">
 
@@ -611,6 +629,27 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <h3>Cache hit vs cache miss</h3>
       <p>A <strong>cache hit</strong> means the CPU found the data it needed in cache — fast, no waiting. A <strong>cache miss</strong> means it wasn't there — the CPU must fetch from the next level down, stalling while it waits. Writing code that causes many cache hits is called having good <strong>cache locality</strong> and is one of the biggest practical performance optimizations.</p>
 
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Cache Pyramid <span>Click a layer to explore</span></div>
+        <button class="btn cache-animate-btn" onclick="animateDataFetch()">▶ Simulate Data Fetch from RAM</button>
+        <div style="position:relative">
+          <div class="cache-pyramid" id="cachePyramid"></div>
+          <div class="data-ball" id="dataBall"></div>
+        </div>
+        <div class="cache-info" id="cacheInfo">
+          <div style="color:var(--muted);font-size:.85rem">← Click any layer to see details</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Split 2: Cache line / Parquet-DuckDB concepts + Memory Layout demo -->
+  <div class="split" style="margin-top:28px">
+    <div class="prose">
+
       <h3>What is a cache line?</h3>
       <p>When the CPU needs one value from RAM, it doesn't fetch just that one value — it always grabs <strong>64 bytes at a time</strong>. That 64-byte chunk is called a <strong>cache line</strong>.</p>
       <p>Why 64 bytes? Because if you needed the value at position 10 in an array, you'll almost certainly need position 11, 12, 13 next. So the CPU pre-loads the whole neighbourhood. If your next values are within the same 64 bytes — they're <strong>already in cache, free</strong>. If your data is scattered all over memory — every access triggers a new 64-byte RAM trip.</p>
@@ -627,19 +666,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:20px">
-      <div class="demo-panel">
-        <div class="demo-title">Cache Pyramid <span>Click a layer to explore</span></div>
-        <button class="btn cache-animate-btn" onclick="animateDataFetch()">▶ Simulate Data Fetch from RAM</button>
-        <div style="position:relative">
-          <div class="cache-pyramid" id="cachePyramid"></div>
-          <div class="data-ball" id="dataBall"></div>
-        </div>
-        <div class="cache-info" id="cacheInfo">
-          <div style="color:var(--muted);font-size:.85rem">← Click any layer to see details</div>
-        </div>
-      </div>
-
+    <div>
       <div class="demo-panel">
         <div class="demo-title">Row vs Column Memory Layout <span>See how cache lines load</span></div>
         <div class="btn-group">
