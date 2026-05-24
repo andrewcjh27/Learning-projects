@@ -279,14 +279,6 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .layout-stats{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
 .layout-stats .stat-box{flex:1;min-width:80px}
 
-/* FULL-WIDTH KEY CONCEPTS GRID */
-.concepts-grid-full{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-top:32px}
-.cg-header{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
-.cg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
-.cg-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;transition:border-color .2s}
-.cg-item:hover{border-color:var(--border-b)}
-.cg-key{font-family:var(--mono);font-size:.72rem;font-weight:600;color:var(--primary);margin-bottom:4px}
-.cg-val{font-size:.78rem;color:var(--muted);line-height:1.45}
 
 /* PYTHON/C BOUNDARY DEMO */
 .boundary-wrap{display:flex;flex-direction:column;gap:0;margin-bottom:10px;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--border)}
@@ -633,15 +625,6 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       One 64-byte cache line loads <strong>8 salary values at once</strong> (8 bytes each). Every byte loaded is exactly what you asked for — zero waste.</p>
       <div class="callout"><p>For <code>AVG(salary)</code> across 1 million rows: the column store loads ~50× less data and keeps the cache full of only the values it needs. That's why DuckDB, Snowflake, BigQuery, and Parquet are 10–100× faster for analytics.</p></div>
 
-      <div class="concepts-box">
-        <h4>Key Concepts</h4>
-        <div class="concept-item"><div class="concept-key">RAM</div><div class="concept-val">Working memory — fast, temporary. Your DataFrames live here while Python runs</div></div>
-        <div class="concept-item"><div class="concept-key">Cache</div><div class="concept-val">Tiny ultra-fast memory inside the CPU — stores recently used data so the CPU doesn't wait on RAM</div></div>
-        <div class="concept-item"><div class="concept-key">Cache line</div><div class="concept-val">The CPU always fetches 64 bytes at a time — nearby values in memory come along for free</div></div>
-        <div class="concept-item"><div class="concept-key">Cache hit</div><div class="concept-val">CPU found the data already in cache — served in ~1–40 ns, no stall</div></div>
-        <div class="concept-item"><div class="concept-key">Cache miss</div><div class="concept-val">Data not in cache — CPU stalls waiting on the next level down</div></div>
-        <div class="concept-item"><div class="concept-key">Cache locality</div><div class="concept-val">Storing values you'll access together close in memory — fills cache lines with zero waste</div></div>
-      </div>
     </div>
 
     <div style="display:flex;flex-direction:column;gap:20px">
@@ -676,6 +659,16 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:32px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">RAM</div><div class="concept-val">Working memory — fast, temporary. Your DataFrames live here while Python runs</div></div>
+    <div class="concept-item"><div class="concept-key">Cache</div><div class="concept-val">Tiny ultra-fast memory inside the CPU — stores recently used data so the CPU doesn't wait on RAM</div></div>
+    <div class="concept-item"><div class="concept-key">Cache line</div><div class="concept-val">The CPU always fetches 64 bytes at a time — nearby values in memory come along for free</div></div>
+    <div class="concept-item"><div class="concept-key">Cache hit</div><div class="concept-val">CPU found the data already in cache — served in ~1–40 ns, no stall</div></div>
+    <div class="concept-item"><div class="concept-key">Cache miss</div><div class="concept-val">Data not in cache — CPU stalls waiting on the next level down</div></div>
+    <div class="concept-item"><div class="concept-key">Cache locality</div><div class="concept-val">Storing values you'll access together close in memory — fills cache lines with zero waste</div></div>
   </div>
 
   <div class="lesson-nav">
@@ -716,13 +709,6 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <h3>Why Spark uses RAM</h3>
       <p>Hadoop MapReduce wrote intermediate results to disk between steps. Spark keeps them in RAM. That's why Spark is typically 100x faster than MapReduce — it avoids disk I/O entirely for iterative workloads.</p>
 
-      <div class="concepts-box">
-        <h4>Key Numbers to Memorize</h4>
-        <div class="concept-item"><div class="concept-key">L1 cache</div><div class="concept-val">~1 ns — the speed of thought</div></div>
-        <div class="concept-item"><div class="concept-key">RAM</div><div class="concept-val">~60–100 ns — 100x slower than L1</div></div>
-        <div class="concept-item"><div class="concept-key">NVMe SSD</div><div class="concept-val">~100 μs — 100,000x slower than L1</div></div>
-        <div class="concept-item"><div class="concept-key">Network</div><div class="concept-val">~1–100 ms — 1,000,000x slower</div></div>
-      </div>
     </div>
 
     <div>
@@ -732,6 +718,16 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <div class="lat-tooltip" id="latTooltip">Hover a bar to see the latency and a human-scale analogy.</div>
       </div>
     </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:32px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">Latency</div><div class="concept-val">Delay before data starts arriving — the bottleneck for interactive systems</div></div>
+    <div class="concept-item"><div class="concept-key">Bandwidth</div><div class="concept-val">How much data arrives per second — matters for bulk transfers</div></div>
+    <div class="concept-item"><div class="concept-key">L1 cache</div><div class="concept-val">~1 ns — fastest storage, lives inside the core</div></div>
+    <div class="concept-item"><div class="concept-key">RAM</div><div class="concept-val">~60–100 ns — 100× slower than L1, where your DataFrames live</div></div>
+    <div class="concept-item"><div class="concept-key">NVMe SSD</div><div class="concept-val">~100 μs — 100,000× slower than L1, where your files live</div></div>
+    <div class="concept-item"><div class="concept-key">Network</div><div class="concept-val">~1–100 ms — every API call crosses this boundary</div></div>
   </div>
 
   <div class="lesson-nav">
@@ -838,13 +834,6 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <li><strong>Traditional ETL</strong> — usually CPU is fine</li>
       </ul>
 
-      <div class="concepts-box">
-        <h4>Key Concepts</h4>
-        <div class="concept-item"><div class="concept-key">VRAM</div><div class="concept-val">GPU memory — model must fit here</div></div>
-        <div class="concept-item"><div class="concept-key">CUDA core</div><div class="concept-val">Basic GPU compute unit — thousands per chip</div></div>
-        <div class="concept-item"><div class="concept-key">Tensor core</div><div class="concept-val">Specialized unit for matrix math — A100 has 432</div></div>
-        <div class="concept-item"><div class="concept-key">Batch size</div><div class="concept-val">Bigger batch = better GPU utilization</div></div>
-      </div>
     </div>
 
     <div>
@@ -877,6 +866,15 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <div class="lat-tooltip" id="gpuNote" style="margin-top:12px">Press Run to see how CPU and GPU process 128 elements differently.</div>
       </div>
     </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:32px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">GPU</div><div class="concept-val">Thousands of small cores built for parallel math — not general logic</div></div>
+    <div class="concept-item"><div class="concept-key">CUDA</div><div class="concept-val">NVIDIA's platform for running code on GPU cores — used by PyTorch, TensorFlow</div></div>
+    <div class="concept-item"><div class="concept-key">VRAM</div><div class="concept-val">GPU's own memory — your model must fit here to run on GPU</div></div>
+    <div class="concept-item"><div class="concept-key">Tensor core</div><div class="concept-val">Specialised unit inside a GPU for matrix math — the backbone of transformer training</div></div>
+    <div class="concept-item"><div class="concept-key">Batch size</div><div class="concept-val">How many samples processed at once — bigger batch = better GPU utilisation</div></div>
   </div>
 
   <div class="lesson-nav">
