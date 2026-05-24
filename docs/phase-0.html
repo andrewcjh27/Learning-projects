@@ -269,6 +269,37 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .race-result.bad{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--danger)}
 .race-result.good{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--accent)}
 
+/* FULL-WIDTH KEY CONCEPTS GRID */
+.concepts-grid-full{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-top:32px}
+.cg-header{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
+.cg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.cg-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;transition:border-color .2s}
+.cg-item:hover{border-color:var(--border-b)}
+.cg-key{font-family:var(--mono);font-size:.72rem;font-weight:600;color:var(--primary);margin-bottom:4px}
+.cg-val{font-size:.78rem;color:var(--muted);line-height:1.45}
+
+/* PYTHON/C BOUNDARY DEMO */
+.boundary-wrap{display:flex;flex-direction:column;gap:0;margin-bottom:10px;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--border)}
+.boundary-zone{padding:12px 14px;transition:background .4s}
+.python-zone{background:rgba(79,142,247,.06)}
+.python-zone.active-zone{background:rgba(79,142,247,.15)}
+.c-zone{background:rgba(251,191,36,.04)}
+.c-zone.active-zone{background:rgba(251,191,36,.12)}
+.bz-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+.python-zone .bz-label{color:var(--primary)}
+.c-zone .bz-label{color:var(--warning)}
+.bz-code{font-family:var(--mono);font-size:.76rem;color:var(--muted);min-height:36px;line-height:1.7;transition:color .3s}
+.bz-code.running{color:var(--text)}
+.boundary-line{background:var(--border);display:flex;align-items:center;justify-content:center;padding:4px 0;position:relative}
+.boundary-line-label{font-size:.65rem;font-weight:700;letter-spacing:.08em;color:var(--dim);background:var(--card);padding:0 10px}
+.gil-status-row{display:flex;align-items:center;gap:8px}
+.gil-status-box{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 14px;font-size:.8rem;color:var(--muted);transition:all .3s;width:100%}
+.gil-status-box.held{border-color:var(--danger);background:rgba(248,113,113,.08);color:var(--danger)}
+.gil-status-box.released{border-color:var(--accent);background:rgba(52,211,153,.08);color:var(--accent)}
+.gil-dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background .3s}
+.gil-dot.held{background:var(--danger);box-shadow:0 0 8px var(--danger)}
+.gil-dot.released{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+
 /* PIPELINE DIAGRAM */
 .pipeline-diagram{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;margin:16px 0}
 .pipe-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
@@ -378,7 +409,10 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
   </div>
 
   <div class="split split-wide">
+
+    <!-- ===== LEFT: ALL CONCEPTS ===== -->
     <div class="prose">
+
       <h3>What is a CPU Core?</h3>
       <p>A <strong>core</strong> is a complete, independent processor inside your CPU. Each core can execute one stream of instructions at a time. A modern laptop has 8–16 cores; a cloud server might have 96.</p>
 
@@ -391,24 +425,63 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <li><strong>Memory Unit</strong> — reads and writes data to/from RAM</li>
         <li><strong>Branch Predictor</strong> — guesses which way an if/else will go, pre-fetches early</li>
       </ul>
-      <p>These units run in a <strong>pipeline</strong> — while the ALU executes instruction 3, the Decode Unit is already decoding instruction 4, and the Fetch Unit is already grabbing instruction 5. They all work simultaneously on different instructions.</p>
+      <p>These units run in a <strong>pipeline</strong> — while the ALU executes instruction 3, the Decode Unit is already decoding instruction 4, and the Fetch Unit is already grabbing instruction 5.</p>
 
       <h3>Hyper-threading</h3>
-      <p>When your thread sends a request to the Memory Unit (e.g. load a value from RAM), the Memory Unit is busy waiting ~80 ns for the data to arrive. During that wait, the <strong>ALU, Fetch, and Decode units are all sitting idle</strong> — they have nothing to do.</p>
-      <p>Hyper-threading lets a <strong>second thread on the same core</strong> use those idle units during the wait. The other physical cores (Core 1, 2, 3…) stay completely idle — this is purely a within-one-core optimization.</p>
-      <div class="pipeline-diagram">
-        <div class="pipe-label">Core 0 — time →</div>
+      <p>When a thread tells the Memory Unit to load data from RAM, the Memory Unit spends ~80 ns waiting for that data. During that wait the <strong>ALU, Fetch, and Decode units sit idle</strong> — nothing to do.</p>
+      <p>Hyper-threading lets a <strong>second thread on the same core</strong> use those idle units during the wait. The other physical cores stay completely idle — this is purely a within-one-core optimization that gives ~20–30% more throughput.</p>
+
+      <h3>Python's GIL — Why it exists</h3>
+      <p>Python tracks memory via <strong>reference counting</strong> — every object has a counter of how many variables point to it. When the count hits 0, Python deletes it.</p>
+      <p>The problem: <strong>two threads can read and write the same counter simultaneously</strong> — a race condition. Both threads read count=5, both add 1, both write 6. Result should be 7. This causes memory leaks or crashes.</p>
+      <p>Python's fix in 1991: <strong>one lock, one thread at a time.</strong> The GIL ensures only one thread touches Python objects — no two threads can ever corrupt the same reference count.</p>
+      <div class="callout"><p>This is why threading your pandas code doesn't make it faster. Use <code>multiprocessing</code> instead — each process has its own separate memory and its own GIL.</p></div>
+
+      <h3>Why hasn't the GIL been removed?</h3>
+      <p>Every C extension ever written (numpy, pandas, scikit-learn…) assumes the GIL exists. Removing it safely took decades. <strong>Python 3.13 (2024)</strong> finally shipped an experimental free-threaded build — opt-in and still early.</p>
+
+      <h3>How NumPy still uses multiple cores</h3>
+      <p>CPython (the Python you install) is itself written in <strong>C</strong>. NumPy is also written in C under the hood. When you call <code>np.dot(a, b)</code>, Python hands the work to a pre-compiled C routine that works directly on raw memory buffers — no Python objects, no reference counts.</p>
+      <p>Because that C code doesn't touch Python objects, numpy <strong>releases the GIL</strong> before entering the C routine, then re-acquires it when done. While the C math is running, other threads are free to run their own C code simultaneously.</p>
+      <p>The boundary that matters:</p>
+      <ul>
+        <li><strong>Your Python code</strong> (loops, if/else, custom functions) → GIL held → one thread at a time</li>
+        <li><strong>C extension code</strong> (numpy math, pandas sort, etc.) → GIL released → multiple threads can overlap</li>
+      </ul>
+    </div>
+
+    <!-- ===== RIGHT: ALL DEMOS ===== -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+
+      <!-- Demo 1: 8-core CPU modes -->
+      <div class="demo-panel">
+        <div class="demo-title">CPU Cores — Threading Modes <span>Click to switch modes</span></div>
+        <div class="btn-group">
+          <button class="btn active" id="btnSingle" onclick="setMode('single')">Single Thread</button>
+          <button class="btn" id="btnThread" onclick="setMode('threading')">Python Threads (GIL)</button>
+          <button class="btn" id="btnMP" onclick="setMode('multiprocessing')">Multiprocessing</button>
+        </div>
+        <div class="cores-grid" id="coresGrid"></div>
+        <div class="core-info-box" id="coreInfoBox">
+          <strong style="color:var(--text)">Single Thread:</strong> One core runs your Python script. The other 7 sit completely idle. This is the default.
+        </div>
+      </div>
+
+      <!-- Demo 2: Hyper-threading pipeline -->
+      <div class="demo-panel">
+        <div class="demo-title">Hyper-threading Pipeline <span>Same core, two threads</span></div>
+        <div class="pipe-label" style="margin-bottom:10px">Core 0 — time →</div>
         <div class="pipe-row">
           <div class="pipe-thread-label" style="color:var(--primary)">Thread 0</div>
           <div class="pipe-cells">
             <div class="pipe-cell active-p">ALU busy</div>
-            <div class="pipe-cell mem-p">Mem waiting…</div>
-            <div class="pipe-cell mem-p">Mem waiting…</div>
-            <div class="pipe-cell mem-p">Mem waiting…</div>
+            <div class="pipe-cell mem-p">Mem wait…</div>
+            <div class="pipe-cell mem-p">Mem wait…</div>
+            <div class="pipe-cell mem-p">Mem wait…</div>
             <div class="pipe-cell active-p">ALU busy</div>
           </div>
         </div>
-        <div class="pipe-row">
+        <div class="pipe-row" style="margin-top:6px">
           <div class="pipe-thread-label" style="color:var(--secondary)">Thread 1 (HT)</div>
           <div class="pipe-cells">
             <div class="pipe-cell idle-p">idle</div>
@@ -418,83 +491,15 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
             <div class="pipe-cell idle-p">idle</div>
           </div>
         </div>
-        <div class="pipe-note">Thread 1 uses the ALU while Thread 0 waits on memory — same core, filling idle hardware</div>
+        <div class="pipe-note" style="margin-top:10px">Thread 1 uses idle ALU while Thread 0 waits on memory. Other cores remain idle.</div>
       </div>
-      <p>Result: ~20–30% more work done per unit time. Not 2× faster — the two threads still share the same core's resources.</p>
 
-      <h3>Python's GIL — Why it exists</h3>
-      <p>Python tracks whether an object in memory is still being used via <strong>reference counting</strong> — every object has a counter of how many variables point to it. When the count hits 0, Python deletes it.</p>
-      <div class="pipeline-diagram">
-        <div class="pipe-label">Reference counting example</div>
-        <div style="font-family:var(--mono);font-size:.78rem;line-height:1.9;color:var(--muted)">
-          <span style="color:var(--accent)">x</span> = [1,2,3] &nbsp;<span style="color:var(--dim)">← list ref count = 1</span><br>
-          <span style="color:var(--accent)">y</span> = x &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--dim)">← list ref count = 2</span><br>
-          <span style="color:var(--danger)">del</span> x &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--dim)">← list ref count = 1</span><br>
-          <span style="color:var(--danger)">del</span> y &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--dim)">← list ref count = 0 → deleted ✓</span>
-        </div>
-      </div>
-      <p>This works fine on one thread. The problem is <strong>two threads updating the same counter simultaneously</strong> — a race condition:</p>
-      <div class="pipeline-diagram">
-        <div class="pipe-label">Race condition — WITHOUT the GIL</div>
-        <div class="pipe-row">
-          <div class="pipe-thread-label" style="color:var(--primary)">Thread A</div>
-          <div class="pipe-cells">
-            <div class="pipe-cell active-p">reads count=5</div>
-            <div class="pipe-cell idle-p"></div>
-            <div class="pipe-cell active-p">writes count=6</div>
-            <div class="pipe-cell idle-p"></div>
-          </div>
-        </div>
-        <div class="pipe-row">
-          <div class="pipe-thread-label" style="color:var(--secondary)">Thread B</div>
-          <div class="pipe-cells">
-            <div class="pipe-cell idle-p"></div>
-            <div class="pipe-cell ht-p">reads count=5</div>
-            <div class="pipe-cell idle-p"></div>
-            <div class="pipe-cell ht-p">writes count=6</div>
-          </div>
-        </div>
-        <div class="pipe-note" style="color:var(--danger)">Both read 5 before either wrote back — result is 6, should be 7. Memory leak. Or worse: Thread A deletes an object Thread B is still using → crash.</div>
-      </div>
-      <p>Python was built in 1991 when multi-core CPUs barely existed. The simplest fix: <strong>one lock, one thread at a time.</strong> No two threads can corrupt the same counter because only one thread runs Python at a time. That lock is the GIL.</p>
-
-      <div class="callout"><p>This is why threading your pandas code doesn't make it faster. Use <code>multiprocessing</code> instead — each process has its own separate memory and its own GIL.</p></div>
-
-      <h3>Why hasn't it been removed?</h3>
-      <p>The entire CPython internals — and every C extension ever written (numpy, pandas…) — assumes the GIL exists. Removing it safely took decades. <strong>Python 3.13 (2024)</strong> shipped an experimental "free-threaded" build with no GIL. It's opt-in and still early.</p>
-
-      <h3>NumPy &amp; pandas can still use threads</h3>
-      <p>When numpy calls into its C code for array math, it <em>releases</em> the GIL. So threads can overlap on C-level work. This is why <code>np.dot()</code> on large arrays can use multiple cores — the actual math runs in C, not Python.</p>
-
-      <div class="concepts-box">
-        <h4>Key Concepts</h4>
-        <div class="concept-item"><div class="concept-key">Ref count</div><div class="concept-val">How Python tracks if an object is still in use</div></div>
-        <div class="concept-item"><div class="concept-key">Race condition</div><div class="concept-val">Two threads read/write the same value simultaneously → corrupt result</div></div>
-        <div class="concept-item"><div class="concept-key">GIL</div><div class="concept-val">One lock that ensures only 1 thread touches Python objects at a time</div></div>
-        <div class="concept-item"><div class="concept-key">Multiprocessing</div><div class="concept-val">Separate processes — own memory + own GIL — true parallelism, higher RAM cost</div></div>
-        <div class="concept-item"><div class="concept-key">Thread</div><div class="concept-val">Lightweight, shared memory — blocked by GIL for CPU-bound Python</div></div>
-      </div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;gap:20px">
+      <!-- Demo 3: Race condition simulator -->
       <div class="demo-panel">
-        <div class="demo-title">Interactive — 8-Core CPU <span>Click a mode to see how threads run</span></div>
+        <div class="demo-title">Race Condition Simulator <span>Why the GIL exists</span></div>
         <div class="btn-group">
-          <button class="btn active" id="btnSingle" onclick="setMode('single')">Single Thread</button>
-          <button class="btn" id="btnThread" onclick="setMode('threading')">Python Threads (GIL)</button>
-          <button class="btn" id="btnMP" onclick="setMode('multiprocessing')">Multiprocessing</button>
-        </div>
-        <div class="cores-grid" id="coresGrid"></div>
-        <div class="core-info-box" id="coreInfoBox">
-          <strong style="color:var(--text)">Single Thread:</strong> One core is running your Python script. The other 7 sit completely idle. This is the default.
-        </div>
-      </div>
-
-      <div class="demo-panel">
-        <div class="demo-title">Race Condition Simulator <span>See why the GIL exists</span></div>
-        <div class="btn-group">
-          <button class="btn danger" onclick="runRaceDemo('unsafe')">▶ Run WITHOUT GIL</button>
-          <button class="btn accent" onclick="runRaceDemo('safe')">▶ Run WITH GIL</button>
+          <button class="btn danger" onclick="runRaceDemo('unsafe')">▶ Without GIL</button>
+          <button class="btn accent" onclick="runRaceDemo('safe')">▶ With GIL</button>
           <button class="btn" onclick="resetRaceDemo()">Reset</button>
         </div>
         <div class="race-object-box">
@@ -517,6 +522,56 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         </div>
         <div class="race-result" id="raceResult"></div>
       </div>
+
+      <!-- Demo 4: Python/C boundary -->
+      <div class="demo-panel">
+        <div class="demo-title">Python vs C Code — GIL Boundary <span>Click a snippet to run it</span></div>
+        <div class="btn-group">
+          <button class="btn" onclick="runBoundaryDemo('loop')">▶ Python loop</button>
+          <button class="btn" onclick="runBoundaryDemo('numpy')">▶ np.sum()</button>
+          <button class="btn" onclick="resetBoundaryDemo()">Reset</button>
+        </div>
+        <div class="boundary-wrap">
+          <div class="boundary-zone python-zone" id="bzPython">
+            <div class="bz-label">Python Zone</div>
+            <div class="bz-code" id="bzCode">← click a snippet above</div>
+          </div>
+          <div class="boundary-line">
+            <span class="boundary-line-label">Python / C boundary</span>
+          </div>
+          <div class="boundary-zone c-zone" id="bzC">
+            <div class="bz-label">C Extension Zone</div>
+            <div class="bz-code" id="bzCCode">C routine runs here</div>
+          </div>
+        </div>
+        <div class="gil-status-row">
+          <div class="gil-status-box" id="gilStatusBox">
+            <span class="gil-dot" id="gilDot"></span>
+            <span id="gilStatusText">GIL status will appear here</span>
+          </div>
+        </div>
+        <div class="race-result" id="boundaryResult" style="margin-top:8px"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== FULL-WIDTH KEY CONCEPTS ===== -->
+  <div class="concepts-grid-full">
+    <div class="cg-header">Key Concepts — Lesson 1</div>
+    <div class="cg-grid">
+      <div class="cg-item"><div class="cg-key">CPU</div><div class="cg-val">The chip on the motherboard that executes all your code</div></div>
+      <div class="cg-item"><div class="cg-key">Core</div><div class="cg-val">Independent processor inside the CPU — modern laptops have 8–16</div></div>
+      <div class="cg-item"><div class="cg-key">ALU</div><div class="cg-val">Arithmetic Logic Unit — the part of a core that does math and comparisons</div></div>
+      <div class="cg-item"><div class="cg-key">Hyper-threading</div><div class="cg-val">One core runs 2 threads by filling idle units during memory waits — ~20–30% more throughput</div></div>
+      <div class="cg-item"><div class="cg-key">Thread</div><div class="cg-val">Lightweight execution unit — shares memory with other threads in the same process</div></div>
+      <div class="cg-item"><div class="cg-key">Ref counting</div><div class="cg-val">How Python tracks if an object is still in use — every object has a counter</div></div>
+      <div class="cg-item"><div class="cg-key">Race condition</div><div class="cg-val">Two threads read/write the same value simultaneously — result is unpredictably wrong</div></div>
+      <div class="cg-item"><div class="cg-key">GIL</div><div class="cg-val">Global Interpreter Lock — only 1 thread runs Python bytecode at a time</div></div>
+      <div class="cg-item"><div class="cg-key">C extension</div><div class="cg-val">Library code written in C (numpy, pandas internals) — releases the GIL, can use multiple cores</div></div>
+      <div class="cg-item"><div class="cg-key">Multiprocessing</div><div class="cg-val">Separate processes, each with own memory + own GIL — true parallelism, higher RAM cost</div></div>
+      <div class="cg-item"><div class="cg-key">CPU-bound</div><div class="cg-val">Bottleneck is computation — use multiprocessing or numpy, not threading</div></div>
+      <div class="cg-item"><div class="cg-key">I/O-bound</div><div class="cg-val">Bottleneck is waiting on network/disk — use async/await, threads are fine here</div></div>
     </div>
   </div>
 
@@ -1041,6 +1096,94 @@ async function runRaceDemo(mode) {
     result.innerHTML = '✓ <strong>Correct:</strong> Count reached 7. The GIL forced threads to take turns — Thread B only read the count <em>after</em> Thread A had written its update. Safe, but sequential.';
   }
   raceRunning = false;
+}
+
+/* =====================================================
+   PYTHON/C BOUNDARY DEMO
+   ===================================================== */
+let boundaryRunning = false;
+
+function resetBoundaryDemo() {
+  boundaryRunning = false;
+  document.getElementById('bzCode').textContent = '← click a snippet above';
+  document.getElementById('bzCode').className = 'bz-code';
+  document.getElementById('bzCCode').textContent = 'C routine runs here';
+  document.getElementById('bzCCode').className = 'bz-code';
+  document.getElementById('bzPython').className = 'boundary-zone python-zone';
+  document.getElementById('bzC').className = 'boundary-zone c-zone';
+  document.getElementById('gilDot').className = 'gil-dot';
+  document.getElementById('gilStatusBox').className = 'gil-status-box';
+  document.getElementById('gilStatusText').textContent = 'GIL status will appear here';
+  document.getElementById('boundaryResult').className = 'race-result';
+  document.getElementById('boundaryResult').textContent = '';
+}
+
+function setGilStatus(state, text) {
+  const dot = document.getElementById('gilDot');
+  const box = document.getElementById('gilStatusBox');
+  const txt = document.getElementById('gilStatusText');
+  dot.className = 'gil-dot ' + state;
+  box.className = 'gil-status-box ' + state;
+  txt.textContent = text;
+}
+
+async function runBoundaryDemo(type) {
+  if (boundaryRunning) return;
+  resetBoundaryDemo();
+  boundaryRunning = true;
+
+  const pyZone  = document.getElementById('bzPython');
+  const cZone   = document.getElementById('bzC');
+  const pyCode  = document.getElementById('bzCode');
+  const cCode   = document.getElementById('bzCCode');
+  const result  = document.getElementById('boundaryResult');
+
+  if (type === 'loop') {
+    // Pure Python — GIL held the entire time, never released
+    pyZone.classList.add('active-zone');
+    pyCode.className = 'bz-code running';
+    pyCode.innerHTML = '<span style="color:var(--muted)">total = 0</span><br><span style="color:var(--primary)">for</span> i <span style="color:var(--primary)">in</span> range(10_000_000):<br>&nbsp;&nbsp;&nbsp;&nbsp;total += i';
+    setGilStatus('held', '🔒 GIL HELD — Python bytecode running, only 1 thread can execute');
+    await delay(1000);
+
+    // GIL never leaves Python zone
+    for (let i = 0; i < 3; i++) {
+      await delay(600);
+      setGilStatus('held', '🔒 GIL HELD — still in Python, loop iteration ' + ((i+1)*3_000_000).toLocaleString());
+    }
+    await delay(600);
+    pyZone.classList.remove('active-zone');
+    result.className = 'race-result bad';
+    result.innerHTML = '🔒 GIL never released — this loop runs entirely in Python. Only 1 thread executes. Other threads wait the whole time.';
+
+  } else {
+    // NumPy — starts in Python, crosses into C, GIL released in C zone
+    pyZone.classList.add('active-zone');
+    pyCode.className = 'bz-code running';
+    pyCode.innerHTML = '<span style="color:var(--primary)">import</span> numpy <span style="color:var(--primary)">as</span> np<br><span style="color:var(--accent)">result</span> = np.sum(np.arange(10_000_000))';
+    setGilStatus('held', '🔒 GIL HELD — Python calling np.sum()…');
+    await delay(1000);
+
+    // Cross the boundary — GIL released
+    pyZone.classList.remove('active-zone');
+    cZone.classList.add('active-zone');
+    cCode.className = 'bz-code running';
+    cCode.innerHTML = '<span style="color:var(--warning)">/* C routine — no Python objects */</span><br>uint64_t sum = 0;<br><span style="color:var(--warning)">for</span>(i=0; i&lt;N; i++) sum += arr[i];';
+    setGilStatus('released', '🔓 GIL RELEASED — C code runs, other threads can execute Python simultaneously');
+    await delay(1800);
+
+    // Back to Python — GIL re-acquired
+    cZone.classList.remove('active-zone');
+    pyZone.classList.add('active-zone');
+    cCode.className = 'bz-code';
+    setGilStatus('held', '🔒 GIL RE-ACQUIRED — back in Python, returning result');
+    await delay(700);
+    pyZone.classList.remove('active-zone');
+
+    result.className = 'race-result good';
+    result.innerHTML = '🔓 GIL was released during the C math loop. While numpy crunched numbers, other threads could run Python. This is why numpy operations can overlap with other work.';
+  }
+  boundaryRunning = false;
 }
 
 /* =====================================================
