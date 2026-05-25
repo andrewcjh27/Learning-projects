@@ -437,6 +437,22 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <li>Zero-copy interop with PyArrow and NumPy</li>
     </ul>
     <div class="callout"><p>Use Pandas for interactive exploration and small datasets. Switch to Polars for anything that takes more than a few seconds or processes files larger than a few hundred MB.</p></div>
+    <h3>So is Polars just better?</h3>
+    <p>Not always — it depends on the job.</p>
+    <p><strong>Pandas wins when:</strong></p>
+    <ul>
+      <li>Exploring data interactively (Jupyter notebooks, quick analysis)</li>
+      <li>Your dataset fits comfortably in memory (under a few GB)</li>
+      <li>You need the wider ecosystem — scikit-learn, matplotlib, and most ML libraries expect Pandas DataFrames</li>
+      <li>You're learning — Pandas has far more tutorials, Stack Overflow answers, and examples</li>
+    </ul>
+    <p><strong>Polars wins when:</strong></p>
+    <ul>
+      <li>Your dataset is large (hundreds of millions of rows, multiple GB)</li>
+      <li>You're writing a production pipeline that needs to be fast</li>
+      <li>You want lazy evaluation — Polars plans the full query before running and skips unnecessary work</li>
+    </ul>
+    <p><strong>In practice:</strong> learn Pandas first — it's what job postings, tutorials, and libraries assume. Reach for Polars once Pandas becomes a bottleneck, which you'll recognise once you've worked with real data at scale. Most data engineers use both.</p>
   </div>
 
   <div class="demo-panel">
