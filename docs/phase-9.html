@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 09 — Distributed Computing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1f;--surface:#0e1628;--card:#121c30;--border:#1e2d47;--border-b:#2d4470;
+  --primary:#4f8ef7;--primary-dim:rgba(79,142,247,.12);--primary-glow:rgba(79,142,247,.3);
+  --secondary:#a78bfa;--accent:#34d399;--warning:#fbbf24;--danger:#f87171;--orange:#fb923c;
+  --text:#dde8f5;--muted:#7a8faa;--dim:#3d5070;
+  --font:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;--r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-back{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-back:hover{color:var(--primary)}
+.nav-sep{color:var(--dim)}
+.nav-title{font-weight:600;font-size:.9rem}
+.lesson-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0}
+.lesson-tab{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;white-space:nowrap;background:transparent;color:var(--muted)}
+.lesson-tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.lesson-tab.active{background:var(--primary-dim);color:var(--primary);border:1px solid var(--primary-glow)}
+@media(max-width:640px){nav{flex-direction:column;height:auto;padding:10px 16px;gap:6px}.lesson-tabs{width:100%}}
+
+.phase-hero{padding:48px 32px 32px;max-width:1100px;margin:0 auto}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.phase-hero h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;letter-spacing:-.04em;margin-bottom:8px;background:linear-gradient(135deg,#fff 40%,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.phase-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+.phase-progress{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.pp-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.pp-step.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.pp-step.done{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.pp-step:not(.active):not(.done){color:var(--dim)}
+.pp-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.lesson-section{display:none;max-width:1100px;margin:0 auto;padding:32px 32px 80px}
+.lesson-section.active{display:block}
+.lesson-header{margin-bottom:32px}
+.lesson-num{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-family:var(--mono)}
+.lesson-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.lesson-desc{color:var(--muted);max-width:680px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.split-wide{grid-template-columns:2fr 3fr}
+
+.prose h3{font-size:1rem;font-weight:600;margin:20px 0 8px;color:var(--text)}
+.prose h3:first-child{margin-top:0}
+.prose p{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.prose ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.prose li{font-size:.9rem;color:var(--muted);padding-left:16px;position:relative}
+.prose li::before{content:'›';position:absolute;left:0;color:var(--primary)}
+.prose strong{color:var(--text);font-weight:600}
+.prose .callout{background:var(--primary-dim);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 16px;margin:12px 0}
+.prose .callout p{color:var(--text);margin:0}
+.prose code{font-family:var(--mono);font-size:.82rem;background:rgba(79,142,247,.1);padding:2px 6px;border-radius:4px;color:var(--primary)}
+
+.concepts-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:20px}
+.concepts-box h4{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.concept-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.concept-item:last-child{border-bottom:none}
+.concept-key{font-family:var(--mono);font-size:.75rem;color:var(--primary);font-weight:500;white-space:nowrap;min-width:120px}
+.concept-val{font-size:.8rem;color:var(--muted)}
+
+.demo-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:relative}
+.demo-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.demo-title span{color:var(--accent);font-size:.7rem;font-weight:600}
+
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.btn:hover{border-color:var(--border-b);color:var(--text)}
+.btn.active,.btn.primary{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.btn.accent{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.btn.secondary{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:var(--secondary)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+.lesson-nav{display:flex;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.big-btn{padding:12px 24px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font)}
+.big-btn.primary{background:var(--primary);color:#fff}
+.big-btn.primary:hover{background:#6fa2ff;box-shadow:0 4px 20px rgba(79,142,247,.4)}
+.big-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.big-btn.ghost:hover{color:var(--text);border-color:var(--border-b)}
+
+/* QUIZ */
+.quiz-wrap{max-width:720px;margin:0 auto}
+.quiz-progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:32px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary));border-radius:2px;transition:width .4s ease}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.q-text{font-size:1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:12px 16px;border-radius:var(--r-sm);border:1px solid var(--border);cursor:pointer;font-size:.88rem;transition:all .2s;background:var(--surface)}
+.option:hover:not(.locked){border-color:var(--border-b);background:rgba(255,255,255,.03)}
+.option.correct{border-color:var(--accent)!important;background:rgba(52,211,153,.1)!important;color:var(--accent)}
+.option.wrong{border-color:var(--danger)!important;background:rgba(248,113,113,.1)!important;color:var(--danger)}
+.option.locked{cursor:default}
+.explanation{margin-top:16px;padding:14px 16px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:var(--r-sm);font-size:.84rem;color:var(--text);line-height:1.6;display:none}
+.explanation.visible{display:block;animation:slideUp .3s ease}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.quiz-score{text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);display:none}
+.quiz-score.visible{display:block;animation:slideUp .4s ease}
+.score-num{font-size:4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-msg{font-size:1.1rem;color:var(--muted);margin-bottom:24px}
+
+/* Light mode */
+[data-theme="light"]{
+  --bg:#f4f6fc;--surface:#eaecf5;--card:#ffffff;--border:#cdd5e4;--border-b:#aab5cc;
+  --primary:#3a6fd8;--primary-dim:rgba(58,111,216,.1);--primary-glow:rgba(58,111,216,.25);
+  --secondary:#6d28d9;--accent:#059669;--warning:#d97706;--danger:#dc2626;--orange:#ea580c;
+  --text:#111827;--muted:#475569;--dim:#94a3b8;
+}
+[data-theme="light"] body{background:var(--bg)}
+[data-theme="light"] nav{background:rgba(244,246,252,.95)}
+[data-theme="light"] .phase-hero h1{background:linear-gradient(135deg,#111827 40%,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="light"] .callout{background:rgba(58,111,216,.07);border-color:rgba(58,111,216,.3)}
+[data-theme="light"] code{background:rgba(0,0,0,.07);color:#1e3a8a}
+.theme-toggle{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 13px;color:var(--muted);cursor:pointer;font-size:.8rem;font-family:var(--font);transition:all .2s;white-space:nowrap;flex-shrink:0}
+.theme-toggle:hover{color:var(--text);border-color:var(--primary)}
+@media(max-width:640px){.phase-hero,.lesson-section{padding-left:20px;padding-right:20px}}
+
+/* =============================================
+   PHASE 9 — DISTRIBUTED COMPUTING
+   ============================================= */
+
+/* Phase hero override: red gradient */
+.phase-hero h1.phase9-title{background:linear-gradient(135deg,#fff 40%,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="light"] .phase-hero h1.phase9-title{background:linear-gradient(135deg,#111827 40%,#dc2626);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* CAP Explorer */
+.cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+@media(max-width:600px){.cap-grid{grid-template-columns:1fr}}
+.cap-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;transition:all .3s;text-align:center;position:relative;overflow:hidden}
+.cap-card:hover{border-color:var(--border-b);transform:translateY(-2px)}
+.cap-card.selected-ca{border-color:#4f8ef7;background:rgba(79,142,247,.08);box-shadow:0 0 24px rgba(79,142,247,.18)}
+.cap-card.selected-cp{border-color:#a78bfa;background:rgba(167,139,250,.08);box-shadow:0 0 24px rgba(167,139,250,.18)}
+.cap-card.selected-ap{border-color:#34d399;background:rgba(52,211,153,.08);box-shadow:0 0 24px rgba(52,211,153,.18)}
+.cap-db-name{font-size:1rem;font-weight:700;margin-bottom:4px}
+.cap-db-type{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.cap-badges{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.cap-badge{padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:700}
+.badge-c{background:rgba(79,142,247,.15);color:#4f8ef7;border:1px solid rgba(79,142,247,.3)}
+.badge-a{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3)}
+.badge-p{background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.3)}
+.badge-missing{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.3);text-decoration:line-through;opacity:.6}
+.cap-info{font-size:.78rem;color:var(--muted);line-height:1.5}
+.cap-partition-vis{background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;margin-top:12px;min-height:90px;transition:all .4s}
+.cap-nodes{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:8px;position:relative}
+.cap-node{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;border:2px solid var(--border);background:var(--surface);transition:all .3s}
+.cap-node.node-active{border-color:var(--accent);background:rgba(52,211,153,.1)}
+.cap-node.node-warn{border-color:var(--warning);background:rgba(251,191,36,.1)}
+.cap-node.node-err{border-color:var(--danger);background:rgba(248,113,113,.1)}
+.cap-wire{width:40px;height:2px;background:var(--border);transition:all .4s;position:relative}
+.cap-wire.wire-broken{background:transparent;border-top:2px dashed var(--danger)}
+.cap-wire.wire-ok{background:var(--accent)}
+.lightning{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);font-size:1.1rem;opacity:0;transition:opacity .4s}
+.lightning.visible{opacity:1}
+.cap-sacrifice{font-size:.78rem;padding:8px 12px;border-radius:var(--r-sm);margin-top:6px;text-align:center;min-height:36px;transition:all .3s}
+.sacrifice-ca{background:rgba(79,142,247,.1);color:#4f8ef7;border:1px solid rgba(79,142,247,.2)}
+.sacrifice-cp{background:rgba(167,139,250,.1);color:#a78bfa;border:1px solid rgba(167,139,250,.2)}
+.sacrifice-ap{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)}
+
+/* Spark DAG */
+.dag-wrap{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;overflow-x:auto}
+.dag-wrap svg{min-width:360px;width:100%}
+.dag-legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
+.dag-legend-item{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)}
+.dag-legend-dot{width:10px;height:10px;border-radius:50%}
+.dag-status{font-size:.8rem;color:var(--muted);margin-top:8px;min-height:24px;text-align:center}
+.partition-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;justify-content:center}
+.partition-block{width:28px;height:20px;border-radius:4px;border:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--muted);transition:all .4s;font-family:var(--mono)}
+.partition-block.p-active{background:rgba(79,142,247,.25);border-color:var(--primary);color:var(--primary)}
+.partition-block.p-done{background:rgba(52,211,153,.15);border-color:var(--accent);color:var(--accent)}
+.partition-block.p-shuffle{background:rgba(251,191,36,.15);border-color:var(--warning);color:var(--warning)}
+
+/* Kafka Explorer */
+.kafka-topic{margin-bottom:20px}
+.kafka-topic-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.kafka-partitions{display:flex;flex-direction:column;gap:8px}
+.kafka-partition{display:flex;align-items:center;gap:10px}
+.kafka-partition-label{font-size:.72rem;font-family:var(--mono);color:var(--muted);min-width:70px}
+.kafka-log{display:flex;gap:3px;flex:1;overflow-x:auto;padding:4px 0;min-height:36px;align-items:center}
+.kafka-msg{width:34px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.62rem;font-family:var(--mono);font-weight:700;flex-shrink:0;border:1px solid rgba(255,255,255,.08);transition:all .3s;animation:msgIn .3s ease}
+@keyframes msgIn{from{opacity:0;transform:scale(0.6)}to{opacity:1;transform:scale(1)}}
+.kafka-consumer-groups{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media(max-width:600px){.kafka-consumer-groups{grid-template-columns:1fr}}
+.kafka-cg{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px}
+.kafka-cg-title{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.kafka-consumer{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--card);border-radius:var(--r-sm);margin-bottom:6px;font-size:.75rem;border:1px solid var(--border)}
+.kafka-consumer-id{font-family:var(--mono);font-size:.7rem;color:var(--primary)}
+.kafka-assigned{display:flex;gap:4px;flex-wrap:wrap}
+.kafka-assigned-tag{padding:2px 6px;border-radius:8px;font-size:.65rem;font-weight:600}
+.kafka-offset-display{font-size:.72rem;color:var(--muted);margin-top:4px;font-family:var(--mono)}
+
+/* Window Visualiser */
+.window-svg-wrap{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;overflow-x:auto}
+.window-svg-wrap svg{min-width:380px;width:100%;height:140px}
+.window-legend{display:flex;gap:14px;margin-top:8px;flex-wrap:wrap}
+.window-desc{font-size:.82rem;color:var(--text);padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);min-height:44px;line-height:1.5;margin-top:10px}
+
+/* SLURM Builder */
+.slurm-form{display:flex;flex-direction:column;gap:14px;margin-bottom:16px}
+.slurm-row{display:flex;flex-direction:column;gap:4px}
+.slurm-row label{font-size:.72rem;font-weight:600;color:var(--muted);display:flex;justify-content:space-between}
+.slurm-row label span{color:var(--primary);font-family:var(--mono)}
+.slurm-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:var(--border);outline:none;cursor:pointer}
+.slurm-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--primary);cursor:pointer;transition:background .2s}
+.slurm-slider:hover::-webkit-slider-thumb{background:#6fa2ff}
+.slurm-script{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;font-family:var(--mono);font-size:.78rem;color:#cde;line-height:1.8;white-space:pre;overflow-x:auto;min-height:260px}
+.slurm-script .s-directive{color:#a78bfa}
+.slurm-script .s-value{color:#34d399}
+.slurm-script .s-comment{color:#4a6280}
+.slurm-script .s-cmd{color:#fbbf24}
+.slurm-queue{background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:var(--r-sm);padding:10px 14px;font-size:.8rem;color:var(--text);margin-top:10px}
+.slurm-queue-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:4px}
+.copy-btn{padding:6px 14px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+.copy-btn.copied{border-color:var(--accent);color:var(--accent);background:rgba(52,211,153,.08)}
+</style>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← Roadmap</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Phase 09 — Distributed Computing</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="lesson-tabs" id="lessonTabs">
+      <button class="lesson-tab active" onclick="goLesson(0)">1. Why Distributed</button>
+      <button class="lesson-tab" onclick="goLesson(1)">2. Spark</button>
+      <button class="lesson-tab" onclick="goLesson(2)">3. Kafka</button>
+      <button class="lesson-tab" onclick="goLesson(3)">4. Batch vs Stream</button>
+      <button class="lesson-tab" onclick="goLesson(4)">5. HPC &amp; SLURM</button>
+      <button class="lesson-tab" onclick="goLesson(5)">✦ Quiz</button>
+    </div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
+  </div>
+</nav>
+
+<!-- PHASE HERO -->
+<div class="phase-hero">
+  <div class="breadcrumb"><a href="index.html">Roadmap</a> › Phase 09</div>
+  <h1 class="phase9-title">Phase 09 — Distributed Computing</h1>
+  <p>Scale beyond a single machine. Master Spark, Kafka, batch &amp; streaming architectures, and HPC clusters with SLURM.</p>
+  <div class="phase-progress" id="phaseProgress">
+    <div class="pp-step active" onclick="goLesson(0)" id="pp0"><span class="pp-dot"></span>Why Distributed</div>
+    <div class="pp-step" onclick="goLesson(1)" id="pp1"><span class="pp-dot"></span>Spark</div>
+    <div class="pp-step" onclick="goLesson(2)" id="pp2"><span class="pp-dot"></span>Kafka</div>
+    <div class="pp-step" onclick="goLesson(3)" id="pp3"><span class="pp-dot"></span>Batch vs Stream</div>
+    <div class="pp-step" onclick="goLesson(4)" id="pp4"><span class="pp-dot"></span>HPC &amp; SLURM</div>
+    <div class="pp-step" onclick="goLesson(5)" id="pp5"><span class="pp-dot"></span>Quiz</div>
+  </div>
+</div>
+
+<!-- ===== LESSON 0: WHY DISTRIBUTED ===== -->
+<section class="lesson-section active" id="lesson0">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 01 of 05</div>
+    <div class="lesson-title">Why Distributed Computing?</div>
+    <div class="lesson-desc">Single machines hit hard limits. Distributed systems let you scale out — but introduce new trade-offs.</div>
+  </div>
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>Scale-Up vs Scale-Out</h3>
+      <p><strong>Scale-up</strong> (vertical): buy a bigger machine — more RAM, more cores, faster disk. Limits: even the biggest server has bounded RAM and CPU; cost grows super-linearly; single point of failure.</p>
+      <p><strong>Scale-out</strong> (horizontal): add more machines. Commodity hardware, fault-tolerant, theoretically unlimited. Trade-off: you now have a distributed system — and distributed systems are hard.</p>
+      <ul>
+        <li><strong>RAM limit</strong>: a 1 TB table can't fit in 256 GB RAM on one machine</li>
+        <li><strong>CPU limit</strong>: 96-core server still can't train a 70B parameter model in reasonable time</li>
+        <li><strong>I/O bottleneck</strong>: one disk ≈ 500 MB/s; 1000 disks = 500 GB/s</li>
+      </ul>
+      <h3>CAP Theorem</h3>
+      <p>In a distributed system you can guarantee at most <strong>2 of 3</strong> properties:</p>
+      <ul>
+        <li><strong>Consistency</strong>: every read gets the most recent write (or an error)</li>
+        <li><strong>Availability</strong>: every request receives a (non-error) response</li>
+        <li><strong>Partition Tolerance</strong>: system works even when network drops messages between nodes</li>
+      </ul>
+      <div class="callout"><p>Network partitions are <strong>inevitable</strong> in any real distributed system. You must choose between consistency and availability when a partition occurs.</p></div>
+      <h3>Latency Reality</h3>
+      <p>Each network hop adds <strong>0.5–5 ms</strong>. A query hitting 10 services could add 50 ms of pure network overhead. Minimise cross-rack traffic; prefer co-located data.</p>
+      <div class="concepts-box">
+        <h4>Key Terms</h4>
+        <div class="concept-item"><span class="concept-key">CA</span><span class="concept-val">PostgreSQL, MySQL — sacrifice partition tolerance (single-region)</span></div>
+        <div class="concept-item"><span class="concept-key">CP</span><span class="concept-val">HBase, Zookeeper — sacrifice availability during partitions</span></div>
+        <div class="concept-item"><span class="concept-key">AP</span><span class="concept-val">Cassandra, DynamoDB — sacrifice consistency (eventual consistency)</span></div>
+        <div class="concept-item"><span class="concept-key">Partition</span><span class="concept-val">Network failure causing nodes to lose communication</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">CAP Theorem Explorer <span>INTERACTIVE</span></div>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px">Click a database to simulate a network partition and see which guarantee it sacrifices.</p>
+        <div class="cap-grid">
+          <!-- PostgreSQL CA -->
+          <div class="cap-card" id="capCard0" onclick="selectCap(0)">
+            <div class="cap-db-name">PostgreSQL</div>
+            <div class="cap-db-type" style="color:#4f8ef7">CA Database</div>
+            <div class="cap-badges">
+              <span class="cap-badge badge-c">C</span>
+              <span class="cap-badge badge-a">A</span>
+              <span class="cap-badge badge-missing">P</span>
+            </div>
+            <div class="cap-info">Relational DB. Strong consistency &amp; high availability within a single region.</div>
+          </div>
+          <!-- HBase CP -->
+          <div class="cap-card" id="capCard1" onclick="selectCap(1)">
+            <div class="cap-db-name">HBase</div>
+            <div class="cap-db-type" style="color:#a78bfa">CP Database</div>
+            <div class="cap-badges">
+              <span class="cap-badge badge-c">C</span>
+              <span class="cap-badge badge-missing">A</span>
+              <span class="cap-badge badge-p">P</span>
+            </div>
+            <div class="cap-info">Hadoop-backed. Consistent reads/writes; returns errors during partitions rather than stale data.</div>
+          </div>
+          <!-- Cassandra AP -->
+          <div class="cap-card" id="capCard2" onclick="selectCap(2)">
+            <div class="cap-db-name">Cassandra</div>
+            <div class="cap-db-type" style="color:#34d399">AP Database</div>
+            <div class="cap-badges">
+              <span class="cap-badge badge-missing">C</span>
+              <span class="cap-badge badge-a">A</span>
+              <span class="cap-badge badge-p">P</span>
+            </div>
+            <div class="cap-info">Wide-column store. Always available; uses eventual consistency — reads may return stale data.</div>
+          </div>
+        </div>
+        <div class="cap-partition-vis" id="capVis">
+          <div style="text-align:center;color:var(--dim);font-size:.8rem;padding:8px 0">Select a database above to simulate a partition event</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="lesson-nav">
+    <span></span>
+    <button class="big-btn primary" onclick="goLesson(1)">Next: Apache Spark →</button>
+  </div>
+</section>
+
+<!-- ===== LESSON 1: SPARK ===== -->
+<section class="lesson-section" id="lesson1">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 02 of 05</div>
+    <div class="lesson-title">Apache Spark</div>
+    <div class="lesson-desc">Distributed in-memory computation. Lazy transformations, DAG execution, and the magic of partitioning.</div>
+  </div>
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>What is Spark?</h3>
+      <p>Spark is a <strong>distributed in-memory computation engine</strong>. Data is split across many machines; Spark coordinates parallel processing across all of them, keeping intermediate results in RAM for speed.</p>
+      <h3>RDDs → DataFrames</h3>
+      <ul>
+        <li><strong>RDD</strong>: low-level API; a distributed collection of objects. Fault-tolerant via lineage.</li>
+        <li><strong>DataFrame</strong>: tabular, schema-aware, optimised by Catalyst query optimiser — use these in practice.</li>
+        <li><strong>Dataset</strong>: type-safe DataFrames (Scala/Java only).</li>
+      </ul>
+      <h3>Lazy Evaluation</h3>
+      <p><strong>Transformations</strong> (<code>map</code>, <code>filter</code>, <code>join</code>, <code>groupBy</code>) are <strong>lazy</strong> — they build a query plan but execute nothing. Only an <strong>action</strong> triggers execution:</p>
+      <ul>
+        <li><code>.count()</code>, <code>.collect()</code>, <code>.show()</code></li>
+        <li><code>.write.parquet(...)</code></li>
+        <li><code>.first()</code>, <code>.take(n)</code></li>
+      </ul>
+      <div class="callout"><p>Catalyst optimiser can reorder and prune operations across the lazy plan before execution — predicate pushdown, column pruning, etc.</p></div>
+      <h3>Partitioning &amp; Shuffle</h3>
+      <p>Data is split into <strong>N partitions</strong>, each processed in parallel on a different executor. The expensive operation is the <strong>shuffle</strong>: data moves between executors for <code>join</code> or <code>groupBy</code>, requiring network I/O.</p>
+      <div class="concepts-box">
+        <h4>Key Terms</h4>
+        <div class="concept-item"><span class="concept-key">Executor</span><span class="concept-val">JVM process on a worker node that runs tasks</span></div>
+        <div class="concept-item"><span class="concept-key">Stage</span><span class="concept-val">Group of tasks that can run without a shuffle boundary</span></div>
+        <div class="concept-item"><span class="concept-key">Shuffle</span><span class="concept-val">All-to-all data exchange — triggers a new stage</span></div>
+        <div class="concept-item"><span class="concept-key">Catalyst</span><span class="concept-val">Spark's query optimiser for DataFrames</span></div>
+        <div class="concept-item"><span class="concept-key">Lineage</span><span class="concept-val">DAG of transformations used to rebuild lost partitions</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Spark DAG Visualiser <span>INTERACTIVE</span></div>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px">Visualise how Spark plans and executes a job across stages and partitions.</p>
+        <div class="dag-wrap">
+          <svg id="dagSvg" viewBox="0 0 500 220" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="dag-legend">
+          <div class="dag-legend-item"><div class="dag-legend-dot" style="background:#4f8ef7"></div>Stage 1</div>
+          <div class="dag-legend-item"><div class="dag-legend-dot" style="background:#a78bfa"></div>Stage 2</div>
+          <div class="dag-legend-item"><div class="dag-legend-dot" style="background:#fbbf24"></div>Shuffle</div>
+          <div class="dag-legend-item"><div class="dag-legend-dot" style="background:#34d399"></div>Complete</div>
+        </div>
+        <div class="dag-status" id="dagStatus">8 partitions · Click Execute to run the job</div>
+        <div class="partition-row" id="partitionRow"></div>
+        <div class="btn-group" style="margin-top:16px;margin-bottom:0">
+          <button class="btn primary" id="dagExecBtn" onclick="runDagAnimation()">▶ Execute</button>
+          <button class="btn" onclick="resetDag()">↺ Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(0)">← Why Distributed</button>
+    <button class="big-btn primary" onclick="goLesson(2)">Next: Kafka →</button>
+  </div>
+</section>
+
+<!-- ===== LESSON 2: KAFKA ===== -->
+<section class="lesson-section" id="lesson2">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 03 of 05</div>
+    <div class="lesson-title">Apache Kafka</div>
+    <div class="lesson-desc">Distributed message log for event streaming, service decoupling, and real-time data pipelines.</div>
+  </div>
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>Kafka Fundamentals</h3>
+      <p>Kafka is a <strong>distributed commit log</strong>. Messages are appended to an ordered, immutable log — never overwritten, retained for days or weeks.</p>
+      <ul>
+        <li><strong>Topic</strong>: named stream of records (like a database table)</li>
+        <li><strong>Partition</strong>: a topic is split into N partitions — each an ordered log on a different broker</li>
+        <li><strong>Offset</strong>: position of a message in a partition (monotonically increasing)</li>
+        <li><strong>Producer</strong>: writes messages; chooses partition via key hash or round-robin</li>
+        <li><strong>Consumer</strong>: reads from a specific offset; tracks its own position</li>
+      </ul>
+      <h3>Consumer Groups</h3>
+      <p>Multiple consumers can form a <strong>consumer group</strong>. Kafka assigns each partition to <strong>exactly one consumer</strong> in the group — preventing duplicate reads. More consumers than partitions = idle consumers.</p>
+      <h3>Key Properties</h3>
+      <ul>
+        <li><strong>Retention</strong>: messages kept for N days regardless of consumption</li>
+        <li><strong>At-least-once</strong>: default; consumer may re-read on failure</li>
+        <li><strong>Exactly-once</strong>: via transactions — higher overhead</li>
+        <li><strong>CDC</strong>: Change Data Capture — stream DB changes via Kafka Connect</li>
+      </ul>
+      <div class="callout"><p>Partition rebalancing occurs when consumers join/leave the group. Briefly pauses consumption — design for it.</p></div>
+      <div class="concepts-box">
+        <h4>Use Cases</h4>
+        <div class="concept-item"><span class="concept-key">Event streaming</span><span class="concept-val">Clickstreams, IoT sensor data, user activity</span></div>
+        <div class="concept-item"><span class="concept-key">Decoupling</span><span class="concept-val">Producer doesn't need to know about consumers</span></div>
+        <div class="concept-item"><span class="concept-key">CDC</span><span class="concept-val">Replicate DB changes to data warehouse in real time</span></div>
+        <div class="concept-item"><span class="concept-key">Real-time analytics</span><span class="concept-val">Feed Flink/Spark Streaming for live dashboards</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Kafka Topic Explorer <span>INTERACTIVE</span></div>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px">Topic: <strong style="color:var(--primary)">user-events</strong> — 3 partitions. Produce messages and watch them land.</p>
+        <div class="kafka-topic">
+          <div class="kafka-topic-label">Topic Partitions</div>
+          <div class="kafka-partitions" id="kafkaPartitions">
+            <div class="kafka-partition">
+              <div class="kafka-partition-label">Partition 0</div>
+              <div class="kafka-log" id="kafkaLog0"></div>
+              <div class="kafka-offset-display" id="offset0">offset: 0</div>
+            </div>
+            <div class="kafka-partition">
+              <div class="kafka-partition-label">Partition 1</div>
+              <div class="kafka-log" id="kafkaLog1"></div>
+              <div class="kafka-offset-display" id="offset1">offset: 0</div>
+            </div>
+            <div class="kafka-partition">
+              <div class="kafka-partition-label">Partition 2</div>
+              <div class="kafka-log" id="kafkaLog2"></div>
+              <div class="kafka-offset-display" id="offset2">offset: 0</div>
+            </div>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn primary" onclick="produceKafkaMessage()">+ Produce Message</button>
+          <button class="btn" onclick="resetKafka()">↺ Reset</button>
+        </div>
+        <div class="kafka-consumer-groups">
+          <div class="kafka-cg">
+            <div class="kafka-cg-title">Group: analytics</div>
+            <div class="kafka-consumer">
+              <div>
+                <div class="kafka-consumer-id">consumer-0</div>
+                <div class="kafka-assigned">
+                  <span class="kafka-assigned-tag" style="background:rgba(79,142,247,.15);color:#4f8ef7;border:1px solid rgba(79,142,247,.3)">P0</span>
+                  <span class="kafka-assigned-tag" style="background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.3)">P1</span>
+                  <span class="kafka-assigned-tag" style="background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3)">P2</span>
+                </div>
+                <div style="font-size:.68rem;color:var(--muted);margin-top:4px">reads all 3 partitions</div>
+              </div>
+            </div>
+          </div>
+          <div class="kafka-cg">
+            <div class="kafka-cg-title">Group: notifications</div>
+            <div class="kafka-consumer">
+              <div class="kafka-consumer-id">consumer-0</div>
+              <div class="kafka-assigned"><span class="kafka-assigned-tag" style="background:rgba(79,142,247,.15);color:#4f8ef7;border:1px solid rgba(79,142,247,.3)">P0</span></div>
+            </div>
+            <div class="kafka-consumer">
+              <div class="kafka-consumer-id">consumer-1</div>
+              <div class="kafka-assigned"><span class="kafka-assigned-tag" style="background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.3)">P1</span></div>
+            </div>
+            <div class="kafka-consumer">
+              <div class="kafka-consumer-id">consumer-2</div>
+              <div class="kafka-assigned"><span class="kafka-assigned-tag" style="background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3)">P2</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(1)">← Spark</button>
+    <button class="big-btn primary" onclick="goLesson(3)">Next: Batch vs Stream →</button>
+  </div>
+</section>
+
+<!-- ===== LESSON 3: BATCH VS STREAMING ===== -->
+<section class="lesson-section" id="lesson3">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 04 of 05</div>
+    <div class="lesson-title">Batch vs Streaming</div>
+    <div class="lesson-desc">Choose the right processing paradigm. Understand windowing strategies for time-series event streams.</div>
+  </div>
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>Batch Processing</h3>
+      <p>Accumulate data, then process it at intervals (hourly, daily). <strong>Simpler</strong> — standard SQL/Spark jobs. Higher latency: results may be hours old. Best for reporting, training ML models, large aggregations.</p>
+      <h3>Stream Processing</h3>
+      <p>Process each event as it arrives — latency in milliseconds. Complex: stateful operations, out-of-order events, exactly-once semantics. Use <strong>Apache Flink</strong> (true streaming) or <strong>Spark Structured Streaming</strong> (micro-batch).</p>
+      <h3>Architectures</h3>
+      <ul>
+        <li><strong>Lambda</strong>: batch layer (accurate, slow) + speed layer (fast, approximate) + serving layer</li>
+        <li><strong>Kappa</strong>: streaming only — reprocess by replaying Kafka topic</li>
+      </ul>
+      <h3>Windowing</h3>
+      <p>Group events into finite buckets for aggregation. Three main types:</p>
+      <ul>
+        <li><strong>Tumbling</strong>: fixed, non-overlapping windows — every event in exactly one window</li>
+        <li><strong>Sliding</strong>: fixed size but moves by slide interval — events can be in multiple windows</li>
+        <li><strong>Session</strong>: variable-length windows defined by gaps in activity</li>
+      </ul>
+      <div class="callout"><p><strong>Watermarks</strong> define how long to wait for late-arriving events before closing a window. Late data after the watermark is dropped or handled via side outputs.</p></div>
+      <div class="concepts-box">
+        <h4>Comparison</h4>
+        <div class="concept-item"><span class="concept-key">Latency</span><span class="concept-val">Batch: minutes–hours · Streaming: milliseconds</span></div>
+        <div class="concept-item"><span class="concept-key">Complexity</span><span class="concept-val">Batch: low · Streaming: high (state, watermarks)</span></div>
+        <div class="concept-item"><span class="concept-key">Use Flink</span><span class="concept-val">True streaming, complex stateful operators</span></div>
+        <div class="concept-item"><span class="concept-key">Use Spark SS</span><span class="concept-val">Micro-batch, existing Spark ecosystem</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Window Type Visualiser <span>INTERACTIVE</span></div>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px">Toggle between window types to see how events are grouped on a timeline.</p>
+        <div class="btn-group">
+          <button class="btn active" id="winBtn0" onclick="setWindowType('tumbling')">Tumbling</button>
+          <button class="btn" id="winBtn1" onclick="setWindowType('sliding')">Sliding</button>
+          <button class="btn" id="winBtn2" onclick="setWindowType('session')">Session</button>
+        </div>
+        <div class="window-svg-wrap">
+          <svg id="windowSvg" viewBox="0 0 500 130" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div class="window-desc" id="windowDesc">
+          <strong>Tumbling window (5s)</strong> — Fixed, non-overlapping. Each event belongs to exactly one window. Simple and efficient.
+        </div>
+        <div class="window-legend">
+          <div class="dag-legend-item"><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#4f8ef7"/></svg> Event</div>
+          <div class="dag-legend-item"><svg width="14" height="14"><rect x="1" y="3" width="12" height="8" rx="2" fill="none" stroke="#a78bfa" stroke-width="1.5"/></svg> Window</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(2)">← Kafka</button>
+    <button class="big-btn primary" onclick="goLesson(4)">Next: HPC &amp; SLURM →</button>
+  </div>
+</section>
+
+<!-- ===== LESSON 4: HPC & SLURM ===== -->
+<section class="lesson-section" id="lesson4">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 05 of 05</div>
+    <div class="lesson-title">HPC &amp; SLURM</div>
+    <div class="lesson-desc">Run large ML training and scientific jobs on supercomputing clusters managed by the SLURM scheduler.</div>
+  </div>
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>HPC Clusters</h3>
+      <p>HPC (High-Performance Computing) clusters are tightly interconnected machines, often with high-bandwidth networking (InfiniBand), shared storage (Lustre/GPFS), and many GPUs per node. Used for ML training, molecular dynamics, CFD simulations.</p>
+      <h3>SLURM Basics</h3>
+      <p>SLURM queues and allocates jobs across nodes. You <strong>never run jobs on the login node</strong> — submit with <code>sbatch</code>, monitor with <code>squeue</code>, cancel with <code>scancel</code>.</p>
+      <ul>
+        <li><code>sbatch job.sh</code> — submit a batch job script</li>
+        <li><code>squeue -u $USER</code> — view your jobs</li>
+        <li><code>sinfo</code> — view cluster partition status</li>
+        <li><code>scancel &lt;jobid&gt;</code> — cancel a job</li>
+        <li><code>srun --pty bash</code> — interactive session</li>
+      </ul>
+      <h3>Job Arrays &amp; MPI</h3>
+      <p><strong>Job arrays</strong> (<code>--array=1-100</code>) run many near-identical jobs with one submission — great for hyperparameter sweeps. <strong>MPI</strong> (Message Passing Interface) enables multi-node communication for tightly-coupled parallel workloads.</p>
+      <h3>HPC vs Cloud</h3>
+      <ul>
+        <li><strong>HPC</strong>: predictable cost, pre-allocated, fast interconnect, fixed config</li>
+        <li><strong>Cloud</strong>: elastic, pay-per-use, slow spin-up, flexible GPU types</li>
+      </ul>
+      <div class="concepts-box">
+        <h4>Common Directives</h4>
+        <div class="concept-item"><span class="concept-key">--nodes</span><span class="concept-val">Number of physical machines</span></div>
+        <div class="concept-item"><span class="concept-key">--ntasks-per-node</span><span class="concept-val">MPI ranks / processes per node</span></div>
+        <div class="concept-item"><span class="concept-key">--gpus-per-node</span><span class="concept-val">GPU count per node</span></div>
+        <div class="concept-item"><span class="concept-key">--mem</span><span class="concept-val">RAM per node (e.g. 64G)</span></div>
+        <div class="concept-item"><span class="concept-key">--time</span><span class="concept-val">Wallclock limit DD-HH:MM:SS</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">SLURM Job Submitter <span>INTERACTIVE</span></div>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px">Adjust sliders to generate a ready-to-submit <code>sbatch</code> script.</p>
+        <div class="slurm-form">
+          <div class="slurm-row">
+            <label>Nodes <span id="slurmNodesVal">2</span></label>
+            <input type="range" class="slurm-slider" id="slurmNodes" min="1" max="8" value="2" oninput="updateSlurm()">
+          </div>
+          <div class="slurm-row">
+            <label>GPUs per Node <span id="slurmGpusVal">4</span></label>
+            <input type="range" class="slurm-slider" id="slurmGpus" min="0" max="8" value="4" oninput="updateSlurm()">
+          </div>
+          <div class="slurm-row">
+            <label>Tasks per Node (MPI ranks) <span id="slurmTasksVal">8</span></label>
+            <input type="range" class="slurm-slider" id="slurmTasks" min="1" max="32" value="8" oninput="updateSlurm()">
+          </div>
+          <div class="slurm-row">
+            <label>Memory per Node (GB) <span id="slurmMemVal">64</span></label>
+            <input type="range" class="slurm-slider" id="slurmMem" min="16" max="512" step="16" value="64" oninput="updateSlurm()">
+          </div>
+          <div class="slurm-row">
+            <label>Walltime (hours) <span id="slurmTimeVal">12</span></label>
+            <input type="range" class="slurm-slider" id="slurmTime" min="1" max="24" value="12" oninput="updateSlurm()">
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:.7rem;color:var(--dim);font-weight:700;letter-spacing:.08em;text-transform:uppercase">Generated Script</span>
+          <button class="copy-btn" id="copyBtn" onclick="copySlurmScript()">Copy</button>
+        </div>
+        <div class="slurm-script" id="slurmScript"></div>
+        <div class="slurm-queue" id="slurmQueue">
+          <div class="slurm-queue-label">Estimated Queue Wait</div>
+          <div id="slurmQueueTime" style="font-size:.85rem;color:var(--text)">~5 minutes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(3)">← Batch vs Stream</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
+  </div>
+</section>
+
+<!-- ===== QUIZ ===== -->
+<section class="lesson-section" id="lesson5">
+  <div class="lesson-header">
+    <div class="lesson-num">Quiz</div>
+    <div class="lesson-title">Phase 09 Quiz</div>
+    <div class="lesson-desc">Test your understanding of distributed computing concepts.</div>
+  </div>
+  <div class="quiz-wrap">
+    <div class="quiz-progress-bar">
+      <div class="quiz-progress-fill" id="quizProgressFill" style="width:0%"></div>
+    </div>
+    <div id="quizQuestions"></div>
+    <div class="quiz-score" id="quizScore">
+      <div class="score-num" id="scoreNum">0/4</div>
+      <div class="score-msg" id="scoreMsg"></div>
+      <button class="big-btn primary" onclick="resetQuiz()" style="margin-right:12px">Retry Quiz</button>
+      <button class="big-btn ghost" onclick="goLesson(0)">Review Lessons</button>
+      <div id="quizDoneMsg" style="margin-top:20px;display:none">
+        <a href="index.html" class="nav-back" style="font-size:.9rem;color:var(--accent)">← Back to Roadmap</a>
+      </div>
+    </div>
+    <div class="lesson-nav" style="margin-top:20px">
+      <button class="big-btn ghost" onclick="goLesson(4)">← HPC &amp; SLURM</button>
+      <button class="big-btn accent" onclick="markPhase9Done()">Mark Phase Complete ✓</button>
+    </div>
+  </div>
+</section>
+
+<script>
+// ─── Theme ───────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const html=document.documentElement;
+  const isLight=html.getAttribute('data-theme')==='light';
+  if(isLight){html.removeAttribute('data-theme');localStorage.removeItem('theme');document.getElementById('themeToggle').textContent='☀ Light';}
+  else{html.setAttribute('data-theme','light');localStorage.setItem('theme','light');document.getElementById('themeToggle').textContent='☾ Dark';}
+}
+(function(){const t=localStorage.getItem('theme');document.getElementById('themeToggle').textContent=t==='light'?'☾ Dark':'☀ Light';})();
+
+// ─── Lesson Navigation ───────────────────────────────────────────────────────
+function goLesson(n){
+  localStorage.setItem('phase9lesson',n);
+  document.querySelectorAll('.lesson-section').forEach((s,i)=>s.classList.toggle('active',i===n));
+  document.querySelectorAll('.lesson-tab').forEach((t,i)=>t.classList.toggle('active',i===n));
+  document.querySelectorAll('.pp-step').forEach((p,i)=>{
+    p.classList.remove('active','done');
+    if(i===n) p.classList.add('active');
+    else if(i<n) p.classList.add('done');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===1) initDag();
+  if(n===3) drawWindows('tumbling');
+  if(n===4) updateSlurm();
+}
+
+// ─── Mark Phase Done ─────────────────────────────────────────────────────────
+function markPhase9Done(){
+  localStorage.setItem('phase9done','1');
+  alert('Phase 09 marked complete! Great work.');
+}
+
+// ─── CAP Explorer ─────────────────────────────────────────────────────────────
+const capData=[
+  {
+    cls:'selected-ca',
+    nodes:['N1','N2','N3'],
+    wires:[true,true],
+    sacrifice:'Sacrifices Partition Tolerance — works only within a single region; cross-region partitions = downtime.',
+    scarCls:'sacrifice-ca',
+    lightningVisible:false,
+    description:'PostgreSQL stays consistent and available but cannot handle network partitions between data centres.'
+  },
+  {
+    cls:'selected-cp',
+    nodes:['N1','N2','N3'],
+    wires:[false,true],
+    sacrifice:'Sacrifices Availability — returns an error during partition rather than serving potentially stale data.',
+    scarCls:'sacrifice-cp',
+    lightningVisible:true,
+    description:'HBase chooses correctness: if it cannot guarantee a consistent read, it refuses to answer.'
+  },
+  {
+    cls:'selected-ap',
+    nodes:['N1','N2','N3'],
+    wires:[false,true],
+    sacrifice:'Sacrifices Consistency — nodes may return stale data during a partition (eventual consistency).',
+    scarCls:'sacrifice-ap',
+    lightningVisible:true,
+    description:'Cassandra stays available across partitions but may serve outdated values until nodes reconcile.'
+  }
+];
+
+function selectCap(idx){
+  ['capCard0','capCard1','capCard2'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.classList.remove('selected-ca','selected-cp','selected-ap');
+    if(i===idx) el.classList.add(capData[idx].cls);
+  });
+  renderCapVis(idx);
+}
+
+function renderCapVis(idx){
+  const d=capData[idx];
+  const vis=document.getElementById('capVis');
+  vis.innerHTML=`
+    <div class="cap-nodes">
+      <div class="cap-node node-active">${d.nodes[0]}</div>
+      <div class="cap-wire ${d.wires[0]?'wire-ok':'wire-broken'}" style="position:relative">
+        <span class="lightning ${d.lightningVisible?'visible':''}">⚡</span>
+      </div>
+      <div class="cap-node ${d.wires[0]?'node-active':'node-err'}">${d.nodes[1]}</div>
+      <div class="cap-wire wire-ok"></div>
+      <div class="cap-node node-active">${d.nodes[2]}</div>
+    </div>
+    <div class="cap-sacrifice ${d.scarCls}">${d.sacrifice}</div>
+    <div style="font-size:.75rem;color:var(--muted);margin-top:8px">${d.description}</div>
+  `;
+}
+
+// ─── Spark DAG ────────────────────────────────────────────────────────────────
+let dagAnimating=false;
+const dagNodes=[
+  {id:'read',   label:'Read CSV',   x:60,  y:110, stage:1, color:'#4f8ef7'},
+  {id:'filter', label:'Filter',     x:170, y:110, stage:1, color:'#4f8ef7'},
+  {id:'group',  label:'groupBy',    x:290, y:110, stage:2, color:'#a78bfa'},
+  {id:'count',  label:'count()',    x:390, y:110, stage:2, color:'#a78bfa'},
+  {id:'write',  label:'Write',      x:470, y:110, stage:2, color:'#a78bfa'},
+];
+const dagEdges=[
+  {from:'read',from_x:60,to:'filter',to_x:170,shuffle:false},
+  {from:'filter',from_x:170,to:'group',to_x:290,shuffle:true},
+  {from:'group',from_x:290,to:'count',to_x:390,shuffle:false},
+  {from:'count',from_x:390,to:'write',to_x:470,shuffle:false},
+];
+
+function initDag(){
+  const svg=document.getElementById('dagSvg');
+  svg.innerHTML='';
+  // Stage backgrounds
+  const stageRect1=rect(20,60,215,100,'rgba(79,142,247,.06)','#1e2d47',6);
+  const stageRect2=rect(245,60,245,100,'rgba(167,139,250,.06)','#1e2d47',6);
+  svg.appendChild(stageRect1);
+  svg.appendChild(stageRect2);
+  // Stage labels
+  svg.appendChild(svgText(127,72,'Stage 1 — no shuffle','#4f8ef7',.58));
+  svg.appendChild(svgText(367,72,'Stage 2 — after shuffle','#a78bfa',.58));
+  // Edges
+  dagEdges.forEach(e=>{
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',e.from_x+30);line.setAttribute('y1',110);
+    line.setAttribute('x2',e.to_x-30);line.setAttribute('y2',110);
+    line.setAttribute('stroke',e.shuffle?'#fbbf24':'#2d4470');
+    line.setAttribute('stroke-width',e.shuffle?2.5:1.5);
+    line.setAttribute('stroke-dasharray',e.shuffle?'6,3':'none');
+    line.setAttribute('marker-end','url(#arr)');
+    svg.appendChild(line);
+    if(e.shuffle){
+      const lbl=svgText((e.from_x+e.to_x)/2,98,'SHUFFLE','#fbbf24',.55);
+      lbl.setAttribute('text-anchor','middle');
+      svg.appendChild(lbl);
+    }
+  });
+  // Arrow marker
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML=`<marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#2d4470"/></marker>`;
+  svg.insertBefore(defs,svg.firstChild);
+  // Nodes
+  dagNodes.forEach(n=>{
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('id','dagNode_'+n.id);
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',n.x);c.setAttribute('cy',n.y);c.setAttribute('r',26);
+    c.setAttribute('fill','rgba(14,22,40,1)');c.setAttribute('stroke',n.color);c.setAttribute('stroke-width',2);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',n.x);t.setAttribute('y',n.y-4);
+    t.setAttribute('text-anchor','middle');t.setAttribute('fill',n.color);
+    t.setAttribute('font-size','8.5');t.setAttribute('font-family','JetBrains Mono, monospace');t.setAttribute('font-weight','600');
+    t.textContent=n.label;
+    g.appendChild(c);g.appendChild(t);
+    svg.appendChild(g);
+  });
+  // Partitions
+  const pRow=document.getElementById('partitionRow');
+  pRow.innerHTML='';
+  for(let i=0;i<8;i++){
+    const b=document.createElement('div');
+    b.className='partition-block';b.id='part'+i;b.textContent='P'+i;
+    pRow.appendChild(b);
+  }
+  document.getElementById('dagStatus').textContent='8 partitions · Click Execute to run the job';
+  document.getElementById('dagExecBtn').disabled=false;
+  dagAnimating=false;
+}
+
+function rect(x,y,w,h,fill,stroke,rx){
+  const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  r.setAttribute('x',x);r.setAttribute('y',y);r.setAttribute('width',w);r.setAttribute('height',h);
+  r.setAttribute('fill',fill);r.setAttribute('stroke',stroke);r.setAttribute('stroke-width','1');
+  r.setAttribute('rx',rx);return r;
+}
+function svgText(x,y,txt,fill,size){
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('x',x);t.setAttribute('y',y);t.setAttribute('fill',fill);
+  t.setAttribute('font-size',size*16);t.setAttribute('font-family','Inter,sans-serif');
+  t.textContent=txt;return t;
+}
+
+async function runDagAnimation(){
+  if(dagAnimating)return;
+  dagAnimating=true;
+  document.getElementById('dagExecBtn').disabled=true;
+  const steps=[
+    {msg:'Stage 1: Reading CSV (8 partitions)…',nodes:['read'],parts:[0,1,2,3,4,5,6,7],partClass:'p-active'},
+    {msg:'Stage 1: Applying filter transformation…',nodes:['read','filter'],parts:[0,1,2,3,4,5,6,7],partClass:'p-active'},
+    {msg:'⚡ Shuffle: data moving between executors for groupBy…',nodes:['group'],parts:[0,1,2,3,4,5,6,7],partClass:'p-shuffle'},
+    {msg:'Stage 2: Counting per group…',nodes:['group','count'],parts:[0,1,2,3,4,5,6,7],partClass:'p-active'},
+    {msg:'Stage 2: Writing output…',nodes:['count','write'],parts:[0,1,2,3,4,5,6,7],partClass:'p-done'},
+    {msg:'✓ Job complete — all 8 partitions written.',nodes:['read','filter','group','count','write'],parts:[0,1,2,3,4,5,6,7],partClass:'p-done'},
+  ];
+  for(const step of steps){
+    document.getElementById('dagStatus').textContent=step.msg;
+    dagNodes.forEach(n=>{
+      const g=document.getElementById('dagNode_'+n.id);
+      const c=g.querySelector('circle');
+      if(step.nodes.includes(n.id)){
+        c.setAttribute('fill',step.partClass==='p-shuffle'?'rgba(251,191,36,.2)':step.partClass==='p-done'?'rgba(52,211,153,.15)':'rgba(79,142,247,.15)');
+        c.setAttribute('stroke',step.partClass==='p-shuffle'?'#fbbf24':step.partClass==='p-done'?'#34d399':n.color);
+      }
+    });
+    for(let i=0;i<8;i++){
+      const b=document.getElementById('part'+i);
+      if(b){b.className='partition-block '+step.partClass;}
+    }
+    await sleep(900);
+  }
+  dagAnimating=false;
+  document.getElementById('dagExecBtn').disabled=false;
+}
+
+function resetDag(){dagAnimating=false;initDag();}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ─── Kafka Explorer ────────────────────────────────────────────────────────────
+const msgColors=[
+  '#4f8ef7','#a78bfa','#34d399','#fbbf24','#f87171','#fb923c','#38bdf8','#f472b6'
+];
+const offsets=[0,0,0];
+let msgCount=0;
+function produceKafkaMessage(){
+  const p=msgCount%3;
+  const offset=offsets[p];
+  const color=msgColors[msgCount%msgColors.length];
+  const log=document.getElementById('kafkaLog'+p);
+  const msg=document.createElement('div');
+  msg.className='kafka-msg';
+  msg.style.background=color.replace('#','rgba(').replace(/(.*)/,'$1, .2)').replace('rgba(','rgba(').replace(', .2)',', .18)');
+  msg.style.background=hexToRgba(color,0.18);
+  msg.style.border='1px solid '+hexToRgba(color,0.45);
+  msg.style.color=color;
+  msg.textContent='#'+offset;
+  log.appendChild(msg);
+  log.scrollLeft=log.scrollWidth;
+  offsets[p]++;
+  document.getElementById('offset'+p).textContent='offset: '+offsets[p];
+  msgCount++;
+}
+function hexToRgba(hex,a){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function resetKafka(){
+  for(let i=0;i<3;i++){
+    document.getElementById('kafkaLog'+i).innerHTML='';
+    document.getElementById('offset'+i).textContent='offset: 0';
+    offsets[i]=0;
+  }
+  msgCount=0;
+}
+
+// ─── Window Visualiser ─────────────────────────────────────────────────────────
+const eventTimes=[0.5,1.2,1.8,2.6,3.3,4.1,4.8,6.0,7.2,8.0,8.6,9.5,11.0,12.3,13.5,14.2];
+let currentWindowType='tumbling';
+
+function setWindowType(type){
+  currentWindowType=type;
+  ['winBtn0','winBtn1','winBtn2'].forEach((id,i)=>document.getElementById(id).classList.remove('active'));
+  const map={tumbling:0,sliding:1,session:2};
+  document.getElementById('winBtn'+map[type]).classList.add('active');
+  drawWindows(type);
+}
+
+function drawWindows(type){
+  const svg=document.getElementById('windowSvg');
+  svg.innerHTML='';
+  const W=500,H=130,padL=20,padR=20,tMin=0,tMax=15;
+  const toX=t=>padL+(t-tMin)/(tMax-tMin)*(W-padL-padR);
+  const eY=85, wY=50, wH=30;
+
+  // Timeline
+  const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+  line.setAttribute('x1',padL);line.setAttribute('y1',eY);line.setAttribute('x2',W-padR);line.setAttribute('y2',eY);
+  line.setAttribute('stroke','#2d4470');line.setAttribute('stroke-width','1.5');
+  svg.appendChild(line);
+
+  // Time ticks
+  for(let t=0;t<=15;t+=5){
+    const x=toX(t);
+    const tick=document.createElementNS('http://www.w3.org/2000/svg','line');
+    tick.setAttribute('x1',x);tick.setAttribute('y1',eY-4);tick.setAttribute('x2',x);tick.setAttribute('y2',eY+4);
+    tick.setAttribute('stroke','#3d5070');tick.setAttribute('stroke-width','1');
+    svg.appendChild(tick);
+    const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('x',x);lbl.setAttribute('y',eY+16);lbl.setAttribute('text-anchor','middle');
+    lbl.setAttribute('fill','#3d5070');lbl.setAttribute('font-size','9');lbl.setAttribute('font-family','JetBrains Mono,monospace');
+    lbl.textContent=t+'s';
+    svg.appendChild(lbl);
+  }
+
+  // Window rectangles
+  let windows=[];
+  if(type==='tumbling'){
+    for(let s=0;s<15;s+=5) windows.push({start:s,end:s+5});
+  } else if(type==='sliding'){
+    for(let s=0;s<=10;s+=2) windows.push({start:s,end:s+5});
+  } else {
+    // Session: gap > 2s creates new session
+    let sessionStart=eventTimes[0],lastTime=eventTimes[0];
+    for(let i=1;i<eventTimes.length;i++){
+      if(eventTimes[i]-lastTime>2){
+        windows.push({start:sessionStart-0.2,end:lastTime+0.2});
+        sessionStart=eventTimes[i];
+      }
+      lastTime=eventTimes[i];
+    }
+    windows.push({start:sessionStart-0.2,end:lastTime+0.2});
+  }
+
+  const wColors=['#a78bfa','#4f8ef7','#34d399','#fbbf24','#f87171','#fb923c'];
+  windows.forEach((w,i)=>{
+    const x1=toX(w.start),x2=toX(w.end);
+    const wr=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    wr.setAttribute('x',x1);wr.setAttribute('y',wY);
+    wr.setAttribute('width',Math.max(x2-x1,4));wr.setAttribute('height',wH);
+    wr.setAttribute('rx','4');
+    wr.setAttribute('fill',hexToRgba(wColors[i%wColors.length],0.12));
+    wr.setAttribute('stroke',wColors[i%wColors.length]);
+    wr.setAttribute('stroke-width','1.5');
+    svg.appendChild(wr);
+    const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('x',(x1+x2)/2);lbl.setAttribute('y',wY+wH/2+4);
+    lbl.setAttribute('text-anchor','middle');lbl.setAttribute('fill',wColors[i%wColors.length]);
+    lbl.setAttribute('font-size','8');lbl.setAttribute('font-family','Inter,sans-serif');lbl.setAttribute('font-weight','700');
+    lbl.textContent='W'+(i+1);
+    svg.appendChild(lbl);
+  });
+
+  // Events
+  eventTimes.forEach((t,i)=>{
+    const x=toX(t);
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x);c.setAttribute('cy',eY);c.setAttribute('r',6);
+    c.setAttribute('fill','#4f8ef7');c.setAttribute('stroke','#0e1628');c.setAttribute('stroke-width','1.5');
+    svg.appendChild(c);
+  });
+
+  const descs={
+    tumbling:'<strong>Tumbling window (5s)</strong> — Fixed, non-overlapping windows. Each event belongs to exactly one window. Simple, predictable, good for regular aggregations.',
+    sliding:'<strong>Sliding window (5s size, 2s slide)</strong> — Overlapping windows. Each event may appear in multiple windows. Good for rolling averages and moving statistics.',
+    session:'<strong>Session window (2s gap)</strong> — Variable-length windows based on activity gaps. Groups bursts of events separated by idle periods. Ideal for user session analysis.'
+  };
+  document.getElementById('windowDesc').innerHTML=descs[type];
+}
+
+// ─── SLURM Builder ─────────────────────────────────────────────────────────────
+function updateSlurm(){
+  const nodes=parseInt(document.getElementById('slurmNodes').value);
+  const gpus=parseInt(document.getElementById('slurmGpus').value);
+  const tasks=parseInt(document.getElementById('slurmTasks').value);
+  const mem=parseInt(document.getElementById('slurmMem').value);
+  const time=parseInt(document.getElementById('slurmTime').value);
+  document.getElementById('slurmNodesVal').textContent=nodes;
+  document.getElementById('slurmGpusVal').textContent=gpus;
+  document.getElementById('slurmTasksVal').textContent=tasks;
+  document.getElementById('slurmMemVal').textContent=mem;
+  document.getElementById('slurmTimeVal').textContent=time;
+  const totalGpus=nodes*gpus;
+  const totalCores=nodes*tasks;
+  const script=generateSlurmScript(nodes,gpus,tasks,mem,time);
+  document.getElementById('slurmScript').innerHTML=script;
+  // Estimate queue wait
+  let wait='~2 minutes';
+  if(totalGpus>16||nodes>4) wait='~30–60 minutes';
+  else if(totalGpus>8||nodes>2) wait='~10–20 minutes';
+  else if(totalGpus>4) wait='~5–10 minutes';
+  document.getElementById('slurmQueueTime').textContent=wait+' ('+totalGpus+' GPU'+(totalGpus!==1?'s':'')+', '+totalCores+' CPU core'+(totalCores!==1?'s':'')+' total)';
+}
+
+function generateSlurmScript(nodes,gpus,tasks,mem,time){
+  const hh=String(time).padStart(2,'0');
+  const gpuLine=gpus>0?`<span class="s-directive">#SBATCH</span> <span class="s-value">--gpus-per-node=${gpus}</span>\n`:'';
+  return `<span class="s-comment">#!/bin/bash</span>
+<span class="s-comment">#──────────────────────────────────────────</span>
+<span class="s-comment"># SLURM Job Script — generated by Phase 09</span>
+<span class="s-comment">#──────────────────────────────────────────</span>
+<span class="s-directive">#SBATCH</span> <span class="s-value">--job-name=my_job</span>
+<span class="s-directive">#SBATCH</span> <span class="s-value">--nodes=${nodes}</span>
+<span class="s-directive">#SBATCH</span> <span class="s-value">--ntasks-per-node=${tasks}</span>
+${gpuLine}<span class="s-directive">#SBATCH</span> <span class="s-value">--mem=${mem}G</span>
+<span class="s-directive">#SBATCH</span> <span class="s-value">--time=${hh}:00:00</span>
+<span class="s-directive">#SBATCH</span> <span class="s-value">--partition=gpu</span>
+<span class="s-directive">#SBATCH</span> <span class="s-value">--output=logs/job_%j.out</span>
+<span class="s-directive">#SBATCH</span> <span class="s-value">--error=logs/job_%j.err</span>
+
+<span class="s-comment"># Load modules</span>
+<span class="s-cmd">module load</span> <span class="s-value">cuda/12.1 python/3.11</span>
+
+<span class="s-comment"># Activate environment</span>
+<span class="s-cmd">source</span> <span class="s-value">~/envs/ml/bin/activate</span>
+
+<span class="s-comment"># Run distributed training</span>
+<span class="s-cmd">srun</span> <span class="s-value">python train.py \\</span>
+<span class="s-value">  --nodes ${nodes} \\</span>
+<span class="s-value">  --gpus-per-node ${gpus||1} \\</span>
+<span class="s-value">  --epochs 50</span>`;
+}
+
+function copySlurmScript(){
+  const nodes=parseInt(document.getElementById('slurmNodes').value);
+  const gpus=parseInt(document.getElementById('slurmGpus').value);
+  const tasks=parseInt(document.getElementById('slurmTasks').value);
+  const mem=parseInt(document.getElementById('slurmMem').value);
+  const time=parseInt(document.getElementById('slurmTime').value);
+  const hh=String(time).padStart(2,'0');
+  const gpuLine=gpus>0?`#SBATCH --gpus-per-node=${gpus}\n`:'';
+  const plain=`#!/bin/bash
+# SLURM Job Script
+#SBATCH --job-name=my_job
+#SBATCH --nodes=${nodes}
+#SBATCH --ntasks-per-node=${tasks}
+${gpuLine}#SBATCH --mem=${mem}G
+#SBATCH --time=${hh}:00:00
+#SBATCH --partition=gpu
+#SBATCH --output=logs/job_%j.out
+#SBATCH --error=logs/job_%j.err
+
+module load cuda/12.1 python/3.11
+source ~/envs/ml/bin/activate
+srun python train.py --nodes ${nodes} --gpus-per-node ${gpus||1} --epochs 50`;
+  navigator.clipboard.writeText(plain).then(()=>{
+    const btn=document.getElementById('copyBtn');
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+  }).catch(()=>{});
+}
+
+// ─── Quiz ─────────────────────────────────────────────────────────────────────
+const quizData=[
+  {
+    q:'In the CAP theorem, which two properties does Cassandra prioritise?',
+    options:['Consistency and Partition Tolerance','Consistency and Availability','Availability and Partition Tolerance','All three equally'],
+    correct:2,
+    explanation:'Cassandra is an AP database — it prioritises Availability and Partition Tolerance, sacrificing strong Consistency in favour of eventual consistency.'
+  },
+  {
+    q:'What triggers actual execution of Spark transformations?',
+    options:['Calling .filter() or .map()','Importing pyspark','Calling an action like .count(), .collect(), or .write()','Defining the SparkSession'],
+    correct:2,
+    explanation:'Transformations are lazy — they build a query plan. Only an action (count, collect, write, show) triggers execution of the full DAG.'
+  },
+  {
+    q:'In Kafka, what ensures two consumers in the same group don\'t read the same message?',
+    options:['Message locking','Each partition is assigned to only one consumer per consumer group','Messages are deleted after first read','Consumer group leader coordinates reads'],
+    correct:1,
+    explanation:'Kafka assigns each partition to exactly one consumer within a consumer group. This guarantees that each message is processed once per group — no locking required.'
+  },
+  {
+    q:'A tumbling window differs from a sliding window because:',
+    options:['Tumbling windows are larger','Tumbling windows don\'t overlap; sliding windows do','Tumbling windows handle late data better','Sliding windows are only for batch processing'],
+    correct:1,
+    explanation:'Tumbling windows are fixed, non-overlapping — each event belongs to exactly one window. Sliding windows overlap, so the same event can appear in multiple windows.'
+  }
+];
+
+let quizAnswered=[];
+function initQuiz(){
+  quizAnswered=new Array(quizData.length).fill(null);
+  const container=document.getElementById('quizQuestions');
+  container.innerHTML='';
+  document.getElementById('quizScore').classList.remove('visible');
+  document.getElementById('quizProgressFill').style.width='0%';
+  quizData.forEach((q,qi)=>{
+    const card=document.createElement('div');
+    card.className='question-card';card.id='qcard'+qi;
+    card.innerHTML=`
+      <div class="q-num">Question ${qi+1} of ${quizData.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="qopts${qi}">
+        ${q.options.map((o,oi)=>`<div class="option" id="qopt${qi}_${oi}" onclick="answerQuiz(${qi},${oi})">${o}</div>`).join('')}
+      </div>
+      <div class="explanation" id="qexp${qi}">${q.explanation}</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function answerQuiz(qi,oi){
+  if(quizAnswered[qi]!==null)return;
+  quizAnswered[qi]=oi;
+  const opts=document.getElementById('qopts'+qi).querySelectorAll('.option');
+  opts.forEach(o=>o.classList.add('locked'));
+  opts[quizData[qi].correct].classList.add('correct');
+  if(oi!==quizData[qi].correct) opts[oi].classList.add('wrong');
+  document.getElementById('qexp'+qi).classList.add('visible');
+  const answered=quizAnswered.filter(a=>a!==null).length;
+  document.getElementById('quizProgressFill').style.width=(answered/quizData.length*100)+'%';
+  if(answered===quizData.length) setTimeout(showScore,600);
+}
+
+function showScore(){
+  const score=quizAnswered.filter((a,i)=>a===quizData[i].correct).length;
+  document.getElementById('scoreNum').textContent=score+'/'+quizData.length;
+  const msgs=['Keep studying — review the lessons above!','Good effort — revisit a few concepts.','Great work! Solid understanding.','Perfect score! You\'ve mastered this phase.'];
+  document.getElementById('scoreMsg').textContent=msgs[score];
+  document.getElementById('quizScore').classList.add('visible');
+  if(score===quizData.length){
+    localStorage.setItem('phase9done','1');
+    const doneMsg=document.getElementById('quizDoneMsg');
+    doneMsg.style.display='block';
+  }
+}
+
+function resetQuiz(){initQuiz();}
+
+// ─── Phase complete ────────────────────────────────────────────────────────────
+function markPhase9Done(){
+  localStorage.setItem('phase9done','1');
+  alert('Phase 09 marked complete!');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(function init(){
+  initQuiz();
+  const saved=parseInt(localStorage.getItem('phase9lesson')||'0');
+  goLesson(saved);
+})();
+</script>
+</body>
+</html>
