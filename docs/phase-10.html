@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 10 — MLOps</title>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1f;--surface:#0e1628;--card:#121c30;--border:#1e2d47;--border-b:#2d4470;
+  --primary:#4f8ef7;--primary-dim:rgba(79,142,247,.12);--primary-glow:rgba(79,142,247,.3);
+  --secondary:#a78bfa;--accent:#34d399;--warning:#fbbf24;--danger:#f87171;--orange:#fb923c;
+  --text:#dde8f5;--muted:#7a8faa;--dim:#3d5070;
+  --font:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;--r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-back{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-back:hover{color:var(--primary)}
+.nav-sep{color:var(--dim)}
+.nav-title{font-weight:600;font-size:.9rem}
+.lesson-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0}
+.lesson-tab{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;white-space:nowrap;background:transparent;color:var(--muted)}
+.lesson-tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.lesson-tab.active{background:var(--primary-dim);color:var(--primary);border:1px solid var(--primary-glow)}
+@media(max-width:640px){nav{flex-direction:column;height:auto;padding:10px 16px;gap:6px}.lesson-tabs{width:100%}}
+
+.phase-hero{padding:48px 32px 32px;max-width:1100px;margin:0 auto}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.phase-hero h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;letter-spacing:-.04em;margin-bottom:8px;background:linear-gradient(135deg,#fff 40%,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.phase-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+.phase-progress{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.pp-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.pp-step.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.pp-step.done{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.pp-step:not(.active):not(.done){color:var(--dim)}
+.pp-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.lesson-section{display:none;max-width:1100px;margin:0 auto;padding:32px 32px 80px}
+.lesson-section.active{display:block}
+.lesson-header{margin-bottom:32px}
+.lesson-num{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-family:var(--mono)}
+.lesson-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.lesson-desc{color:var(--muted);max-width:680px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.split-wide{grid-template-columns:2fr 3fr}
+
+.prose h3{font-size:1rem;font-weight:600;margin:20px 0 8px;color:var(--text)}
+.prose h3:first-child{margin-top:0}
+.prose p{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.prose ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.prose li{font-size:.9rem;color:var(--muted);padding-left:16px;position:relative}
+.prose li::before{content:'›';position:absolute;left:0;color:var(--primary)}
+.prose strong{color:var(--text);font-weight:600}
+.prose .callout{background:var(--primary-dim);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 16px;margin:12px 0}
+.prose .callout p{color:var(--text);margin:0}
+.prose code{font-family:var(--mono);font-size:.82rem;background:rgba(79,142,247,.1);padding:2px 6px;border-radius:4px;color:var(--primary)}
+
+.concepts-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:20px}
+.concepts-box h4{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.concept-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.concept-item:last-child{border-bottom:none}
+.concept-key{font-family:var(--mono);font-size:.75rem;color:var(--primary);font-weight:500;white-space:nowrap;min-width:120px}
+.concept-val{font-size:.8rem;color:var(--muted)}
+
+.demo-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:relative}
+.demo-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.demo-title span{color:var(--accent);font-size:.7rem;font-weight:600}
+
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.btn:hover{border-color:var(--border-b);color:var(--text)}
+.btn.active,.btn.primary{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.btn.accent{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.btn.secondary{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:var(--secondary)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+.lesson-nav{display:flex;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.big-btn{padding:12px 24px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font)}
+.big-btn.primary{background:var(--primary);color:#fff}
+.big-btn.primary:hover{background:#6fa2ff;box-shadow:0 4px 20px rgba(79,142,247,.4)}
+.big-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.big-btn.ghost:hover{color:var(--text);border-color:var(--border-b)}
+
+/* QUIZ */
+.quiz-wrap{max-width:720px;margin:0 auto}
+.quiz-progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:32px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary));border-radius:2px;transition:width .4s ease}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.q-text{font-size:1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:12px 16px;border-radius:var(--r-sm);border:1px solid var(--border);cursor:pointer;font-size:.88rem;transition:all .2s;background:var(--surface)}
+.option:hover:not(.locked){border-color:var(--border-b);background:rgba(255,255,255,.03)}
+.option.correct{border-color:var(--accent)!important;background:rgba(52,211,153,.1)!important;color:var(--accent)}
+.option.wrong{border-color:var(--danger)!important;background:rgba(248,113,113,.1)!important;color:var(--danger)}
+.option.locked{cursor:default}
+.explanation{margin-top:16px;padding:14px 16px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:var(--r-sm);font-size:.84rem;color:var(--text);line-height:1.6;display:none}
+.explanation.visible{display:block;animation:slideUp .3s ease}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.quiz-score{text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);display:none}
+.quiz-score.visible{display:block;animation:slideUp .4s ease}
+.score-num{font-size:4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-msg{font-size:1.1rem;color:var(--muted);margin-bottom:24px}
+
+/* Light mode */
+[data-theme="light"]{
+  --bg:#f4f6fc;--surface:#eaecf5;--card:#ffffff;--border:#cdd5e4;--border-b:#aab5cc;
+  --primary:#3a6fd8;--primary-dim:rgba(58,111,216,.1);--primary-glow:rgba(58,111,216,.25);
+  --secondary:#6d28d9;--accent:#059669;--warning:#d97706;--danger:#dc2626;--orange:#ea580c;
+  --text:#111827;--muted:#475569;--dim:#94a3b8;
+}
+[data-theme="light"] body{background:var(--bg)}
+[data-theme="light"] nav{background:rgba(244,246,252,.95)}
+[data-theme="light"] .phase-hero h1{background:linear-gradient(135deg,#111827 40%,#6d28d9);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="light"] .callout{background:rgba(58,111,216,.07);border-color:rgba(58,111,216,.3)}
+[data-theme="light"] code{background:rgba(0,0,0,.07);color:#1e3a8a}
+.theme-toggle{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 13px;color:var(--muted);cursor:pointer;font-size:.8rem;font-family:var(--font);transition:all .2s;white-space:nowrap;flex-shrink:0}
+.theme-toggle:hover{color:var(--text);border-color:var(--primary)}
+@media(max-width:640px){.phase-hero,.lesson-section{padding-left:20px;padding-right:20px}}
+
+/* =============================================
+   PHASE 10 — MLOPS SPECIFIC STYLES
+   ============================================= */
+
+/* MLflow Run Comparator */
+.runs-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.78rem}
+.runs-table th{padding:8px 12px;text-align:left;color:var(--dim);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+.runs-table th:hover{color:var(--primary)}
+.runs-table th.sorted-asc::after{content:' ▲';color:var(--primary)}
+.runs-table th.sorted-desc::after{content:' ▼';color:var(--primary)}
+.runs-table td{padding:8px 12px;border-bottom:1px solid rgba(30,45,71,.5);color:var(--muted);vertical-align:middle}
+.runs-table tr:hover td{background:rgba(79,142,247,.04)}
+.runs-table tr.best-run td{color:var(--accent)}
+.runs-table tr.best-run{box-shadow:0 0 0 1px rgba(52,211,153,.35) inset;background:rgba(52,211,153,.06)}
+.runs-table tr.selected-run td{background:rgba(167,139,250,.08)}
+.runs-table tr.diff-run td.diff-cell{background:rgba(251,191,36,.12);color:var(--warning)}
+.run-checkbox{width:15px;height:15px;cursor:pointer;accent-color:var(--secondary)}
+.diff-banner{margin-top:12px;padding:12px 16px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.25);border-radius:var(--r-sm);font-size:.8rem;color:var(--text);display:none}
+.diff-banner.visible{display:block}
+.diff-row{display:flex;gap:16px;margin-bottom:6px;font-family:var(--mono);font-size:.75rem}
+.diff-key{color:var(--dim);min-width:100px}
+.diff-a{color:var(--secondary)}
+.diff-b{color:var(--warning)}
+
+/* Dockerfile Builder */
+.dockerfile-wrap{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;font-family:var(--mono);font-size:.8rem}
+.dockerfile-bar{background:#1a2540;padding:8px 14px;font-size:.7rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+.dockerfile-body{padding:8px 0}
+.df-line{display:flex;padding:6px 14px;gap:10px;cursor:pointer;transition:background .2s;border-left:3px solid transparent}
+.df-line:hover{background:rgba(255,255,255,.03)}
+.df-line.active{background:rgba(79,142,247,.12);border-left-color:var(--primary)}
+.df-line.active .df-instruction{color:var(--primary)}
+.df-lnum{color:var(--dim);min-width:18px;text-align:right;user-select:none;flex-shrink:0;font-size:.72rem}
+.df-instruction{color:#a78bfa;font-weight:600}
+.df-rest{color:#34d399}
+.df-comment{color:#4a6280;font-style:italic}
+.df-explain{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;margin-top:14px;font-size:.83rem;color:var(--text);line-height:1.6;min-height:60px;display:none}
+.df-explain.visible{display:block;animation:slideUp .25s ease}
+.layer-stack{display:flex;flex-direction:column-reverse;gap:5px;margin-top:14px}
+.layer-block{height:32px;border-radius:5px;display:flex;align-items:center;padding:0 14px;font-size:.72rem;font-weight:600;transition:all .4s ease}
+.layer-cache-icon{margin-left:auto;font-size:.65rem;opacity:.8}
+
+/* K8s Scaler */
+.pod-grid{display:flex;flex-wrap:wrap;gap:10px;min-height:80px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm)}
+.pod-circle{width:44px;height:44px;border-radius:50%;border:2px solid var(--border-b);background:var(--primary-dim);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:var(--primary);transition:all .5s ease;cursor:default;user-select:none;font-family:var(--mono)}
+.pod-circle.pod-new{background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.5);color:var(--accent);transform:scale(1.1)}
+.pod-circle.pod-terminating{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:var(--danger);opacity:.5;transform:scale(0.85)}
+.pod-circle.pod-hpa{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.4);color:var(--warning)}
+.k8s-controls{display:flex;flex-direction:column;gap:14px;margin-bottom:16px}
+.k8s-slider-row{display:flex;align-items:center;gap:12px}
+.k8s-slider-row label{font-size:.8rem;color:var(--muted);min-width:80px}
+.k8s-slider-row input[type=range]{flex:1;accent-color:var(--primary)}
+.k8s-slider-row .k8s-val{font-family:var(--mono);font-size:.85rem;color:var(--primary);min-width:20px}
+.cluster-label{font-size:.7rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+
+/* CI/CD Pipeline */
+.pipeline-wrap{overflow-x:auto;padding-bottom:8px}
+.pipeline-stages{display:flex;align-items:center;gap:0;min-width:600px}
+.pipeline-stage{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
+.pipeline-stage:not(:last-child)::after{content:'';position:absolute;right:-1px;top:22px;width:2px;height:2px;border-top:2px solid var(--border);width:100%;top:18px;left:50%;z-index:0}
+.stage-node{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .4s ease;z-index:1;position:relative}
+.stage-label{font-size:.62rem;color:var(--dim);margin-top:6px;text-align:center;line-height:1.3;max-width:64px;font-weight:500}
+.stage-connector{flex:1;height:2px;background:var(--border);margin-top:-18px;transition:background .4s ease;z-index:0}
+.stage-node.s-pending{border-color:var(--border)}
+.stage-node.s-running{border-color:var(--warning);background:rgba(251,191,36,.15);animation:pulse-ring .8s ease infinite}
+@keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,.4)}50%{box-shadow:0 0 0 6px rgba(251,191,36,0)}}
+.stage-node.s-pass{border-color:var(--accent);background:rgba(52,211,153,.15)}
+.stage-node.s-fail{border-color:var(--danger);background:rgba(248,113,113,.15)}
+.stage-connector.c-active{background:var(--accent)}
+.stage-connector.c-fail{background:var(--danger)}
+.pipeline-status{margin-top:16px;padding:10px 14px;border-radius:var(--r-sm);font-size:.83rem;font-weight:500;display:none}
+.pipeline-status.visible{display:block}
+.pipeline-status.pass{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--accent)}
+.pipeline-status.fail{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--danger)}
+.toggle-failure-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:.83rem;color:var(--muted)}
+.toggle-switch{position:relative;width:40px;height:22px;cursor:pointer}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:11px;transition:.3s}
+.toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle-switch input:checked+.toggle-slider{background:var(--danger)}
+.toggle-switch input:checked+.toggle-slider::before{transform:translateX(18px)}
+
+/* Data Drift Monitor */
+.drift-chart{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;margin-bottom:12px}
+.drift-chart-title{font-size:.72rem;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+.drift-bars-group{display:flex;flex-direction:column;gap:8px}
+.drift-bar-row{display:flex;align-items:center;gap:10px}
+.drift-bar-label{font-size:.72rem;color:var(--muted);min-width:70px;font-family:var(--mono)}
+.drift-bar-wrap{flex:1;height:18px;background:var(--card);border-radius:4px;overflow:hidden;position:relative}
+.drift-bar{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1),background .4s ease}
+.drift-bar.train{background:var(--primary)}
+.drift-bar.live{background:var(--accent)}
+.drift-bar.live.drifted{background:var(--danger)}
+.drift-bar-val{font-size:.7rem;font-family:var(--mono);color:var(--muted);min-width:36px;text-align:right}
+.drift-legend{display:flex;gap:16px;margin-bottom:14px;font-size:.75rem}
+.drift-legend-item{display:flex;align-items:center;gap:6px}
+.drift-legend-dot{width:10px;height:10px;border-radius:50%}
+.drift-alert{padding:10px 16px;border-radius:var(--r-sm);font-size:.82rem;font-weight:600;margin-bottom:12px;display:none;transition:all .3s}
+.drift-alert.visible{display:flex;align-items:center;gap:8px}
+.drift-alert.ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--accent)}
+.drift-alert.bad{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--danger)}
+.drift-score-row{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
+.drift-score-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 16px;flex:1;text-align:center}
+.drift-score-label{font-size:.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.drift-score-val{font-size:1.2rem;font-weight:700;font-family:var(--mono);transition:color .4s}
+.drift-score-val.ok{color:var(--accent)}
+.drift-score-val.bad{color:var(--danger)}
+
+/* Mark Complete */
+.mark-complete-btn{padding:10px 20px;border-radius:var(--r-sm);background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.35);color:var(--secondary);font-size:.85rem;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .2s;margin-top:16px}
+.mark-complete-btn:hover{background:rgba(167,139,250,.2);border-color:rgba(167,139,250,.5)}
+.mark-complete-btn.done{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.35);color:var(--accent);cursor:default}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← Roadmap</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Phase 10 — MLOps</span>
+  </div>
+  <div class="lesson-tabs" id="lessonTabs">
+    <button class="lesson-tab active" onclick="goLesson(0)">1. MLflow</button>
+    <button class="lesson-tab" onclick="goLesson(1)">2. Docker</button>
+    <button class="lesson-tab" onclick="goLesson(2)">3. Kubernetes</button>
+    <button class="lesson-tab" onclick="goLesson(3)">4. CI/CD</button>
+    <button class="lesson-tab" onclick="goLesson(4)">5. Monitoring</button>
+    <button class="lesson-tab" onclick="goLesson(5)">✦ Quiz</button>
+  </div>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
+</nav>
+
+<div class="phase-hero">
+  <div class="breadcrumb"><a href="index.html">Roadmap</a> › Phase 10</div>
+  <h1>MLOps</h1>
+  <p>Experiment tracking, containerisation, orchestration, CI/CD pipelines, and production model monitoring — everything needed to ship ML reliably.</p>
+  <div class="phase-progress" id="phaseProgress">
+    <div class="pp-step active" onclick="goLesson(0)"><div class="pp-dot"></div>MLflow</div>
+    <div class="pp-step" onclick="goLesson(1)"><div class="pp-dot"></div>Docker</div>
+    <div class="pp-step" onclick="goLesson(2)"><div class="pp-dot"></div>Kubernetes</div>
+    <div class="pp-step" onclick="goLesson(3)"><div class="pp-dot"></div>CI/CD</div>
+    <div class="pp-step" onclick="goLesson(4)"><div class="pp-dot"></div>Monitoring</div>
+    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>Quiz</div>
+  </div>
+</div>
+
+<!-- ==================== LESSON 0 — MLflow ==================== -->
+<section class="lesson-section active" id="lesson-0">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 01 / 05</div>
+    <div class="lesson-title">ML Experiment Tracking with MLflow</div>
+    <div class="lesson-desc">Stop losing experiment results. MLflow logs every parameter, metric, and artifact from each training run so you can reproduce and compare.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>The Problem Without Tracking</h3>
+      <p>Running experiments without tracking means you <strong>can't reproduce results</strong> and can't compare runs. "Which hyperparameters gave 94% accuracy last Tuesday?" becomes unanswerable.</p>
+      <h3>MLflow Components</h3>
+      <ul>
+        <li><strong>Tracking</strong> — log params, metrics, and artifacts per run</li>
+        <li><strong>Model Registry</strong> — version models, promote to Staging/Production</li>
+        <li><strong>Projects</strong> — reproducible ML code via MLproject file</li>
+        <li><strong>Serve</strong> — deploy any registered model as a REST endpoint</li>
+      </ul>
+      <h3>Key API</h3>
+      <ul>
+        <li><code>mlflow.log_param("lr", 0.01)</code></li>
+        <li><code>mlflow.log_metric("accuracy", 0.94)</code></li>
+        <li><code>mlflow.log_artifact("model.pkl")</code></li>
+      </ul>
+      <div class="callout"><p>Click a column header to sort runs. Select two rows with checkboxes to highlight their differences.</p></div>
+      <div class="concepts-box">
+        <h4>Quick Reference</h4>
+        <div class="concept-item"><span class="concept-key">log_param</span><span class="concept-val">Log a single key-value hyperparameter for the current run</span></div>
+        <div class="concept-item"><span class="concept-key">log_metric</span><span class="concept-val">Log a numeric metric — can be called multiple times (steps)</span></div>
+        <div class="concept-item"><span class="concept-key">log_artifact</span><span class="concept-val">Save any file (model, plot, CSV) as an artifact</span></div>
+        <div class="concept-item"><span class="concept-key">set_tag</span><span class="concept-val">Attach freeform metadata strings to a run</span></div>
+        <div class="concept-item"><span class="concept-key">mlflow ui</span><span class="concept-val">Launch the web UI at localhost:5000 to compare runs</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">MLflow Run Comparator <span>Interactive Demo</span></div>
+        <div class="btn-group" id="mlflowBtns">
+          <button class="btn" onclick="clearRunSelection()">Clear Selection</button>
+          <span id="compareHint" style="font-size:.75rem;color:var(--muted);align-self:center;">Select 2 runs to compare</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="runs-table" id="runsTable">
+            <thead>
+              <tr>
+                <th></th>
+                <th onclick="sortRuns('run_id')">Run ID</th>
+                <th onclick="sortRuns('lr')">lr</th>
+                <th onclick="sortRuns('batch')">batch</th>
+                <th onclick="sortRuns('epochs')">epochs</th>
+                <th onclick="sortRuns('val_acc')">val_acc ↓</th>
+                <th onclick="sortRuns('val_loss')">val_loss</th>
+              </tr>
+            </thead>
+            <tbody id="runsTbody"></tbody>
+          </table>
+        </div>
+        <div class="diff-banner" id="diffBanner">
+          <div style="font-size:.75rem;font-weight:700;color:var(--secondary);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase;">Diff: Run A vs Run B</div>
+          <div id="diffContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <div></div>
+    <button class="big-btn primary" onclick="goLesson(1)">Next: Docker →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 1 — Docker ==================== -->
+<section class="lesson-section" id="lesson-1">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 02 / 05</div>
+    <div class="lesson-title">Docker &amp; Containers</div>
+    <div class="lesson-desc">Package your ML app and all its dependencies into a portable image that runs identically everywhere — dev laptop, CI server, or cloud GPU.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>What Docker Solves</h3>
+      <p>A Docker <strong>image</strong> bundles app code + runtime + dependencies. No more "works on my machine" problems. For ML, it means <strong>reproducible training and inference</strong> across every environment.</p>
+      <h3>Dockerfile Instructions</h3>
+      <ul>
+        <li><strong>FROM</strong> — base image (e.g. <code>python:3.11-slim</code>)</li>
+        <li><strong>WORKDIR</strong> — set the working directory inside the container</li>
+        <li><strong>COPY</strong> — copy files from host into the image</li>
+        <li><strong>RUN</strong> — execute a shell command during build</li>
+        <li><strong>EXPOSE</strong> — declare port the container listens on</li>
+        <li><strong>CMD</strong> — default command when container starts</li>
+      </ul>
+      <h3>Build &amp; Run</h3>
+      <ul>
+        <li><code>docker build -t myapp:v1 .</code></li>
+        <li><code>docker run -p 8080:8080 myapp:v1</code></li>
+      </ul>
+      <div class="callout"><p>Image layers are cached. Put rarely-changing steps (e.g. <code>pip install</code>) before frequently-changing ones (e.g. copying your source code) to maximise cache hits.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Dockerfile Builder <span>Click any line</span></div>
+        <div class="btn-group">
+          <button class="btn active" id="dfGoodBtn" onclick="dfSetOrder('good')">Good ordering</button>
+          <button class="btn" id="dfBadBtn" onclick="dfSetOrder('bad')">Bad ordering</button>
+        </div>
+        <div class="dockerfile-wrap">
+          <div class="dockerfile-bar"><span>Dockerfile</span><span id="dfCacheMsg" style="color:var(--accent);font-size:.7rem;">✓ Cache-friendly</span></div>
+          <div class="dockerfile-body" id="dfBody"></div>
+        </div>
+        <div class="df-explain" id="dfExplain"></div>
+        <div style="margin-top:16px">
+          <div style="font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Layer Stack (bottom = base)</div>
+          <div class="layer-stack" id="layerStack"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(0)">← MLflow</button>
+    <button class="big-btn primary" onclick="goLesson(2)">Next: Kubernetes →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 2 — Kubernetes ==================== -->
+<section class="lesson-section" id="lesson-2">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 03 / 05</div>
+    <div class="lesson-title">Kubernetes Basics</div>
+    <div class="lesson-desc">K8s orchestrates containers at scale — handling rolling updates, auto-scaling, and service discovery across clusters of machines.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>Core Objects</h3>
+      <ul>
+        <li><strong>Pod</strong> — one or more containers sharing networking/storage</li>
+        <li><strong>Deployment</strong> — desired state, rolling updates, replica count</li>
+        <li><strong>Service</strong> — stable DNS/IP that routes traffic to pods</li>
+        <li><strong>Ingress</strong> — HTTP routing rules (host/path → service)</li>
+      </ul>
+      <h3>Essential kubectl</h3>
+      <ul>
+        <li><code>kubectl get pods</code></li>
+        <li><code>kubectl describe pod &lt;name&gt;</code></li>
+        <li><code>kubectl logs &lt;pod&gt;</code></li>
+        <li><code>kubectl apply -f deployment.yaml</code></li>
+      </ul>
+      <h3>Zero-Downtime Updates</h3>
+      <p>A <strong>Rolling Update</strong> brings new pods up before old ones go down. HPA (Horizontal Pod Autoscaler) adds replicas based on CPU/memory load.</p>
+      <div class="callout"><p>For ML serving: run multiple model versions as separate Deployments. Use a Service to control traffic split between versions.</p></div>
+      <div class="concepts-box">
+        <h4>Quick Reference</h4>
+        <div class="concept-item"><span class="concept-key">Pod</span><span class="concept-val">Smallest deployable unit — wraps your container(s)</span></div>
+        <div class="concept-item"><span class="concept-key">Deployment</span><span class="concept-key concept-val">Manages replica count + rolling updates declaratively</span></div>
+        <div class="concept-item"><span class="concept-key">HPA</span><span class="concept-val">Auto-scales pod count based on CPU/custom metrics</span></div>
+        <div class="concept-item"><span class="concept-key">Service</span><span class="concept-val">Stable endpoint that load-balances across healthy pods</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">K8s Deployment Scaler <span>Interactive Demo</span></div>
+        <div class="k8s-controls">
+          <div class="k8s-slider-row">
+            <label>Replicas</label>
+            <input type="range" id="replicaSlider" min="1" max="8" value="3" oninput="setReplicas(parseInt(this.value))">
+            <span class="k8s-val" id="replicaVal">3</span>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn primary" onclick="triggerRollingUpdate()">Update Image</button>
+          <button class="btn accent" onclick="triggerHPA()">Simulate Load Spike</button>
+          <button class="btn" onclick="resetPods()">Reset</button>
+        </div>
+        <div class="cluster-label">Cluster — my-ml-deployment</div>
+        <div class="pod-grid" id="podGrid"></div>
+        <div id="k8sStatus" style="font-size:.78rem;color:var(--muted);margin-top:10px;min-height:20px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(1)">← Docker</button>
+    <button class="big-btn primary" onclick="goLesson(3)">Next: CI/CD →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 3 — CI/CD ==================== -->
+<section class="lesson-section" id="lesson-3">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 04 / 05</div>
+    <div class="lesson-title">CI/CD for ML</div>
+    <div class="lesson-desc">Automate everything from code push to production deployment. Every change runs through tests, model validation, and Docker build before it ships.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>CI — Continuous Integration</h3>
+      <p>On every pull request: run linting, unit tests, train on a sample of data, and evaluate the resulting model. All automated via <strong>GitHub Actions</strong>.</p>
+      <h3>CD — Continuous Deployment</h3>
+      <p>When tests pass and the model beats the baseline: build a Docker image, push to registry, deploy to staging, then production.</p>
+      <h3>Model Validation Gates</h3>
+      <ul>
+        <li><strong>Accuracy gate</strong> — must be ≥ baseline on held-out set</li>
+        <li><strong>Data drift check</strong> — new training data distribution check</li>
+        <li><strong>Latency benchmark</strong> — p99 inference latency ≤ SLA</li>
+      </ul>
+      <h3>Blue-Green Deployment</h3>
+      <p>Run old and new model in parallel. Gradually shift traffic (10% → 50% → 100%) while monitoring error rates. Roll back instantly if metrics degrade.</p>
+      <div class="callout"><p>The "Gate Check" stage is the most important safeguard. A model that regresses on accuracy should never reach production automatically.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">CI/CD Pipeline Visualiser <span>Interactive Demo</span></div>
+        <div class="toggle-failure-row">
+          <label class="toggle-switch">
+            <input type="checkbox" id="failToggle" onchange="updateFailMode()">
+            <span class="toggle-slider"></span>
+          </label>
+          <span>Inject failure at Gate Check</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn primary" id="runPipelineBtn" onclick="runPipeline()">Run Pipeline</button>
+          <button class="btn" onclick="resetPipeline()">Reset</button>
+        </div>
+        <div class="pipeline-wrap">
+          <div id="pipelineViz"></div>
+        </div>
+        <div class="pipeline-status" id="pipelineStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(2)">← Kubernetes</button>
+    <button class="big-btn primary" onclick="goLesson(4)">Next: Monitoring →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 4 — Monitoring ==================== -->
+<section class="lesson-section" id="lesson-4">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 05 / 05</div>
+    <div class="lesson-title">Model Serving &amp; Monitoring</div>
+    <div class="lesson-desc">Deploying a model is just the beginning. You need to serve predictions efficiently and detect when the world has changed enough to require retraining.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>Serving Options</h3>
+      <ul>
+        <li><strong>REST API</strong> — FastAPI wrapper, ~10ms latency, easy to build</li>
+        <li><strong>gRPC</strong> — binary protocol, lower overhead for high-QPS</li>
+        <li><strong>Batch inference</strong> — offline, high throughput, no latency SLA</li>
+        <li><strong>vLLM</strong> — high-throughput LLM serving with continuous batching</li>
+      </ul>
+      <h3>Model Optimisation</h3>
+      <ul>
+        <li><strong>Quantization</strong> — fp16/int8, 2-4× speedup, slight accuracy cost</li>
+        <li><strong>ONNX</strong> — framework-independent format, portable inference</li>
+        <li><strong>TensorRT</strong> — GPU-optimised inference, fused ops</li>
+      </ul>
+      <h3>Drift Types</h3>
+      <ul>
+        <li><strong>Data drift</strong> — input distribution shifts from training data</li>
+        <li><strong>Concept drift</strong> — relationship between X and y changes</li>
+        <li><strong>Prediction drift</strong> — output distribution changes without new labels</li>
+      </ul>
+      <div class="callout"><p>If accuracy on a labelled sample drops below threshold, trigger an automated retraining pipeline. Log every prediction for offline analysis.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Data Drift Monitor <span>Interactive Demo</span></div>
+        <div class="btn-group">
+          <button class="btn accent active" id="driftNoneBtn" onclick="setDriftMode('none')">No Drift</button>
+          <button class="btn" id="driftDriftBtn" onclick="setDriftMode('drift')">Drift Detected</button>
+        </div>
+        <div class="drift-alert" id="driftAlert"></div>
+        <div class="drift-legend">
+          <div class="drift-legend-item"><div class="drift-legend-dot" style="background:var(--primary)"></div><span style="font-size:.75rem;color:var(--muted)">Training dist.</span></div>
+          <div class="drift-legend-item"><div class="drift-legend-dot" style="background:var(--accent)" id="liveLegendDot"></div><span style="font-size:.75rem;color:var(--muted)">Live dist.</span></div>
+        </div>
+        <div id="driftCharts"></div>
+        <div class="drift-score-row" id="driftScores"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(3)">← CI/CD</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
+  </div>
+</section>
+
+<!-- ==================== QUIZ ==================== -->
+<section class="lesson-section" id="lesson-5">
+  <div class="lesson-header">
+    <div class="lesson-num">Quiz</div>
+    <div class="lesson-title">Phase 10 Quiz</div>
+    <div class="lesson-desc">Test your knowledge of MLOps — experiment tracking, containers, orchestration, pipelines, and monitoring.</div>
+  </div>
+
+  <div class="quiz-wrap">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizFill" style="width:0%"></div></div>
+    <div id="quizCards"></div>
+    <div class="quiz-score" id="quizScore">
+      <div class="score-num" id="scoreNum"></div>
+      <div class="score-msg" id="scoreMsg"></div>
+      <button class="btn primary" onclick="resetQuiz()" style="margin-right:8px">Retry Quiz</button>
+      <button class="btn" onclick="goLesson(0)">Back to Lessons</button>
+    </div>
+    <button class="mark-complete-btn" id="markCompleteBtn" onclick="markPhase10Done()">Mark Phase Complete</button>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(4)">← Monitoring</button>
+    <div></div>
+  </div>
+</section>
+
+<script>
+// =============================================
+// THEME
+// =============================================
+function toggleTheme(){
+  const html=document.documentElement;
+  const isLight=html.getAttribute('data-theme')==='light';
+  if(isLight){html.removeAttribute('data-theme');localStorage.setItem('theme','dark');document.getElementById('themeToggle').textContent='☀ Light';}
+  else{html.setAttribute('data-theme','light');localStorage.setItem('theme','light');document.getElementById('themeToggle').textContent='☾ Dark';}
+}
+(function(){const t=localStorage.getItem('theme');document.getElementById('themeToggle').textContent=t==='light'?'☾ Dark':'☀ Light';})();
+
+// =============================================
+// NAVIGATION
+// =============================================
+function goLesson(n){
+  localStorage.setItem('phase10lesson',n);
+  document.querySelectorAll('.lesson-section').forEach((s,i)=>s.classList.toggle('active',i===n));
+  document.querySelectorAll('.lesson-tab').forEach((t,i)=>t.classList.toggle('active',i===n));
+  document.querySelectorAll('.pp-step').forEach((s,i)=>s.classList.toggle('active',i===n));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===1) initDockerDemo();
+  if(n===2) initK8sDemo();
+  if(n===3) initPipelineDemo();
+  if(n===4) initDriftDemo();
+}
+
+// =============================================
+// LESSON 0 — MLFLOW RUN COMPARATOR
+// =============================================
+const mlRuns=[
+  {run_id:'a3f2e1',lr:0.001,batch:32,epochs:20,val_acc:0.9210,val_loss:0.2341},
+  {run_id:'b7c4d8',lr:0.01, batch:64,epochs:15,val_acc:0.9440,val_loss:0.1987},
+  {run_id:'c1a9b3',lr:0.005,batch:32,epochs:25,val_acc:0.9612,val_loss:0.1543},
+  {run_id:'d5f3e7',lr:0.01, batch:128,epochs:10,val_acc:0.9381,val_loss:0.2102},
+  {run_id:'e2b8a4',lr:0.001,batch:64,epochs:30,val_acc:0.9504,val_loss:0.1728},
+];
+let runSortKey='val_acc';
+let runSortDir=-1;
+let selectedRuns=[];
+
+function renderRuns(){
+  const sorted=[...mlRuns].sort((a,b)=>runSortDir*(a[runSortKey]>b[runSortKey]?1:-1));
+  const bestIdx=mlRuns.indexOf(mlRuns.reduce((best,r)=>r.val_acc>best.val_acc?r:best,mlRuns[0]));
+  const tbody=document.getElementById('runsTbody');
+  tbody.innerHTML='';
+  sorted.forEach(r=>{
+    const isBest=r===mlRuns[bestIdx];
+    const selIdx=selectedRuns.indexOf(r.run_id);
+    const isSelected=selIdx!==-1;
+    const tr=document.createElement('tr');
+    if(isBest)tr.classList.add('best-run');
+    if(isSelected)tr.classList.add('selected-run');
+    tr.innerHTML=`
+      <td><input type="checkbox" class="run-checkbox" ${isSelected?'checked':''} onchange="toggleRunSelect('${r.run_id}',this.checked)"></td>
+      <td style="font-family:var(--mono);color:var(--secondary)">${r.run_id}${isBest?' ✦':''}</td>
+      <td>${r.lr}</td>
+      <td>${r.batch}</td>
+      <td>${r.epochs}</td>
+      <td style="color:${isBest?'var(--accent)':'inherit'};font-weight:${isBest?'700':'400'}">${r.val_acc.toFixed(4)}</td>
+      <td>${r.val_loss.toFixed(4)}</td>`;
+    tbody.appendChild(tr);
+  });
+  // update column headers
+  document.querySelectorAll('.runs-table th').forEach(th=>{
+    th.classList.remove('sorted-asc','sorted-desc');
+  });
+  renderDiff();
+}
+
+function sortRuns(key){
+  if(runSortKey===key)runSortDir*=-1;
+  else{runSortKey=key;runSortDir=-1;}
+  renderRuns();
+}
+
+function toggleRunSelect(id,checked){
+  if(checked){
+    if(selectedRuns.length>=2){
+      // deselect first
+      selectedRuns.shift();
+    }
+    selectedRuns.push(id);
+  } else {
+    selectedRuns=selectedRuns.filter(x=>x!==id);
+  }
+  renderRuns();
+}
+
+function clearRunSelection(){
+  selectedRuns=[];
+  renderRuns();
+}
+
+function renderDiff(){
+  const banner=document.getElementById('diffBanner');
+  const content=document.getElementById('diffContent');
+  const hint=document.getElementById('compareHint');
+  if(selectedRuns.length!==2){banner.classList.remove('visible');hint.style.display='';return;}
+  hint.style.display='none';
+  const ra=mlRuns.find(r=>r.run_id===selectedRuns[0]);
+  const rb=mlRuns.find(r=>r.run_id===selectedRuns[1]);
+  if(!ra||!rb){banner.classList.remove('visible');return;}
+  const keys=['lr','batch','epochs','val_acc','val_loss'];
+  let html=`<div style="font-size:.72rem;color:var(--dim);margin-bottom:6px">Run <span style="color:var(--secondary)">${ra.run_id}</span> vs <span style="color:var(--warning)">${rb.run_id}</span></div>`;
+  keys.forEach(k=>{
+    const same=ra[k]===rb[k];
+    html+=`<div class="diff-row"><span class="diff-key">${k}</span><span class="diff-a">${ra[k]}</span><span style="color:var(--dim);padding:0 4px">${same?'=':'≠'}</span><span class="diff-b">${rb[k]}</span>${!same?'<span style="color:var(--warning);font-size:.65rem;margin-left:4px">DIFF</span>':''}</div>`;
+  });
+  content.innerHTML=html;
+  banner.classList.add('visible');
+}
+
+renderRuns();
+
+// =============================================
+// LESSON 1 — DOCKERFILE BUILDER
+// =============================================
+const dfGood=[
+  {instr:'FROM',rest:'python:3.11-slim',explain:'Start from the official slim Python 3.11 base image. The slim variant omits dev tools to keep the image small.',color:'#a78bfa',cache:'Base — rarely changes'},
+  {instr:'WORKDIR',rest:'/app',explain:'Set /app as the working directory. All subsequent commands run relative to this path inside the container.',color:'#4f8ef7',cache:'Working dir setup'},
+  {instr:'COPY',rest:'requirements.txt .',explain:'Copy only requirements.txt first. This way Docker can cache the pip install layer as long as requirements.txt is unchanged.',color:'#fbbf24',cache:'Requirements file'},
+  {instr:'RUN',rest:'pip install -r requirements.txt',explain:'Install Python dependencies. Because requirements.txt was copied before source code, this layer is cached on rebuilds unless requirements change.',color:'#34d399',cache:'Pip install (cached ✓)'},
+  {instr:'COPY',rest:'. .',explain:'Now copy all source code. This step invalidates the cache on every code change — but the expensive pip install above is already cached.',color:'#fbbf24',cache:'Source code (changes often)'},
+  {instr:'EXPOSE',rest:'8080',explain:'Document that the container listens on port 8080. Does not actually publish the port — use -p 8080:8080 at runtime.',color:'#fb923c',cache:'Port declaration'},
+  {instr:'CMD',rest:'["python","app.py"]',explain:'The default command executed when the container starts. Using JSON array form avoids shell interpretation issues.',color:'#f87171',cache:'Entrypoint'},
+];
+const dfBad=[
+  {instr:'FROM',rest:'python:3.11-slim',explain:'Start from the official slim Python 3.11 base image.',color:'#a78bfa',cache:'Base — rarely changes'},
+  {instr:'WORKDIR',rest:'/app',explain:'Set /app as the working directory.',color:'#4f8ef7',cache:'Working dir setup'},
+  {instr:'COPY',rest:'. .',explain:'BAD: Copying all source code first means any code change will invalidate the pip install cache below — rebuilds are slow.',color:'#f87171',cache:'⚠ Source code first!'},
+  {instr:'COPY',rest:'requirements.txt .',explain:'Too late — requirements.txt was already copied above with all files.',color:'#fbbf24',cache:'Requirements (too late)'},
+  {instr:'RUN',rest:'pip install -r requirements.txt',explain:'BAD: Because source code was copied before this step, Docker cannot cache the pip install. Every code change triggers a full reinstall.',color:'#f87171',cache:'⚠ pip install (no cache)'},
+  {instr:'EXPOSE',rest:'8080',explain:'Expose port 8080.',color:'#fb923c',cache:'Port declaration'},
+  {instr:'CMD',rest:'["python","app.py"]',explain:'Default start command.',color:'#f87171',cache:'Entrypoint'},
+];
+
+let dfOrder='good';
+let dfActiveIdx=-1;
+
+function initDockerDemo(){
+  dfRender();
+}
+
+function dfSetOrder(o){
+  dfOrder=o;
+  dfActiveIdx=-1;
+  document.getElementById('dfGoodBtn').classList.toggle('active',o==='good');
+  document.getElementById('dfBadBtn').classList.toggle('active',o==='bad');
+  document.getElementById('dfCacheMsg').textContent=o==='good'?'✓ Cache-friendly':'✗ Poor layer order';
+  document.getElementById('dfCacheMsg').style.color=o==='good'?'var(--accent)':'var(--danger)';
+  document.getElementById('dfExplain').classList.remove('visible');
+  dfRender();
+}
+
+function dfRender(){
+  const lines=dfOrder==='good'?dfGood:dfBad;
+  const body=document.getElementById('dfBody');
+  body.innerHTML='';
+  lines.forEach((l,i)=>{
+    const div=document.createElement('div');
+    div.className='df-line'+(dfActiveIdx===i?' active':'');
+    div.innerHTML=`<span class="df-lnum">${i+1}</span><span class="df-instruction">${l.instr}</span>&nbsp;<span class="df-rest">${l.rest}</span>`;
+    div.onclick=()=>dfSelect(i);
+    body.appendChild(div);
+  });
+  renderLayers();
+}
+
+function dfSelect(i){
+  const lines=dfOrder==='good'?dfGood:dfBad;
+  dfActiveIdx=i;
+  const ex=document.getElementById('dfExplain');
+  ex.textContent=lines[i].explain;
+  ex.classList.add('visible');
+  dfRender();
+}
+
+function renderLayers(){
+  const lines=dfOrder==='good'?dfGood:dfBad;
+  const stack=document.getElementById('layerStack');
+  stack.innerHTML='';
+  lines.forEach(l=>{
+    const div=document.createElement('div');
+    div.className='layer-block';
+    const isCached=dfOrder==='good'&&(l.instr==='FROM'||l.instr==='WORKDIR'||l.rest==='requirements.txt .'||l.rest==='pip install -r requirements.txt');
+    const isBad=dfOrder==='bad'&&(l.cache.includes('⚠'));
+    div.style.background=isBad?'rgba(248,113,113,.15)':(isCached?'rgba(52,211,153,.12)':'rgba(79,142,247,.1)');
+    div.style.border=`1px solid ${isBad?'rgba(248,113,113,.35)':(isCached?'rgba(52,211,153,.3)':'rgba(79,142,247,.2)')}`;
+    div.style.color=isBad?'var(--danger)':(isCached?'var(--accent)':'var(--muted)');
+    div.innerHTML=`<span style="font-family:var(--mono);font-size:.7rem;color:inherit">${l.instr}</span><span style="font-size:.68rem;margin-left:6px;opacity:.7">${l.rest.length>22?l.rest.slice(0,22)+'…':l.rest}</span><span class="layer-cache-icon">${isBad?'✗ no cache':(isCached?'✓ cached':'')}</span>`;
+    stack.appendChild(div);
+  });
+}
+
+// =============================================
+// LESSON 2 — K8S SCALER
+// =============================================
+let podCount=3;
+let podStates=[];
+let k8sAnimating=false;
+
+function initK8sDemo(){
+  podCount=parseInt(document.getElementById('replicaSlider').value)||3;
+  podStates=Array(podCount).fill('running');
+  renderPods();
+}
+
+function setReplicas(n){
+  if(k8sAnimating)return;
+  document.getElementById('replicaVal').textContent=n;
+  const old=podCount;
+  podCount=n;
+  if(n>old){
+    for(let i=old;i<n;i++)podStates.push('new');
+    renderPods();
+    setTimeout(()=>{podStates=podStates.map(s=>s==='new'?'running':s);renderPods();},700);
+  } else if(n<old){
+    podStates=podStates.slice(0,n);
+    renderPods();
+  }
+  document.getElementById('k8sStatus').textContent=`Deployment scaled to ${n} replica${n!==1?'s':''}.`;
+}
+
+function renderPods(){
+  const grid=document.getElementById('podGrid');
+  grid.innerHTML='';
+  for(let i=0;i<podCount;i++){
+    const div=document.createElement('div');
+    div.className='pod-circle';
+    const s=podStates[i]||'running';
+    if(s==='new')div.classList.add('pod-new');
+    else if(s==='terminating')div.classList.add('pod-terminating');
+    else if(s==='hpa')div.classList.add('pod-hpa');
+    div.textContent='P'+(i+1);
+    grid.appendChild(div);
+  }
+}
+
+function triggerRollingUpdate(){
+  if(k8sAnimating)return;
+  k8sAnimating=true;
+  document.getElementById('k8sStatus').textContent='Rolling update started — new pods coming up...';
+  const newStates=Array(podCount).fill('new');
+  const total=podCount;
+  let step=0;
+  function tick(){
+    if(step>=total){
+      podStates=Array(total).fill('running');
+      renderPods();
+      document.getElementById('k8sStatus').textContent='Rolling update complete. All pods running new image.';
+      k8sAnimating=false;
+      return;
+    }
+    podStates[step]='new';
+    renderPods();
+    setTimeout(()=>{
+      podStates[step]='running';
+      step++;
+      renderPods();
+      setTimeout(tick,350);
+    },500);
+  }
+  tick();
+}
+
+function triggerHPA(){
+  if(k8sAnimating)return;
+  k8sAnimating=true;
+  document.getElementById('k8sStatus').textContent='Load spike detected — HPA scaling up...';
+  const target=Math.min(8,podCount+3);
+  let i=podCount;
+  function addPod(){
+    if(i>=target){
+      setTimeout(()=>{podStates=podStates.map(s=>s==='hpa'?'running':s);renderPods();document.getElementById('k8sStatus').textContent=`HPA scaled to ${target} pods. Load normalised.`;k8sAnimating=false;},1200);
+      return;
+    }
+    podCount=i+1;
+    podStates.push('hpa');
+    document.getElementById('replicaSlider').value=podCount;
+    document.getElementById('replicaVal').textContent=podCount;
+    renderPods();
+    i++;
+    setTimeout(addPod,400);
+  }
+  addPod();
+}
+
+function resetPods(){
+  k8sAnimating=false;
+  podCount=3;
+  document.getElementById('replicaSlider').value=3;
+  document.getElementById('replicaVal').textContent=3;
+  podStates=Array(3).fill('running');
+  renderPods();
+  document.getElementById('k8sStatus').textContent='';
+}
+
+// =============================================
+// LESSON 3 — CI/CD PIPELINE
+// =============================================
+const pipelineStages=[
+  {label:'Code\nPush',icon:'⬆'},
+  {label:'Lint &\nTest',icon:'🔍'},
+  {label:'Model\nTrain',icon:'🏋'},
+  {label:'Evaluate',icon:'📊'},
+  {label:'Gate\nCheck',icon:'🚦'},
+  {label:'Build\nImage',icon:'🐳'},
+  {label:'Deploy\nStaging',icon:'🧪'},
+  {label:'Deploy\nProd',icon:'🚀'},
+];
+let pipelineRunning=false;
+let pipelineFailMode=false;
+
+function initPipelineDemo(){
+  renderPipelineViz('idle');
+}
+
+function updateFailMode(){
+  pipelineFailMode=document.getElementById('failToggle').checked;
+}
+
+function renderPipelineViz(stateArr){
+  const wrap=document.getElementById('pipelineViz');
+  // stateArr: array of 'pending'|'running'|'pass'|'fail' per stage, or string 'idle'
+  const states=Array.isArray(stateArr)?stateArr:pipelineStages.map(()=>'pending');
+  let html='<div style="display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding-bottom:8px;min-width:560px">';
+  pipelineStages.forEach((s,i)=>{
+    const st=states[i]||'pending';
+    const icon=st==='pass'?'✓':st==='fail'?'✗':st==='running'?'…':s.icon;
+    html+=`<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:64px">
+      <div class="stage-node s-${st}">${icon}</div>
+      <div class="stage-label">${s.label.replace('\n','<br>')}</div>
+    </div>`;
+    if(i<pipelineStages.length-1){
+      const connClass=states[i]==='pass'?'c-active':states[i]==='fail'?'c-fail':'';
+      html+=`<div class="stage-connector ${connClass}" style="margin-top:17px"></div>`;
+    }
+  });
+  html+='</div>';
+  wrap.innerHTML=html;
+}
+
+function runPipeline(){
+  if(pipelineRunning)return;
+  pipelineRunning=true;
+  document.getElementById('runPipelineBtn').disabled=true;
+  const statusEl=document.getElementById('pipelineStatus');
+  statusEl.className='pipeline-status';
+  statusEl.textContent='';
+  const failAt=pipelineFailMode?4:-1; // Gate Check index=4
+  const states=pipelineStages.map(()=>'pending');
+  renderPipelineViz(states);
+
+  function step(i){
+    if(i>=pipelineStages.length){
+      statusEl.className='pipeline-status pass visible';
+      statusEl.textContent='✓ Pipeline succeeded — model deployed to production.';
+      pipelineRunning=false;
+      document.getElementById('runPipelineBtn').disabled=false;
+      return;
+    }
+    states[i]='running';
+    renderPipelineViz([...states]);
+    const delay=i===2?1200:i===3?900:600;
+    setTimeout(()=>{
+      if(i===failAt){
+        states[i]='fail';
+        renderPipelineViz([...states]);
+        statusEl.className='pipeline-status fail visible';
+        statusEl.textContent='✗ Gate Check failed — model accuracy below baseline threshold. Pipeline halted. No deployment.';
+        pipelineRunning=false;
+        document.getElementById('runPipelineBtn').disabled=false;
+        return;
+      }
+      states[i]='pass';
+      renderPipelineViz([...states]);
+      setTimeout(()=>step(i+1),200);
+    },delay);
+  }
+  step(0);
+}
+
+function resetPipeline(){
+  pipelineRunning=false;
+  document.getElementById('runPipelineBtn').disabled=false;
+  const statusEl=document.getElementById('pipelineStatus');
+  statusEl.className='pipeline-status';
+  statusEl.textContent='';
+  renderPipelineViz('idle');
+}
+
+// =============================================
+// LESSON 4 — DATA DRIFT MONITOR
+// =============================================
+const driftFeatures=[
+  {name:'age',train:62,liveNone:61,liveDrift:38},
+  {name:'income',train:71,liveNone:70,liveDrift:89},
+  {name:'spend',train:55,liveNone:56,liveDrift:22},
+];
+const driftKL={none:[0.003,0.002,0.001],drift:[0.412,0.538,0.631]};
+let driftMode='none';
+
+function initDriftDemo(){
+  renderDriftCharts();
+  renderDriftScores();
+}
+
+function setDriftMode(mode){
+  driftMode=mode;
+  document.getElementById('driftNoneBtn').classList.toggle('active',mode==='none');
+  document.getElementById('driftNoneBtn').classList.toggle('accent',mode==='none');
+  document.getElementById('driftDriftBtn').classList.toggle('active',mode==='drift');
+  document.getElementById('driftDriftBtn').classList.toggle('btn',true);
+  if(mode==='drift'){
+    document.getElementById('driftDriftBtn').style.background='rgba(248,113,113,.1)';
+    document.getElementById('driftDriftBtn').style.borderColor='rgba(248,113,113,.3)';
+    document.getElementById('driftDriftBtn').style.color='var(--danger)';
+  } else {
+    document.getElementById('driftDriftBtn').style.background='';
+    document.getElementById('driftDriftBtn').style.borderColor='';
+    document.getElementById('driftDriftBtn').style.color='';
+  }
+  renderDriftAlert();
+  renderDriftCharts();
+  renderDriftScores();
+}
+
+function renderDriftAlert(){
+  const el=document.getElementById('driftAlert');
+  if(driftMode==='drift'){
+    el.className='drift-alert bad visible';
+    el.innerHTML='⚠ Drift Detected — KL divergence exceeds threshold on all features. Consider retraining.';
+  } else {
+    el.className='drift-alert ok visible';
+    el.innerHTML='✓ No Drift — live distribution matches training data within acceptable bounds.';
+  }
+}
+
+function renderDriftCharts(){
+  const container=document.getElementById('driftCharts');
+  container.innerHTML='';
+  driftFeatures.forEach((f,i)=>{
+    const liveVal=driftMode==='drift'?f.liveDrift:f.liveNone;
+    const isDrifted=driftMode==='drift';
+    const div=document.createElement('div');
+    div.className='drift-chart';
+    div.innerHTML=`
+      <div class="drift-chart-title">Feature: ${f.name}</div>
+      <div class="drift-bars-group">
+        <div class="drift-bar-row">
+          <span class="drift-bar-label">Training</span>
+          <div class="drift-bar-wrap"><div class="drift-bar train" style="width:${f.train}%"></div></div>
+          <span class="drift-bar-val">${f.train}%</span>
+        </div>
+        <div class="drift-bar-row">
+          <span class="drift-bar-label">Live</span>
+          <div class="drift-bar-wrap"><div class="drift-bar live${isDrifted?' drifted':''}" style="width:${liveVal}%"></div></div>
+          <span class="drift-bar-val">${liveVal}%</span>
+        </div>
+      </div>`;
+    container.appendChild(div);
+  });
+  renderDriftAlert();
+}
+
+function renderDriftScores(){
+  const row=document.getElementById('driftScores');
+  row.innerHTML='';
+  driftFeatures.forEach((f,i)=>{
+    const kl=driftKL[driftMode][i];
+    const bad=kl>0.1;
+    const div=document.createElement('div');
+    div.className='drift-score-box';
+    div.innerHTML=`<div class="drift-score-label">KL (${f.name})</div><div class="drift-score-val ${bad?'bad':'ok'}">${kl.toFixed(3)}</div>`;
+    row.appendChild(div);
+  });
+}
+
+// =============================================
+// QUIZ
+// =============================================
+const quizData=[
+  {
+    q:'In MLflow, mlflow.log_metric("val_loss", 0.23) does what?',
+    options:[
+      'Prints the metric to stdout',
+      'Saves the metric to a local CSV file',
+      'Records the metric in the MLflow tracking server for this run',
+      'Uploads the model to the registry',
+    ],
+    correct:2,
+    explain:'mlflow.log_metric() records the key-value metric to the active MLflow run in the tracking server (or local mlruns folder). It can be called multiple times with a step argument to track metrics over epochs.'
+  },
+  {
+    q:'Why should you COPY requirements.txt and RUN pip install BEFORE copying your source code in a Dockerfile?',
+    options:[
+      'Source code is larger than requirements',
+      'Docker caches layers — if requirements don\'t change, the install step is skipped on rebuild',
+      'pip cannot access source code files',
+      'It is required by the Docker specification',
+    ],
+    correct:1,
+    explain:'Docker builds images layer by layer and caches each layer. If requirements.txt hasn\'t changed, Docker reuses the cached pip install layer, making rebuilds much faster. Copying source code first would invalidate that cache on every code change.'
+  },
+  {
+    q:'A Kubernetes Rolling Update ensures zero downtime by:',
+    options:[
+      'Stopping all pods then starting new ones',
+      'Bringing new pods up before the old ones are terminated',
+      'Using a load balancer to buffer requests',
+      'Pausing traffic during the update',
+    ],
+    correct:1,
+    explain:'K8s gradually replaces old pods with new ones: it creates new pod(s) with the updated image and waits for them to become Ready before terminating the same number of old pods. The Service always routes to healthy pods throughout the process.'
+  },
+  {
+    q:'Data drift in a production ML model means:',
+    options:[
+      'The model weights have changed',
+      'The model is making slower predictions',
+      'The distribution of incoming features has shifted from what the model was trained on',
+      'The training loss increased',
+    ],
+    correct:2,
+    explain:'Data drift (also called covariate shift) occurs when the statistical distribution of incoming feature values differs from the training distribution. This can silently degrade model performance even though the model itself hasn\'t changed.'
+  },
+];
+
+let quizAnswers={};
+
+function renderQuiz(){
+  const container=document.getElementById('quizCards');
+  container.innerHTML='';
+  quizData.forEach((q,qi)=>{
+    const answered=quizAnswers[qi]!==undefined;
+    const card=document.createElement('div');
+    card.className='question-card';
+    card.id=`qcard-${qi}`;
+    let optHTML='';
+    q.options.forEach((opt,oi)=>{
+      let cls='option';
+      if(answered){
+        cls+=' locked';
+        if(oi===q.correct)cls+=' correct';
+        else if(oi===quizAnswers[qi])cls+=' wrong';
+      }
+      optHTML+=`<div class="${cls}" onclick="answerQuiz(${qi},${oi})">${opt}</div>`;
+    });
+    card.innerHTML=`
+      <div class="q-num">Question ${qi+1} of ${quizData.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">${optHTML}</div>
+      <div class="explanation${answered?' visible':''}" id="exp-${qi}">${q.explain}</div>`;
+    container.appendChild(card);
+  });
+  updateQuizProgress();
+  const allDone=Object.keys(quizAnswers).length===quizData.length;
+  if(allDone)showScore();
+}
+
+function answerQuiz(qi,oi){
+  if(quizAnswers[qi]!==undefined)return;
+  quizAnswers[qi]=oi;
+  renderQuiz();
+}
+
+function updateQuizProgress(){
+  const done=Object.keys(quizAnswers).length;
+  document.getElementById('quizFill').style.width=`${(done/quizData.length)*100}%`;
+}
+
+function showScore(){
+  const score=quizData.filter((_,i)=>quizAnswers[i]===quizData[i].correct).length;
+  const total=quizData.length;
+  const pct=Math.round(score/total*100);
+  document.getElementById('scoreNum').textContent=`${score}/${total}`;
+  document.getElementById('scoreMsg').textContent=pct===100?'Perfect score! You\'ve mastered MLOps fundamentals.':pct>=75?'Great work! Review any missed questions above.':'Keep studying — revisit the lessons and try again.';
+  const scoreDiv=document.getElementById('quizScore');
+  scoreDiv.classList.add('visible');
+  localStorage.setItem('phase10done','1');
+  // append back to roadmap link if not already there
+  if(!document.getElementById('backRoadmapLink')){
+    const a=document.createElement('a');
+    a.id='backRoadmapLink';
+    a.href='index.html';
+    a.style.cssText='display:inline-block;margin-top:16px;color:var(--primary);text-decoration:none;font-size:.88rem;font-weight:600;';
+    a.textContent='← Back to Roadmap';
+    scoreDiv.appendChild(a);
+  }
+}
+
+function resetQuiz(){
+  quizAnswers={};
+  document.getElementById('quizScore').classList.remove('visible');
+  document.getElementById('quizFill').style.width='0%';
+  renderQuiz();
+}
+
+function markPhase10Done(){
+  localStorage.setItem('phase10done','1');
+  const btn=document.getElementById('markCompleteBtn');
+  btn.textContent='✓ Phase Complete';
+  btn.classList.add('done');
+  btn.disabled=true;
+}
+
+// =============================================
+// INIT
+// =============================================
+(function init(){
+  renderQuiz();
+  initPipelineDemo();
+  // check mark-complete state
+  if(localStorage.getItem('phase10done')==='1'){
+    const btn=document.getElementById('markCompleteBtn');
+    if(btn){btn.textContent='✓ Phase Complete';btn.classList.add('done');btn.disabled=true;}
+  }
+  // restore lesson
+  const saved=localStorage.getItem('phase10lesson');
+  if(saved!==null){
+    const n=parseInt(saved);
+    if(n>=0&&n<=5)goLesson(n);
+  } else {
+    // init lesson 0 demo
+    renderRuns();
+  }
+})();
+</script>
+</body>
+</html>
