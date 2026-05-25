@@ -355,6 +355,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 
   <div class="split split-wide">
     <div class="prose">
+      <h3>What is Pydantic?</h3>
+      <p><strong>Pydantic</strong> is a Python library that validates data using type hints. You define a class describing the shape of your data, and Pydantic checks that any incoming data matches — raising a detailed error if it doesn't. It's the backbone of FastAPI's request validation and widely used in data pipelines to catch bad data at the source before it corrupts downstream results.</p>
       <h3>Python type hints</h3>
       <p>Type hints (PEP 484) are annotations that tell readers — and tools — what types a function expects and returns. Python itself doesn't enforce them at runtime, but <strong>mypy</strong> does static analysis.</p>
       <ul>
@@ -421,6 +423,9 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
   </div>
 
   <div class="prose" style="max-width:700px;margin-bottom:28px">
+    <h3>What are Pandas and Polars?</h3>
+    <p><strong>Pandas</strong> is the most widely used Python library for tabular data — think of a spreadsheet you can program. You load data into a <strong>DataFrame</strong> (rows × columns) and use Python to filter, aggregate, join, and transform it. It's the default tool for data exploration and analysis on datasets that fit in memory.</p>
+    <p><strong>Polars</strong> is a newer DataFrame library written in Rust. Same concept — DataFrames with similar operations — but engineered from scratch for speed and large datasets, using columnar memory layout, lazy evaluation, and automatic parallelism.</p>
     <h3>Why Pandas can be slow</h3>
     <p>Pandas stores data as Python objects row-by-row internally for mixed types. Operations loop through Python objects, which means interpreter overhead on every row. It is single-threaded and eager by default.</p>
     <h3>What Polars does differently</h3>
