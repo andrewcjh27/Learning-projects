@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 11 — Advanced Topics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1f;--surface:#0e1628;--card:#121c30;--border:#1e2d47;--border-b:#2d4470;
+  --primary:#4f8ef7;--primary-dim:rgba(79,142,247,.12);--primary-glow:rgba(79,142,247,.3);
+  --secondary:#a78bfa;--accent:#34d399;--warning:#fbbf24;--danger:#f87171;--orange:#fb923c;
+  --text:#dde8f5;--muted:#7a8faa;--dim:#3d5070;
+  --font:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;--r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-back{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-back:hover{color:var(--primary)}
+.nav-sep{color:var(--dim)}
+.nav-title{font-weight:600;font-size:.9rem}
+.lesson-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0}
+.lesson-tab{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;white-space:nowrap;background:transparent;color:var(--muted)}
+.lesson-tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.lesson-tab.active{background:var(--primary-dim);color:var(--primary);border:1px solid var(--primary-glow)}
+@media(max-width:640px){nav{flex-direction:column;height:auto;padding:10px 16px;gap:6px}.lesson-tabs{width:100%}}
+
+.phase-hero{padding:48px 32px 32px;max-width:1100px;margin:0 auto}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.phase-hero h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;letter-spacing:-.04em;margin-bottom:8px;background:linear-gradient(135deg,#fff 40%,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.phase-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+.phase-progress{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.pp-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.pp-step.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.pp-step.done{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.pp-step:not(.active):not(.done){color:var(--dim)}
+.pp-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.lesson-section{display:none;max-width:1100px;margin:0 auto;padding:32px 32px 80px}
+.lesson-section.active{display:block}
+.lesson-header{margin-bottom:32px}
+.lesson-num{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-family:var(--mono)}
+.lesson-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.lesson-desc{color:var(--muted);max-width:680px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.split-wide{grid-template-columns:2fr 3fr}
+
+.prose h3{font-size:1rem;font-weight:600;margin:20px 0 8px;color:var(--text)}
+.prose h3:first-child{margin-top:0}
+.prose p{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.prose ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.prose li{font-size:.9rem;color:var(--muted);padding-left:16px;position:relative}
+.prose li::before{content:'›';position:absolute;left:0;color:var(--primary)}
+.prose strong{color:var(--text);font-weight:600}
+.prose .callout{background:var(--primary-dim);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 16px;margin:12px 0}
+.prose .callout p{color:var(--text);margin:0}
+.prose code{font-family:var(--mono);font-size:.82rem;background:rgba(79,142,247,.1);padding:2px 6px;border-radius:4px;color:var(--primary)}
+
+.concepts-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:20px}
+.concepts-box h4{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.concept-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.concept-item:last-child{border-bottom:none}
+.concept-key{font-family:var(--mono);font-size:.75rem;color:var(--primary);font-weight:500;white-space:nowrap;min-width:120px}
+.concept-val{font-size:.8rem;color:var(--muted)}
+
+.demo-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:relative}
+.demo-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.demo-title span{color:var(--accent);font-size:.7rem;font-weight:600}
+
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.btn:hover{border-color:var(--border-b);color:var(--text)}
+.btn.active,.btn.primary{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.btn.accent{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.btn.secondary{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:var(--secondary)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+.lesson-nav{display:flex;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.big-btn{padding:12px 24px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font)}
+.big-btn.primary{background:var(--primary);color:#fff}
+.big-btn.primary:hover{background:#6fa2ff;box-shadow:0 4px 20px rgba(79,142,247,.4)}
+.big-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.big-btn.ghost:hover{color:var(--text);border-color:var(--border-b)}
+
+/* QUIZ */
+.quiz-wrap{max-width:720px;margin:0 auto}
+.quiz-progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:32px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary));border-radius:2px;transition:width .4s ease}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.q-text{font-size:1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:12px 16px;border-radius:var(--r-sm);border:1px solid var(--border);cursor:pointer;font-size:.88rem;transition:all .2s;background:var(--surface)}
+.option:hover:not(.locked){border-color:var(--border-b);background:rgba(255,255,255,.03)}
+.option.correct{border-color:var(--accent)!important;background:rgba(52,211,153,.1)!important;color:var(--accent)}
+.option.wrong{border-color:var(--danger)!important;background:rgba(248,113,113,.1)!important;color:var(--danger)}
+.option.locked{cursor:default}
+.explanation{margin-top:16px;padding:14px 16px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:var(--r-sm);font-size:.84rem;color:var(--text);line-height:1.6;display:none}
+.explanation.visible{display:block;animation:slideUp .3s ease}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.quiz-score{text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);display:none}
+.quiz-score.visible{display:block;animation:slideUp .4s ease}
+.score-num{font-size:4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-msg{font-size:1.1rem;color:var(--muted);margin-bottom:24px}
+
+/* Light mode */
+[data-theme="light"]{
+  --bg:#f4f6fc;--surface:#eaecf5;--card:#ffffff;--border:#cdd5e4;--border-b:#aab5cc;
+  --primary:#3a6fd8;--primary-dim:rgba(58,111,216,.1);--primary-glow:rgba(58,111,216,.25);
+  --secondary:#6d28d9;--accent:#059669;--warning:#d97706;--danger:#dc2626;--orange:#ea580c;
+  --text:#111827;--muted:#475569;--dim:#94a3b8;
+}
+[data-theme="light"] body{background:var(--bg)}
+[data-theme="light"] nav{background:rgba(244,246,252,.95)}
+[data-theme="light"] .phase-hero h1{background:linear-gradient(135deg,#111827 40%,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="light"] .callout{background:rgba(58,111,216,.07);border-color:rgba(58,111,216,.3)}
+[data-theme="light"] code{background:rgba(0,0,0,.07);color:#1e3a8a}
+.theme-toggle{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 13px;color:var(--muted);cursor:pointer;font-size:.8rem;font-family:var(--font);transition:all .2s;white-space:nowrap;flex-shrink:0}
+.theme-toggle:hover{color:var(--text);border-color:var(--primary)}
+@media(max-width:640px){.phase-hero,.lesson-section{padding-left:20px;padding-right:20px}}
+
+/* =============================================
+   PHASE 11 SPECIFIC
+   ============================================= */
+
+/* Hero gradient override — gold for final phase */
+.phase-hero h1.gold-gradient{background:linear-gradient(135deg,#fff 40%,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="light"] .phase-hero h1.gold-gradient{background:linear-gradient(135deg,#111827 40%,#d97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* KV Cache memory visualiser */
+.mem-grid{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;margin:12px 0}
+.mem-block{height:22px;border-radius:3px;transition:all .4s ease;border:1px solid transparent}
+.mem-block.free{background:var(--surface);border-color:var(--border)}
+.mem-block.r0{background:#4f8ef7;border-color:#6fa2ff}
+.mem-block.r1{background:#a78bfa;border-color:#c4b5fd}
+.mem-block.r2{background:#34d399;border-color:#6ee7b7}
+.mem-block.r3{background:#fbbf24;border-color:#fcd34d}
+.mem-block.r4{background:#f87171;border-color:#fca5a5}
+.mem-block.wasted{background:rgba(248,113,113,.18);border-color:rgba(248,113,113,.3)}
+.mem-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.mem-legend-item{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)}
+.mem-legend-dot{width:10px;height:10px;border-radius:2px}
+.mem-stat{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
+.mem-stat-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 14px;font-size:.8rem}
+.mem-stat-item .stat-label{color:var(--muted);font-size:.7rem;margin-bottom:2px}
+.mem-stat-item .stat-val{font-weight:700;font-family:var(--mono)}
+.stat-val.wasted-val{color:var(--danger)}
+.stat-val.used-val{color:var(--accent)}
+
+/* Terraform plan visualiser */
+.tf-resource{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface);margin-bottom:8px;transition:all .4s ease;font-family:var(--mono);font-size:.82rem}
+.tf-op{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
+.tf-op.create{background:rgba(52,211,153,.15);color:var(--accent)}
+.tf-op.modify{background:rgba(251,191,36,.15);color:var(--warning)}
+.tf-op.destroy{background:rgba(248,113,113,.15);color:var(--danger)}
+.tf-name{flex:1;color:var(--text)}
+.tf-type{color:var(--muted);font-size:.72rem}
+.tf-status{font-size:.72rem;font-weight:600;padding:3px 8px;border-radius:10px}
+.tf-status.planned-c{background:rgba(52,211,153,.1);color:var(--accent)}
+.tf-status.planned-m{background:rgba(251,191,36,.1);color:var(--warning)}
+.tf-status.planned-d{background:rgba(248,113,113,.1);color:var(--danger)}
+.tf-status.created{background:rgba(52,211,153,.2);color:var(--accent);animation:fadeIn .4s ease}
+.tf-status.unchanged{background:rgba(79,142,247,.1);color:var(--primary)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.tf-summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 16px;font-family:var(--mono);font-size:.8rem;color:var(--muted);margin-top:12px}
+.tf-summary strong{color:var(--text)}
+
+/* Flink checkpoint visualiser */
+.flink-pipeline{display:flex;align-items:center;gap:0;margin:16px 0;overflow-x:auto;padding-bottom:8px}
+.operator-box{background:var(--surface);border:2px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;min-width:120px;text-align:center;position:relative;transition:all .4s ease;flex-shrink:0}
+.operator-box .op-name{font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.operator-box .op-type{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.operator-box .op-state-bar{height:6px;border-radius:3px;background:var(--border);margin-top:8px;overflow:hidden}
+.operator-box .op-state-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--primary));border-radius:3px;transition:width .6s ease}
+.operator-box.checkpoint-active{border-color:var(--warning);box-shadow:0 0 14px rgba(251,191,36,.3)}
+.operator-box.checkpoint-done{border-color:var(--accent);box-shadow:0 0 10px rgba(52,211,153,.2)}
+.operator-box.failed{border-color:var(--danger);box-shadow:0 0 14px rgba(248,113,113,.4);animation:shake .4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.pipeline-arrow{color:var(--dim);font-size:1.2rem;padding:0 6px;flex-shrink:0;align-self:center}
+.checkpoint-barrier{width:4px;height:60px;background:var(--warning);border-radius:2px;box-shadow:0 0 10px rgba(251,191,36,.6);position:absolute;top:50%;transform:translateY(-50%);transition:left .5s ease;display:none}
+.flink-status{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 16px;font-size:.82rem;color:var(--muted);margin-top:12px;min-height:40px;line-height:1.5}
+.flink-status .status-ok{color:var(--accent)}
+.flink-status .status-warn{color:var(--warning)}
+.flink-status .status-err{color:var(--danger)}
+
+/* Data contract validator */
+.contract-tabs{display:flex;gap:4px;margin-bottom:16px}
+.contract-tab{padding:6px 14px;border-radius:var(--r-sm);font-size:.78rem;font-weight:600;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;font-family:var(--font)}
+.contract-tab:hover{color:var(--text)}
+.contract-tab.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.contract-display{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.75rem;color:#cde;line-height:1.8;min-height:160px;overflow-x:auto}
+.ct-key{color:#a78bfa}
+.ct-str{color:#34d399}
+.ct-num{color:#fbbf24}
+.ct-bool{color:#4f8ef7}
+.ct-comment{color:#4a6280}
+.contract-result{margin-top:12px;padding:12px 16px;border-radius:var(--r-sm);border:1px solid;font-size:.85rem;font-weight:600}
+.contract-result.pass{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.contract-result.fail{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.3);color:var(--danger)}
+.contract-result.warn{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3);color:var(--warning)}
+.contract-errors{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.contract-error-item{font-size:.78rem;font-weight:400;color:var(--danger);padding:4px 8px;background:rgba(248,113,113,.06);border-radius:4px;font-family:var(--mono)}
+
+/* LoRA calculator */
+.lora-sliders{display:flex;flex-direction:column;gap:20px;margin-bottom:20px}
+.slider-group{display:flex;flex-direction:column;gap:8px}
+.slider-label{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted)}
+.slider-label strong{color:var(--text);font-family:var(--mono)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:var(--border);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--primary);border:2px solid var(--bg);box-shadow:0 0 6px var(--primary-glow)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--primary);border:2px solid var(--bg)}
+.lora-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.lora-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px}
+.lora-stat .ls-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:4px}
+.lora-stat .ls-val{font-size:1.1rem;font-weight:700;font-family:var(--mono);color:var(--text)}
+.lora-stat .ls-val.accent{color:var(--accent)}
+.lora-stat .ls-val.warning{color:var(--warning)}
+.lora-visual{margin-top:16px}
+.lora-visual-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:10px}
+.lora-matrices{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.matrix-full{border-radius:4px;background:var(--dim);opacity:.5;transition:all .3s}
+.lora-decomp{display:flex;align-items:center;gap:6px}
+.matrix-a{border-radius:3px;background:var(--primary);opacity:.8;transition:all .3s}
+.matrix-b{border-radius:3px;background:var(--secondary);opacity:.8;transition:all .3s}
+.matrix-sep{color:var(--muted);font-size:.9rem;font-weight:700}
+.lora-pct-bar{height:8px;border-radius:4px;background:var(--border);margin-top:12px;overflow:hidden}
+.lora-pct-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--primary));border-radius:4px;transition:width .4s ease}
+.lora-pct-label{font-size:.75rem;color:var(--muted);margin-top:6px}
+</style>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← Roadmap</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Phase 11 — Advanced Topics</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="lesson-tabs" id="lessonTabs">
+      <button class="lesson-tab active" onclick="goLesson(0)">1. vLLM</button>
+      <button class="lesson-tab" onclick="goLesson(1)">2. Terraform</button>
+      <button class="lesson-tab" onclick="goLesson(2)">3. Flink</button>
+      <button class="lesson-tab" onclick="goLesson(3)">4. Data Contracts</button>
+      <button class="lesson-tab" onclick="goLesson(4)">5. Fine-tuning</button>
+      <button class="lesson-tab" onclick="goLesson(5)">✦ Quiz</button>
+    </div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
+  </div>
+</nav>
+
+<!-- PHASE HERO -->
+<div class="phase-hero">
+  <div class="breadcrumb"><a href="index.html">Roadmap</a> › Phase 11</div>
+  <h1 class="gold-gradient">Phase 11 — Advanced Topics</h1>
+  <p>LLM serving infrastructure, Terraform IaC, stream processing with Flink, data contracts, and fine-tuning techniques including LoRA and RLHF.</p>
+  <div class="phase-progress" id="phaseProgress">
+    <div class="pp-step active" onclick="goLesson(0)"><span class="pp-dot"></span>vLLM</div>
+    <div class="pp-step" onclick="goLesson(1)"><span class="pp-dot"></span>Terraform</div>
+    <div class="pp-step" onclick="goLesson(2)"><span class="pp-dot"></span>Flink</div>
+    <div class="pp-step" onclick="goLesson(3)"><span class="pp-dot"></span>Data Contracts</div>
+    <div class="pp-step" onclick="goLesson(4)"><span class="pp-dot"></span>Fine-tuning</div>
+    <div class="pp-step" onclick="goLesson(5)"><span class="pp-dot"></span>Quiz</div>
+  </div>
+</div>
+
+<!-- =================== LESSON 0 — vLLM =================== -->
+<section class="lesson-section active" id="lesson0">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 01 of 05</div>
+    <div class="lesson-title">vLLM &amp; LLM Inference Optimisation</div>
+    <div class="lesson-desc">High-throughput LLM serving: PagedAttention, continuous batching, speculative decoding, and quantization tradeoffs.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>What is vLLM?</h3>
+      <p>vLLM is a high-throughput LLM serving engine built for production. It achieves 10–24× higher throughput than naive serving by combining several innovations in memory management and batching strategy.</p>
+
+      <h3>PagedAttention</h3>
+      <p>The KV cache (key-value cache for attention) is the dominant memory consumer during inference. Standard attention allocates a <strong>large contiguous chunk</strong> per request — most of which is wasted because sequence length is unknown at allocation time. This fragmentation severely limits batch size.</p>
+      <p>PagedAttention borrows the OS concept of <strong>virtual memory paging</strong>: the KV cache is divided into fixed-size blocks (pages), allocated on demand. Blocks from different requests can be freely interleaved — no fragmentation, far larger effective batch sizes.</p>
+
+      <h3>Continuous Batching</h3>
+      <p>Traditional batching waits for all requests in a batch to finish before starting new ones. <strong>Continuous batching</strong> (iteration-level scheduling) inserts new requests as soon as a slot frees up — dramatically improving GPU utilisation and throughput.</p>
+
+      <h3>Speculative Decoding</h3>
+      <p>A small, fast <strong>draft model</strong> proposes N tokens ahead. The large model verifies all N in a single forward pass (parallel). If correct, you get N tokens for the cost of 1 forward pass. Reduces latency without accuracy loss.</p>
+
+      <h3>Quantization</h3>
+      <p><strong>GPTQ</strong> (post-training, layer-wise quantization), <strong>AWQ</strong> (weight-aware, preserves salient weights). int4 roughly halves VRAM vs fp16 with small accuracy drop; int8 is safer. Throughput vs latency: higher quantization improves throughput but may slightly increase time-to-first-token for large models.</p>
+
+      <div class="callout"><p><strong>Key metric:</strong> Throughput (tokens/sec) measures system capacity; Latency (time-to-first-token) measures user experience. PagedAttention primarily improves throughput by enabling large batches.</p></div>
+
+      <div class="concepts-box">
+        <h4>Quick Reference</h4>
+        <div class="concept-item"><span class="concept-key">PagedAttention</span><span class="concept-val">Fixed-size KV cache blocks — eliminates fragmentation</span></div>
+        <div class="concept-item"><span class="concept-key">Continuous batch</span><span class="concept-val">Insert requests as slots free; no batch-end waits</span></div>
+        <div class="concept-item"><span class="concept-key">Speculative dec.</span><span class="concept-val">Draft model proposes; large model verifies in parallel</span></div>
+        <div class="concept-item"><span class="concept-key">GPTQ / AWQ</span><span class="concept-val">Post-training quantization methods; int4/int8</span></div>
+        <div class="concept-item"><span class="concept-key">Throughput</span><span class="concept-val">Tokens/sec across all concurrent requests</span></div>
+        <div class="concept-item"><span class="concept-key">TTFT</span><span class="concept-val">Time To First Token — user-facing latency</span></div>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">KV Cache Memory Visualiser <span>Interactive Demo</span></div>
+      <div class="btn-group">
+        <button class="btn active" id="btnStdAttn" onclick="setMemMode('standard')">Standard Attention</button>
+        <button class="btn" id="btnPagedAttn" onclick="setMemMode('paged')">PagedAttention</button>
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px" id="memModeDesc">
+        Standard attention reserves a large contiguous block per request — unused slots are wasted (shown in red).
+      </div>
+      <div class="mem-grid" id="memGrid"></div>
+      <div class="mem-legend">
+        <div class="mem-legend-item"><div class="mem-legend-dot" style="background:#4f8ef7"></div>Request A</div>
+        <div class="mem-legend-item"><div class="mem-legend-dot" style="background:#a78bfa"></div>Request B</div>
+        <div class="mem-legend-item"><div class="mem-legend-dot" style="background:#34d399"></div>Request C</div>
+        <div class="mem-legend-item"><div class="mem-legend-dot" style="background:#fbbf24"></div>Request D</div>
+        <div class="mem-legend-item"><div class="mem-legend-dot" style="background:#f87171"></div>Request E</div>
+        <div class="mem-legend-item"><div class="mem-legend-dot" style="background:rgba(248,113,113,.18);border:1px solid rgba(248,113,113,.3)"></div>Wasted</div>
+        <div class="mem-legend-item"><div class="mem-legend-dot" style="background:var(--surface);border:1px solid var(--border)"></div>Free</div>
+      </div>
+      <div class="mem-stat" id="memStat">
+        <div class="mem-stat-item"><div class="stat-label">Total blocks</div><div class="stat-val">64</div></div>
+        <div class="mem-stat-item"><div class="stat-label">Used blocks</div><div class="stat-val used-val" id="usedBlocks">0</div></div>
+        <div class="mem-stat-item"><div class="stat-label">Wasted blocks</div><div class="stat-val wasted-val" id="wastedBlocks">0</div></div>
+        <div class="mem-stat-item"><div class="stat-label">Efficiency</div><div class="stat-val" id="efficiency">0%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <div></div>
+    <button class="big-btn primary" onclick="goLesson(1)">Next: Terraform →</button>
+  </div>
+</section>
+
+<!-- =================== LESSON 1 — TERRAFORM =================== -->
+<section class="lesson-section" id="lesson1">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 02 of 05</div>
+    <div class="lesson-title">Terraform &amp; Infrastructure as Code</div>
+    <div class="lesson-desc">Declarative infrastructure management with HCL: plan, apply, destroy, state, and modules.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>What is Terraform?</h3>
+      <p>Terraform is a <strong>declarative Infrastructure as Code</strong> tool by HashiCorp. You describe the desired state of your infrastructure in HCL, and Terraform figures out how to reach it. No more click-ops in the AWS console.</p>
+
+      <h3>HCL Syntax</h3>
+      <p>Resources are the building blocks. The syntax is: <code>resource "TYPE" "NAME" { ... }</code></p>
+      <div class="callout"><p><code>resource "aws_s3_bucket" "data" &#123; bucket = "my-data-lake" &#125;</code></p></div>
+
+      <h3>The Core Workflow</h3>
+      <ul>
+        <li><strong>terraform init</strong> — download provider plugins (AWS, GCP, etc.)</li>
+        <li><strong>terraform plan</strong> — preview changes without applying them</li>
+        <li><strong>terraform apply</strong> — create/update/delete resources</li>
+        <li><strong>terraform destroy</strong> — tear down all managed resources</li>
+      </ul>
+
+      <h3>State File</h3>
+      <p>Terraform maintains a <code>terraform.tfstate</code> file that maps your HCL config to real-world resources. This is how it knows what exists and what needs to change. For teams, store state remotely in <strong>S3 + DynamoDB</strong> (locking) to prevent conflicts.</p>
+
+      <h3>Why IaC?</h3>
+      <ul>
+        <li>Reproducible environments — dev matches prod</li>
+        <li>Version-controlled infrastructure — PRs, code review, audit trail</li>
+        <li>No click-ops drift — the code is the source of truth</li>
+        <li>Modules for reusable infrastructure components</li>
+      </ul>
+
+      <div class="concepts-box">
+        <h4>Quick Reference</h4>
+        <div class="concept-item"><span class="concept-key">terraform init</span><span class="concept-val">Download provider plugins</span></div>
+        <div class="concept-item"><span class="concept-key">terraform plan</span><span class="concept-val">Preview changes (dry run)</span></div>
+        <div class="concept-item"><span class="concept-key">terraform apply</span><span class="concept-val">Create / update resources</span></div>
+        <div class="concept-item"><span class="concept-key">terraform destroy</span><span class="concept-val">Delete all managed resources</span></div>
+        <div class="concept-item"><span class="concept-key">tfstate</span><span class="concept-val">Tracks real-world resource state</span></div>
+        <div class="concept-item"><span class="concept-key">Remote state</span><span class="concept-val">S3 + DynamoDB for team use</span></div>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Terraform Plan Visualiser <span>Interactive Demo</span></div>
+      <div class="btn-group">
+        <button class="btn active" id="tfBtnInitial" onclick="setTfScenario('initial')">Initial Deploy</button>
+        <button class="btn" id="tfBtnUpdate" onclick="setTfScenario('update')">Update Lambda</button>
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px" id="tfScenarioDesc">
+        All 4 resources will be created from scratch.
+      </div>
+      <div id="tfResources"></div>
+      <div class="tf-summary" id="tfSummary"></div>
+      <div class="btn-group" style="margin-top:14px;margin-bottom:0">
+        <button class="btn accent" id="tfApplyBtn" onclick="tfApply()">▶ terraform apply</button>
+        <button class="btn" onclick="tfReset()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(0)">← vLLM</button>
+    <button class="big-btn primary" onclick="goLesson(2)">Next: Flink →</button>
+  </div>
+</section>
+
+<!-- =================== LESSON 2 — FLINK =================== -->
+<section class="lesson-section" id="lesson2">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 03 of 05</div>
+    <div class="lesson-title">Apache Flink &amp; Stream Processing</div>
+    <div class="lesson-desc">Stateful stream processing at scale: checkpointing, event time, fault tolerance, and how Flink differs from Spark.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>What is Apache Flink?</h3>
+      <p>Flink is a <strong>stateful stream processing engine</strong> designed for low latency and high throughput. Unlike Spark Structured Streaming (micro-batch), Flink processes events <strong>one at a time</strong> as they arrive — true streaming with millisecond latency.</p>
+
+      <h3>Flink vs Spark Streaming</h3>
+      <ul>
+        <li><strong>Flink</strong>: true event-at-a-time streaming, ms latency, rich state management</li>
+        <li><strong>Spark</strong>: micro-batch (collect events, process as mini-batch), seconds latency</li>
+        <li>Flink's state is first-class — operators can hold arbitrary state between events</li>
+      </ul>
+
+      <h3>State Backends</h3>
+      <p><strong>HashMap</strong> — in-memory, fastest, limited by RAM. <strong>RocksDB</strong> — spills to disk, handles very large state (TBs), slightly slower.</p>
+
+      <h3>Checkpointing</h3>
+      <p>Flink periodically saves a <strong>consistent snapshot</strong> of all operator state to durable storage (S3). A checkpoint barrier flows through the pipeline — each operator saves its state when the barrier arrives. On failure, Flink restores from the last successful checkpoint and replays from there.</p>
+
+      <h3>Event Time vs Processing Time</h3>
+      <p><strong>Processing time</strong> uses the wall clock when the event arrives — simple but incorrect for out-of-order or late data. <strong>Event time</strong> uses the timestamp embedded in the event itself — correct windowing even for late-arriving data, using watermarks to track progress.</p>
+
+      <div class="concepts-box">
+        <h4>Quick Reference</h4>
+        <div class="concept-item"><span class="concept-key">True streaming</span><span class="concept-val">Event-at-a-time, not micro-batch</span></div>
+        <div class="concept-item"><span class="concept-key">State backend</span><span class="concept-key">HashMap (RAM) or RocksDB (disk)</span></div>
+        <div class="concept-item"><span class="concept-key">Checkpoint</span><span class="concept-val">Consistent state snapshot to S3</span></div>
+        <div class="concept-item"><span class="concept-key">Barrier</span><span class="concept-val">Special record triggering checkpoint in each operator</span></div>
+        <div class="concept-item"><span class="concept-key">Event time</span><span class="concept-val">Use event timestamp, not arrival time</span></div>
+        <div class="concept-item"><span class="concept-key">Watermark</span><span class="concept-val">Tracks event-time progress for windows</span></div>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Flink Checkpoint Visualiser <span>Interactive Demo</span></div>
+      <div class="flink-pipeline" id="flinkPipeline">
+        <div class="operator-box" id="fop0">
+          <div class="op-name">Source</div>
+          <div class="op-type">Kafka</div>
+          <div class="op-state-bar"><div class="op-state-fill" id="fstate0"></div></div>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="operator-box" id="fop1">
+          <div class="op-name">Filter</div>
+          <div class="op-type">Stateless</div>
+          <div class="op-state-bar"><div class="op-state-fill" id="fstate1"></div></div>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="operator-box" id="fop2">
+          <div class="op-name">Aggregate</div>
+          <div class="op-type">Stateful</div>
+          <div class="op-state-bar"><div class="op-state-fill" id="fstate2"></div></div>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="operator-box" id="fop3">
+          <div class="op-name">Sink</div>
+          <div class="op-type">S3 / DB</div>
+          <div class="op-state-bar"><div class="op-state-fill" id="fstate3"></div></div>
+        </div>
+      </div>
+      <div class="flink-status" id="flinkStatus">Ready. Start a checkpoint or simulate a failure.</div>
+      <div class="btn-group" style="margin-top:14px;margin-bottom:0">
+        <button class="btn accent" id="flinkCkptBtn" onclick="startCheckpoint()">✦ Start Checkpoint</button>
+        <button class="btn" style="border-color:rgba(248,113,113,.3);color:var(--danger)" id="flinkFailBtn" onclick="simulateFailure()">✕ Simulate Failure</button>
+        <button class="btn" id="flinkRestoreBtn" onclick="restoreCheckpoint()" style="display:none">↺ Restore from Checkpoint</button>
+        <button class="btn" onclick="flinkReset()">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(1)">← Terraform</button>
+    <button class="big-btn primary" onclick="goLesson(3)">Next: Data Contracts →</button>
+  </div>
+</section>
+
+<!-- =================== LESSON 3 — DATA CONTRACTS =================== -->
+<section class="lesson-section" id="lesson3">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 04 of 05</div>
+    <div class="lesson-title">Data Contracts</div>
+    <div class="lesson-desc">Explicit agreements between data producers and consumers: schema, semantics, SLAs, and ownership in a data mesh world.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>The Problem</h3>
+      <p>Data pipelines break <strong>silently</strong> when upstream teams rename a column, change a type, or drop a field. Consumers only find out when dashboards show wrong numbers — or nothing at all.</p>
+
+      <h3>What is a Data Contract?</h3>
+      <p>A <strong>data contract</strong> is an explicit, versioned agreement published by the data producer specifying: schema (field names, types, nullability), semantics (what does <code>revenue</code> mean?), SLAs (freshness, availability), and ownership.</p>
+
+      <h3>Schema Formats</h3>
+      <p>Common encoding formats: <strong>Avro</strong> (compact binary, schema in registry), <strong>Protobuf</strong> (Google, typed, great for gRPC), <strong>JSON Schema</strong> (flexible, human-readable). Schema evolution rules define backward/forward compatibility.</p>
+
+      <h3>Semantic Layer &amp; Data Mesh</h3>
+      <p>The <strong>semantic layer</strong> ensures <code>revenue</code> means the same thing in every dashboard, report, and ML model. In a <strong>data mesh</strong>, each domain team owns its data as a product and publishes contracts — decentralised ownership with centralised governance.</p>
+
+      <h3>Tooling</h3>
+      <p>Enforcement tools: <strong>Great Expectations</strong> (Python, assertion-based), <strong>Soda</strong> (declarative checks, Soda CL), <strong>dbt tests</strong> (SQL-level assertions in dbt), <strong>OpenMetadata</strong> (data catalog with lineage).</p>
+
+      <div class="concepts-box">
+        <h4>Quick Reference</h4>
+        <div class="concept-item"><span class="concept-key">Data contract</span><span class="concept-val">Schema + SLA + ownership agreement</span></div>
+        <div class="concept-item"><span class="concept-key">Avro</span><span class="concept-val">Compact binary format, schema registry</span></div>
+        <div class="concept-item"><span class="concept-key">Backward compat</span><span class="concept-val">Old consumers can read new data</span></div>
+        <div class="concept-item"><span class="concept-key">Data mesh</span><span class="concept-val">Decentralised domain ownership</span></div>
+        <div class="concept-item"><span class="concept-key">Semantic layer</span><span class="concept-val">Shared definition of business metrics</span></div>
+        <div class="concept-item"><span class="concept-key">Great Expectations</span><span class="concept-val">Python-based data assertion framework</span></div>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Data Contract Validator <span>Interactive Demo</span></div>
+      <div class="contract-tabs">
+        <button class="contract-tab active" onclick="setContractTab('valid')">Valid Payload</button>
+        <button class="contract-tab" onclick="setContractTab('invalid')">Invalid Payload</button>
+        <button class="contract-tab" onclick="setContractTab('v2')">Version 2.0 Proposal</button>
+      </div>
+      <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:6px">Contract: user_events v1.0 (Avro)</div>
+      <div class="contract-display" id="contractDisplay"></div>
+      <div class="contract-result" id="contractResult"></div>
+      <div class="contract-errors" id="contractErrors"></div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(2)">← Flink</button>
+    <button class="big-btn primary" onclick="goLesson(4)">Next: Fine-tuning →</button>
+  </div>
+</section>
+
+<!-- =================== LESSON 4 — FINE-TUNING =================== -->
+<section class="lesson-section" id="lesson4">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 05 of 05</div>
+    <div class="lesson-title">Fine-tuning &amp; Alignment</div>
+    <div class="lesson-desc">When to fine-tune, LoRA vs full fine-tuning, QLoRA, RLHF, DPO, and avoiding catastrophic forgetting.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>When to Fine-tune?</h3>
+      <p>Fine-tune when you need: domain-specific vocabulary, consistent output format, proprietary knowledge not in the base model, or a smaller fine-tuned model that beats a larger base model at your specific task (latency + cost win).</p>
+
+      <h3>Full Fine-tuning vs LoRA</h3>
+      <p><strong>Full fine-tuning</strong> updates all parameters — expensive in VRAM and compute, risks catastrophic forgetting (overwrites general capabilities). <strong>LoRA</strong> (Low-Rank Adaptation) freezes the original weights and trains only two small adapter matrices A and B alongside each layer. The weight update is <code>ΔW = A × B</code> where A is (d × r) and B is (r × d), with rank r ≪ d. Only ~0.1% of parameters are trained.</p>
+
+      <h3>QLoRA</h3>
+      <p>LoRA applied to a <strong>4-bit quantized base model</strong> (NF4 quantization). Enables fine-tuning a 70B model on a single A100 80 GB GPU. The quantized base model is frozen; only LoRA adapters are trained in bf16.</p>
+
+      <h3>RLHF &amp; DPO</h3>
+      <p><strong>RLHF</strong>: train a reward model on human preference data, then use PPO to update the LLM to maximise reward. Effective but complex (requires separate reward model, PPO instability). <strong>DPO</strong> (Direct Preference Optimisation): skips the reward model entirely — directly optimises the LLM on preference pairs using a closed-form objective. Simpler, often comparable quality.</p>
+
+      <h3>Avoiding Overfitting</h3>
+      <p>Always validate on a held-out set. Watch for: loss on eval rising while train loss drops (overfit), performance on general benchmarks dropping (catastrophic forgetting). LoRA's small parameter count naturally regularises.</p>
+
+      <div class="concepts-box">
+        <h4>Quick Reference</h4>
+        <div class="concept-item"><span class="concept-key">LoRA</span><span class="concept-val">Train A×B adapter matrices, freeze base weights</span></div>
+        <div class="concept-item"><span class="concept-key">QLoRA</span><span class="concept-val">LoRA + 4-bit quantized base model</span></div>
+        <div class="concept-item"><span class="concept-key">Rank r</span><span class="concept-val">LoRA bottleneck dimension (4, 8, 16, 32)</span></div>
+        <div class="concept-item"><span class="concept-key">RLHF</span><span class="concept-val">Reward model + PPO alignment</span></div>
+        <div class="concept-item"><span class="concept-key">DPO</span><span class="concept-val">Direct preference optimisation, no reward model</span></div>
+        <div class="concept-item"><span class="concept-key">Cat. forgetting</span><span class="concept-val">General capabilities degraded by fine-tuning</span></div>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">LoRA Parameter Calculator <span>Interactive Demo</span></div>
+      <div class="lora-sliders">
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Model size</span>
+            <strong id="modelSizeLabel">7B</strong>
+          </div>
+          <input type="range" id="modelSizeSlider" min="0" max="2" step="1" value="0" oninput="updateLora()">
+          <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--dim)"><span>7B</span><span>13B</span><span>70B</span></div>
+        </div>
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>LoRA rank (r)</span>
+            <strong id="loraRankLabel">8</strong>
+          </div>
+          <input type="range" id="loraRankSlider" min="0" max="3" step="1" value="1" oninput="updateLora()">
+          <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--dim)"><span>4</span><span>8</span><span>16</span><span>32</span></div>
+        </div>
+      </div>
+      <div class="lora-stats">
+        <div class="lora-stat"><div class="ls-label">Full fine-tune params</div><div class="ls-val" id="fullParams">—</div></div>
+        <div class="lora-stat"><div class="ls-label">LoRA trainable params</div><div class="ls-val accent" id="loraParams">—</div></div>
+        <div class="lora-stat"><div class="ls-label">% of params trained</div><div class="ls-val warning" id="loraPct">—</div></div>
+        <div class="lora-stat"><div class="ls-label">Approx VRAM reduction</div><div class="ls-val accent" id="vramReduction">—</div></div>
+      </div>
+      <div class="lora-visual">
+        <div class="lora-visual-label">Weight matrix decomposition</div>
+        <div class="lora-matrices">
+          <div style="text-align:center">
+            <div class="matrix-full" id="matrixFull" style="width:64px;height:64px"></div>
+            <div style="font-size:.65rem;color:var(--muted);margin-top:4px">Full W</div>
+          </div>
+          <div style="color:var(--muted);align-self:center;font-size:1.2rem">≈</div>
+          <div class="lora-decomp">
+            <div style="text-align:center">
+              <div class="matrix-a" id="matrixA" style="width:16px;height:64px"></div>
+              <div style="font-size:.65rem;color:var(--muted);margin-top:4px">A</div>
+            </div>
+            <div class="matrix-sep">×</div>
+            <div style="text-align:center">
+              <div class="matrix-b" id="matrixB" style="width:64px;height:16px"></div>
+              <div style="font-size:.65rem;color:var(--muted);margin-top:4px">B</div>
+            </div>
+          </div>
+        </div>
+        <div class="lora-pct-bar"><div class="lora-pct-fill" id="loraPctBar" style="width:1%"></div></div>
+        <div class="lora-pct-label" id="loraPctBarLabel">LoRA trains a tiny fraction of total parameters</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(3)">← Data Contracts</button>
+    <button class="big-btn primary" onclick="goLesson(5)">✦ Take the Quiz →</button>
+  </div>
+</section>
+
+<!-- =================== QUIZ =================== -->
+<section class="lesson-section" id="lesson5">
+  <div class="lesson-header">
+    <div class="lesson-num">Knowledge Check</div>
+    <div class="lesson-title">Phase 11 Quiz</div>
+    <div class="lesson-desc">Test your understanding of vLLM, Terraform, Flink, Data Contracts, and Fine-tuning.</div>
+  </div>
+
+  <div class="quiz-wrap">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizProgressFill" style="width:0%"></div></div>
+
+    <!-- Q1 -->
+    <div class="question-card" id="qcard0">
+      <div class="q-num">Question 1 of 4</div>
+      <div class="q-text">vLLM's PagedAttention improves throughput by:</div>
+      <div class="options" id="qopts0">
+        <div class="option" onclick="selectOption(0,0)">Running multiple model replicas simultaneously</div>
+        <div class="option" onclick="selectOption(0,1)">Eliminating KV cache memory fragmentation using fixed-size block allocation</div>
+        <div class="option" onclick="selectOption(0,2)">Using int4 quantization automatically</div>
+        <div class="option" onclick="selectOption(0,3)">Caching responses for identical prompts</div>
+      </div>
+      <div class="explanation" id="qexp0">PagedAttention is inspired by OS virtual memory paging. By dividing the KV cache into fixed-size blocks and allocating them on demand, it eliminates the memory fragmentation that occurs when each request pre-reserves a large contiguous chunk — enabling much larger batch sizes and significantly higher throughput.</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question-card" id="qcard1" style="display:none">
+      <div class="q-num">Question 2 of 4</div>
+      <div class="q-text"><code>terraform plan</code> does what?</div>
+      <div class="options" id="qopts1">
+        <div class="option" onclick="selectOption(1,0)">Creates all resources immediately</div>
+        <div class="option" onclick="selectOption(1,1)">Destroys and recreates resources</div>
+        <div class="option" onclick="selectOption(1,2)">Shows a preview of what changes Terraform will make without applying them</div>
+        <div class="option" onclick="selectOption(1,3)">Validates HCL syntax only</div>
+      </div>
+      <div class="explanation" id="qexp1"><code>terraform plan</code> is a dry run — it reads current state, compares it to your HCL configuration, and shows exactly what it would create (+), modify (~), or destroy (-) without actually making any changes. This is an essential safety step before <code>terraform apply</code>.</div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question-card" id="qcard2" style="display:none">
+      <div class="q-num">Question 3 of 4</div>
+      <div class="q-text">What makes Apache Flink different from Spark Structured Streaming?</div>
+      <div class="options" id="qopts2">
+        <div class="option" onclick="selectOption(2,0)">Flink only works with Kafka</div>
+        <div class="option" onclick="selectOption(2,1)">Flink processes events one at a time (true streaming); Spark collects micro-batches</div>
+        <div class="option" onclick="selectOption(2,2)">Flink requires more memory than Spark</div>
+        <div class="option" onclick="selectOption(2,3)">Flink cannot handle stateful computations</div>
+      </div>
+      <div class="explanation" id="qexp2">Flink is a true streaming engine — it processes each event as it arrives, achieving millisecond latency. Spark Structured Streaming uses a micro-batch model: it collects events into small batches (typically seconds) and processes them together. Flink also has richer, first-class state management designed for long-running stateful computations.</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question-card" id="qcard3" style="display:none">
+      <div class="q-num">Question 4 of 4</div>
+      <div class="q-text">LoRA fine-tuning trains:</div>
+      <div class="options" id="qopts3">
+        <div class="option" onclick="selectOption(3,0)">All model parameters at reduced precision</div>
+        <div class="option" onclick="selectOption(3,1)">Only the final transformer block</div>
+        <div class="option" onclick="selectOption(3,2)">Small adapter matrices added alongside frozen original weights</div>
+        <div class="option" onclick="selectOption(3,3)">The embedding layer only</div>
+      </div>
+      <div class="explanation" id="qexp3">LoRA (Low-Rank Adaptation) keeps all original model weights frozen and inserts small trainable matrices A and B alongside each attention layer. The effective weight update is ΔW = A × B where rank r ≪ d, meaning only ~0.1% of parameters are trained. This dramatically reduces VRAM requirements while achieving performance close to full fine-tuning.</div>
+    </div>
+
+    <div class="quiz-nav" id="quizNav">
+      <div></div>
+      <button class="big-btn primary" id="quizNextBtn" onclick="quizNext()" disabled>Next Question →</button>
+    </div>
+
+    <div class="quiz-score" id="quizScore">
+      <div class="score-num" id="scoreNum"></div>
+      <div class="score-msg" id="scoreMsg"></div>
+      <button class="big-btn primary" onclick="resetQuiz()" style="margin-right:12px">Try Again</button>
+      <button class="big-btn ghost" onclick="goLesson(0)">← Review Lessons</button>
+      <div id="quizDoneArea" style="margin-top:24px"></div>
+    </div>
+  </div>
+
+  <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;max-width:720px;margin-left:auto;margin-right:auto">
+    <button class="big-btn ghost" onclick="goLesson(4)">← Fine-tuning</button>
+    <button class="big-btn accent" style="background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);color:var(--accent)" onclick="markPhase11Done()">✓ Mark Phase Complete</button>
+  </div>
+</section>
+
+<script>
+// ── THEME ──────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const html=document.documentElement;
+  const isLight=html.getAttribute('data-theme')==='light';
+  if(isLight){html.removeAttribute('data-theme');localStorage.setItem('theme','dark');document.getElementById('themeToggle').textContent='☀ Light';}
+  else{html.setAttribute('data-theme','light');localStorage.setItem('theme','light');document.getElementById('themeToggle').textContent='☾ Dark';}
+}
+(function(){
+  const t=localStorage.getItem('theme');
+  document.getElementById('themeToggle').textContent=(t==='light')?'☾ Dark':'☀ Light';
+})();
+
+// ── NAVIGATION ─────────────────────────────────────────────────────────
+function goLesson(n){
+  localStorage.setItem('phase11lesson', n);
+  document.querySelectorAll('.lesson-section').forEach((s,i)=>{
+    s.classList.toggle('active',i===n);
+  });
+  document.querySelectorAll('.lesson-tab').forEach((t,i)=>{
+    t.classList.toggle('active',i===n);
+  });
+  document.querySelectorAll('.pp-step').forEach((s,i)=>{
+    s.classList.remove('active');
+    if(i===n) s.classList.add('active');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===0) initMemGrid();
+  if(n===1) initTfDemo();
+  if(n===3) initContract();
+  if(n===4) updateLora();
+}
+
+// ── MARK PHASE COMPLETE ────────────────────────────────────────────────
+function markPhase11Done(){
+  localStorage.setItem('phase11done','1');
+  const area=document.getElementById('quizDoneArea');
+  area.innerHTML='<p style="color:var(--accent);font-weight:600;font-size:.95rem">Phase 11 marked complete! <a href="index.html" style="color:var(--primary);text-decoration:none;margin-left:8px">← Back to Roadmap</a></p>';
+  document.querySelectorAll('.pp-step').forEach(s=>s.classList.add('done'));
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// LESSON 0 — KV CACHE MEMORY VISUALISER
+// ══════════════════════════════════════════════════════════════════════
+const TOTAL_BLOCKS = 64;
+// Standard: each request gets a fixed big allocation (many wasted)
+// Paged: exact allocation per request
+const REQUESTS = [
+  {id:'r0', usedBlocks:10, allocBlocks:16}, // standard: 16 allocated, 10 used
+  {id:'r1', usedBlocks:6,  allocBlocks:12},
+  {id:'r2', usedBlocks:8,  allocBlocks:12},
+  {id:'r3', usedBlocks:4,  allocBlocks:8},
+  {id:'r4', usedBlocks:5,  allocBlocks:8},
+];
+
+let memMode = 'standard';
+
+function setMemMode(mode){
+  memMode = mode;
+  document.getElementById('btnStdAttn').classList.toggle('active', mode==='standard');
+  document.getElementById('btnPagedAttn').classList.toggle('active', mode==='paged');
+  const desc = document.getElementById('memModeDesc');
+  if(mode==='standard'){
+    desc.textContent='Standard attention reserves a large contiguous block per request — unused slots are wasted (shown in red).';
+  } else {
+    desc.textContent='PagedAttention allocates only the blocks actually needed — no fragmentation, maximum GPU memory utilisation.';
+  }
+  renderMemGrid();
+}
+
+function initMemGrid(){ renderMemGrid(); }
+
+function renderMemGrid(){
+  const grid = document.getElementById('memGrid');
+  const blocks = new Array(TOTAL_BLOCKS).fill(null).map(()=>({cls:'free', req:null}));
+  let usedCount = 0, wastedCount = 0;
+
+  if(memMode === 'standard'){
+    let pos = 0;
+    REQUESTS.forEach(r=>{
+      for(let i=0;i<r.allocBlocks;i++){
+        if(pos < TOTAL_BLOCKS){
+          if(i < r.usedBlocks){ blocks[pos].cls = r.id; usedCount++; }
+          else { blocks[pos].cls = 'wasted'; wastedCount++; }
+          pos++;
+        }
+      }
+    });
+  } else {
+    // Paged: pack tightly, only actual used blocks
+    let pos = 0;
+    REQUESTS.forEach(r=>{
+      for(let i=0;i<r.usedBlocks;i++){
+        if(pos < TOTAL_BLOCKS){ blocks[pos].cls = r.id; usedCount++; pos++; }
+      }
+    });
+  }
+
+  grid.innerHTML = blocks.map(b=>`<div class="mem-block ${b.cls}"></div>`).join('');
+  document.getElementById('usedBlocks').textContent = usedCount;
+  document.getElementById('wastedBlocks').textContent = wastedCount;
+  const eff = Math.round((usedCount/(usedCount+wastedCount||1))*100);
+  document.getElementById('efficiency').textContent = (usedCount+wastedCount===0?'0':eff)+'%';
+  document.getElementById('efficiency').style.color = memMode==='paged'?'var(--accent)':'var(--warning)';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// LESSON 1 — TERRAFORM PLAN VISUALISER
+// ══════════════════════════════════════════════════════════════════════
+const TF_SCENARIOS = {
+  initial:{
+    desc:'All 4 resources will be created from scratch.',
+    resources:[
+      {name:'aws_s3_bucket.data_lake',    type:'S3 Bucket',          op:'create', symbol:'+'},
+      {name:'aws_iam_role.lambda_exec',   type:'IAM Role',           op:'create', symbol:'+'},
+      {name:'aws_lambda_function.etl',    type:'Lambda Function',    op:'create', symbol:'+'},
+      {name:'aws_cloudwatch_log_group.etl',type:'CloudWatch Logs',   op:'create', symbol:'+'},
+    ],
+    summary:() => `Plan: <strong>4 to add</strong>, 0 to change, 0 to destroy.`
+  },
+  update:{
+    desc:'Only the Lambda function configuration changes (new runtime). Other resources are unchanged.',
+    resources:[
+      {name:'aws_s3_bucket.data_lake',    type:'S3 Bucket',          op:'unchanged', symbol:'~'},
+      {name:'aws_iam_role.lambda_exec',   type:'IAM Role',           op:'unchanged', symbol:'~'},
+      {name:'aws_lambda_function.etl',    type:'Lambda Function',    op:'modify',    symbol:'~'},
+      {name:'aws_cloudwatch_log_group.etl',type:'CloudWatch Logs',   op:'unchanged', symbol:'~'},
+    ],
+    summary:() => `Plan: 0 to add, <strong>1 to change</strong>, 0 to destroy.`
+  }
+};
+
+let tfScenario = 'initial';
+let tfApplied = false;
+let tfApplyTimeout = null;
+
+function initTfDemo(){ tfScenario='initial'; tfApplied=false; renderTfPlan(); }
+
+function setTfScenario(s){
+  tfScenario = s;
+  tfApplied = false;
+  clearTimeout(tfApplyTimeout);
+  document.getElementById('tfBtnInitial').classList.toggle('active', s==='initial');
+  document.getElementById('tfBtnUpdate').classList.toggle('active', s==='update');
+  renderTfPlan();
+}
+
+function renderTfPlan(applied){
+  const sc = TF_SCENARIOS[tfScenario];
+  document.getElementById('tfScenarioDesc').textContent = sc.desc;
+  const container = document.getElementById('tfResources');
+  container.innerHTML = sc.resources.map((r,i)=>{
+    let opClass = r.op==='create'?'create':r.op==='modify'?'modify':r.op==='destroy'?'destroy':'';
+    let statusClass, statusText;
+    if(!applied){
+      if(r.op==='create'){statusClass='planned-c';statusText='+ create';}
+      else if(r.op==='modify'){statusClass='planned-m';statusText='~ modify';}
+      else if(r.op==='destroy'){statusClass='planned-d';statusText='- destroy';}
+      else{statusClass='unchanged';statusText='no changes';}
+    } else {
+      if(r.op==='create'){statusClass='created';statusText='✓ created';}
+      else if(r.op==='modify'){statusClass='created';statusText='✓ modified';}
+      else if(r.op==='destroy'){statusClass='planned-d';statusText='✓ destroyed';}
+      else{statusClass='unchanged';statusText='no changes';}
+    }
+    return `<div class="tf-resource" id="tfres${i}">
+      <div class="tf-op ${opClass}">${r.symbol}</div>
+      <div class="tf-name">${r.name}</div>
+      <div class="tf-type">${r.type}</div>
+      <div class="tf-status ${statusClass}">${statusText}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('tfSummary').innerHTML = sc.summary();
+  document.getElementById('tfApplyBtn').disabled = !!applied;
+}
+
+function tfApply(){
+  if(tfApplied) return;
+  const sc = TF_SCENARIOS[tfScenario];
+  let i = 0;
+  function applyNext(){
+    if(i >= sc.resources.length){ tfApplied=true; return; }
+    const r = sc.resources[i];
+    const el = document.getElementById('tfres'+i);
+    if(el){
+      let statusClass, statusText;
+      if(r.op==='create'){statusClass='created';statusText='✓ created';}
+      else if(r.op==='modify'){statusClass='created';statusText='✓ modified';}
+      else{statusClass='unchanged';statusText='no changes';}
+      const badge = el.querySelector('.tf-status');
+      badge.className='tf-status '+statusClass;
+      badge.textContent=statusText;
+    }
+    i++;
+    tfApplyTimeout = setTimeout(applyNext, 500);
+  }
+  applyNext();
+  document.getElementById('tfApplyBtn').disabled = true;
+}
+
+function tfReset(){
+  clearTimeout(tfApplyTimeout);
+  tfApplied=false;
+  renderTfPlan(false);
+  document.getElementById('tfApplyBtn').disabled=false;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// LESSON 2 — FLINK CHECKPOINT VISUALISER
+// ══════════════════════════════════════════════════════════════════════
+let flinkCheckpointDone = false;
+let flinkFailed = false;
+let flinkAnimating = false;
+
+function flinkReset(){
+  flinkCheckpointDone = false;
+  flinkFailed = false;
+  flinkAnimating = false;
+  for(let i=0;i<4;i++){
+    const op = document.getElementById('fop'+i);
+    op.classList.remove('checkpoint-active','checkpoint-done','failed');
+    document.getElementById('fstate'+i).style.width='0%';
+  }
+  document.getElementById('flinkStatus').innerHTML='Ready. Start a checkpoint or simulate a failure.';
+  document.getElementById('flinkCkptBtn').disabled=false;
+  document.getElementById('flinkFailBtn').disabled=false;
+  document.getElementById('flinkRestoreBtn').style.display='none';
+}
+
+function startCheckpoint(){
+  if(flinkAnimating) return;
+  flinkAnimating=true;
+  document.getElementById('flinkCkptBtn').disabled=true;
+  document.getElementById('flinkFailBtn').disabled=true;
+  document.getElementById('flinkStatus').innerHTML='<span class="status-warn">▶ Checkpoint barrier flowing through pipeline…</span>';
+
+  let step = 0;
+  function doStep(){
+    if(step > 3){
+      flinkCheckpointDone=true; flinkAnimating=false;
+      document.getElementById('flinkStatus').innerHTML='<span class="status-ok">✓ Checkpoint complete — all operator state saved to S3.</span>';
+      document.getElementById('flinkCkptBtn').disabled=false;
+      document.getElementById('flinkFailBtn').disabled=false;
+      return;
+    }
+    const op = document.getElementById('fop'+step);
+    op.classList.add('checkpoint-active');
+    setTimeout(()=>{
+      document.getElementById('fstate'+step).style.width='100%';
+      setTimeout(()=>{
+        op.classList.remove('checkpoint-active');
+        op.classList.add('checkpoint-done');
+        step++;
+        setTimeout(doStep, 200);
+      }, 500);
+    }, 300);
+  }
+  doStep();
+}
+
+function simulateFailure(){
+  if(flinkAnimating) return;
+  flinkFailed = true;
+  const agg = document.getElementById('fop2');
+  agg.classList.add('failed');
+  document.getElementById('flinkStatus').innerHTML='<span class="status-err">✕ Aggregate operator failed! Job halted.</span>';
+  document.getElementById('flinkCkptBtn').disabled=true;
+  document.getElementById('flinkFailBtn').disabled=true;
+  if(flinkCheckpointDone){
+    document.getElementById('flinkRestoreBtn').style.display='inline-flex';
+  }
+}
+
+function restoreCheckpoint(){
+  document.getElementById('flinkRestoreBtn').style.display='none';
+  const agg = document.getElementById('fop2');
+  agg.classList.remove('failed');
+  document.getElementById('flinkStatus').innerHTML='<span class="status-warn">↺ Restoring from last checkpoint…</span>';
+  setTimeout(()=>{
+    document.getElementById('flinkStatus').innerHTML='<span class="status-ok">✓ Restored from checkpoint. Replaying events from last consistent snapshot.</span>';
+    agg.classList.add('checkpoint-done');
+    flinkFailed=false;
+    document.getElementById('flinkCkptBtn').disabled=false;
+    document.getElementById('flinkFailBtn').disabled=false;
+  }, 1200);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// LESSON 3 — DATA CONTRACT VALIDATOR
+// ══════════════════════════════════════════════════════════════════════
+const CONTRACT_TABS = {
+  valid:{
+    label:'valid',
+    code:`<span class="ct-comment">// Payload — matches contract v1.0</span>
+{
+  <span class="ct-key">"user_id"</span>: <span class="ct-str">"u_8821a"</span>,
+  <span class="ct-key">"event_type"</span>: <span class="ct-str">"page_view"</span>,
+  <span class="ct-key">"timestamp"</span>: <span class="ct-num">1716825600</span>,
+  <span class="ct-key">"session_id"</span>: <span class="ct-str">"sess_xk91"</span>,
+  <span class="ct-key">"properties"</span>: {
+    <span class="ct-key">"url"</span>: <span class="ct-str">"/dashboard"</span>,
+    <span class="ct-key">"referrer"</span>: <span class="ct-str">"google.com"</span>
+  }
+}`,
+    result:'pass',
+    resultText:'✓ Contract satisfied — all fields present and types match v1.0 schema.',
+    errors:[]
+  },
+  invalid:{
+    label:'invalid',
+    code:`<span class="ct-comment">// Payload — contract violation</span>
+{
+  <span class="ct-key">"user_id"</span>: <span class="ct-str">"u_8821a"</span>,
+  <span class="ct-comment">// ✕ event_type missing (required field)</span>
+  <span class="ct-key">"timestamp"</span>: <span class="ct-str">"2024-05-27T12:00:00Z"</span>,
+  <span class="ct-comment">// ✕ timestamp should be int64 (unix ms), not string</span>
+  <span class="ct-key">"properties"</span>: {
+    <span class="ct-key">"url"</span>: <span class="ct-str">"/dashboard"</span>
+  }
+}`,
+    result:'fail',
+    resultText:'✕ Contract violated — 2 errors found.',
+    errors:[
+      'Field "event_type" is required but missing',
+      'Field "timestamp": expected int64, got string — "2024-05-27T12:00:00Z"'
+    ]
+  },
+  v2:{
+    label:'v2 proposal',
+    code:`<span class="ct-comment">// Version 2.0 proposal — adds optional field</span>
+{
+  <span class="ct-key">"user_id"</span>: <span class="ct-str">"u_8821a"</span>,
+  <span class="ct-key">"event_type"</span>: <span class="ct-str">"page_view"</span>,
+  <span class="ct-key">"timestamp"</span>: <span class="ct-num">1716825600</span>,
+  <span class="ct-key">"session_id"</span>: <span class="ct-str">"sess_xk91"</span>,
+  <span class="ct-key">"properties"</span>: { <span class="ct-key">"url"</span>: <span class="ct-str">"/dashboard"</span> },
+  <span class="ct-key">"geo_country"</span>: <span class="ct-str">"US"</span>
+  <span class="ct-comment">// ↑ NEW optional field (default: null)</span>
+}`,
+    result:'warn',
+    resultText:'⚠ Breaking change? → No. New optional field with default null is backward-compatible. Existing v1.0 consumers safely ignore it.',
+    errors:[]
+  }
+};
+
+let activeContractTab = 'valid';
+
+function initContract(){ setContractTab('valid'); }
+
+function setContractTab(tab){
+  activeContractTab = tab;
+  document.querySelectorAll('.contract-tab').forEach((el,i)=>{
+    const tabs=['valid','invalid','v2'];
+    el.classList.toggle('active',tabs[i]===tab);
+  });
+  const data = CONTRACT_TABS[tab];
+  document.getElementById('contractDisplay').innerHTML = data.code;
+  const res = document.getElementById('contractResult');
+  res.className = 'contract-result '+data.result;
+  res.textContent = data.resultText;
+  const errBox = document.getElementById('contractErrors');
+  errBox.innerHTML = data.errors.map(e=>`<div class="contract-error-item">${e}</div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// LESSON 4 — LoRA PARAMETER CALCULATOR
+// ══════════════════════════════════════════════════════════════════════
+const MODEL_SIZES = [7e9, 13e9, 70e9];
+const MODEL_LABELS = ['7B','13B','70B'];
+const LORA_RANKS = [4, 8, 16, 32];
+
+// Approximate number of attention projection matrices per model
+// Each matrix has dim d×d; LoRA replaces with d×r + r×d
+// For a transformer, there are ~4 proj matrices per layer
+// 7B ~ 32 layers, 13B ~ 40 layers, 70B ~ 80 layers
+const MODEL_LAYERS = [32, 40, 80];
+const MODEL_DIM    = [4096, 5120, 8192]; // hidden dim
+
+function fmt(n){
+  if(n>=1e9) return (n/1e9).toFixed(2)+'B';
+  if(n>=1e6) return (n/1e6).toFixed(1)+'M';
+  if(n>=1e3) return (n/1e3).toFixed(0)+'K';
+  return n.toString();
+}
+
+function updateLora(){
+  const sizeIdx = parseInt(document.getElementById('modelSizeSlider').value);
+  const rankIdx = parseInt(document.getElementById('loraRankSlider').value);
+  const rank = LORA_RANKS[rankIdx];
+  const modelSize = MODEL_SIZES[sizeIdx];
+  const layers = MODEL_LAYERS[sizeIdx];
+  const dim = MODEL_DIM[sizeIdx];
+
+  document.getElementById('modelSizeLabel').textContent = MODEL_LABELS[sizeIdx];
+  document.getElementById('loraRankLabel').textContent = rank;
+
+  // Full fine-tune = all model params
+  const fullParams = modelSize;
+
+  // LoRA params: 4 projections per layer (q,k,v,o), each adds 2×(d×r)
+  const loraParams = layers * 4 * 2 * dim * rank;
+
+  const pct = (loraParams / fullParams * 100);
+  const pctStr = pct < 0.1 ? pct.toFixed(3)+'%' : pct.toFixed(2)+'%';
+
+  // VRAM reduction: roughly proportional to ratio of trainable params
+  // Full FP16: modelSize * 2 bytes per param for weights + optimizer states (~8x)
+  // LoRA: same inference size but optimizer states only for LoRA params
+  const vramRed = Math.round((1 - loraParams/fullParams) * 95);
+
+  document.getElementById('fullParams').textContent = fmt(fullParams);
+  document.getElementById('loraParams').textContent = fmt(loraParams);
+  document.getElementById('loraPct').textContent = pctStr;
+  document.getElementById('vramReduction').textContent = '~'+vramRed+'% less VRAM';
+
+  // Progress bar — visual representation of % trained
+  const barPct = Math.max(0.3, pct);
+  document.getElementById('loraPctBar').style.width = Math.min(barPct * 10, 100)+'%';
+  document.getElementById('loraPctBarLabel').textContent = `LoRA trains ${pctStr} of total parameters (rank=${rank}, ${MODEL_LABELS[sizeIdx]} model)`;
+
+  // Visual matrix sizes — relative to rank
+  const rankNorm = (rank - 4) / 28; // 0..1
+  const aWidth = 10 + Math.round(rankNorm * 18); // 10–28px
+  const bHeight = 10 + Math.round(rankNorm * 18);
+  document.getElementById('matrixA').style.width = aWidth+'px';
+  document.getElementById('matrixB').style.height = bHeight+'px';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// QUIZ
+// ══════════════════════════════════════════════════════════════════════
+const CORRECT = [1, 2, 1, 2]; // correct option index per question
+let quizAnswers = [null, null, null, null];
+let quizCurrent = 0;
+let quizDone = false;
+
+function selectOption(qIdx, optIdx){
+  if(quizAnswers[qIdx] !== null) return; // already answered
+  quizAnswers[qIdx] = optIdx;
+
+  const opts = document.querySelectorAll('#qopts'+qIdx+' .option');
+  opts.forEach((o,i)=>{
+    o.classList.add('locked');
+    if(i === CORRECT[qIdx]) o.classList.add('correct');
+    else if(i === optIdx && optIdx !== CORRECT[qIdx]) o.classList.add('wrong');
+  });
+
+  document.getElementById('qexp'+qIdx).classList.add('visible');
+  document.getElementById('quizNextBtn').disabled = false;
+
+  // Update progress bar
+  const answered = quizAnswers.filter(a=>a!==null).length;
+  document.getElementById('quizProgressFill').style.width = (answered/4*100)+'%';
+}
+
+function quizNext(){
+  if(quizCurrent < 3){
+    document.getElementById('qcard'+quizCurrent).style.display='none';
+    quizCurrent++;
+    document.getElementById('qcard'+quizCurrent).style.display='block';
+    document.getElementById('quizNextBtn').disabled = (quizAnswers[quizCurrent]===null);
+    if(quizCurrent === 3){
+      document.getElementById('quizNextBtn').textContent='See Score →';
+    }
+  } else {
+    showScore();
+  }
+}
+
+function showScore(){
+  document.getElementById('qcard3').style.display='none';
+  document.getElementById('quizNav').style.display='none';
+  const correct = quizAnswers.filter((a,i)=>a===CORRECT[i]).length;
+  const scoreEl = document.getElementById('quizScore');
+  scoreEl.classList.add('visible');
+  document.getElementById('scoreNum').textContent = correct+'/4';
+  const msgs = ['Keep reviewing the lessons!','Good effort — review any misses.','Nice work!','Perfect score — Phase 11 complete!'];
+  document.getElementById('scoreMsg').textContent = msgs[correct];
+  document.getElementById('quizProgressFill').style.width='100%';
+  quizDone = true;
+
+  // Set phase11done and show back link
+  localStorage.setItem('phase11done','1');
+  const area = document.getElementById('quizDoneArea');
+  area.innerHTML='<a href="index.html" style="color:var(--primary);text-decoration:none;font-size:.9rem">← Back to Roadmap</a>';
+}
+
+function resetQuiz(){
+  quizAnswers = [null,null,null,null];
+  quizCurrent = 0;
+  quizDone = false;
+  document.getElementById('quizScore').classList.remove('visible');
+  document.getElementById('quizNav').style.display='flex';
+  document.getElementById('quizNextBtn').textContent='Next Question →';
+  document.getElementById('quizNextBtn').disabled=true;
+  document.getElementById('quizDoneArea').innerHTML='';
+  document.getElementById('quizProgressFill').style.width='0%';
+  for(let i=0;i<4;i++){
+    const card=document.getElementById('qcard'+i);
+    card.style.display=i===0?'block':'none';
+    document.getElementById('qexp'+i).classList.remove('visible');
+    document.querySelectorAll('#qopts'+i+' .option').forEach(o=>{
+      o.classList.remove('locked','correct','wrong');
+    });
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+(function(){
+  const saved = parseInt(localStorage.getItem('phase11lesson')||'0');
+  if(saved && saved >= 0 && saved <= 5){
+    goLesson(saved);
+  } else {
+    initMemGrid();
+  }
+})();
+</script>
+</body>
+</html>
