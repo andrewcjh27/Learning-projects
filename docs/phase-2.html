@@ -168,6 +168,14 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .fn{color:#4f8ef7}
 .str{color:#34d399}
 .cm{color:#4a6280}
+.cmt{color:#4a6280}
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+@media(max-width:700px){.code-compare{grid-template-columns:1fr}}
+.code-col pre{background:#0a0f1a;border:1px solid var(--border);border-radius:0 0 var(--r-sm) var(--r-sm);padding:12px;font-family:var(--mono);font-size:.75rem;line-height:1.7;overflow-x:auto;margin:0}
+.code-col pre code{color:#a8c0d8}
+.code-col-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:5px 10px;border-radius:var(--r-sm) var(--r-sm) 0 0;display:block}
+.code-col-label.bad{background:rgba(248,113,113,.12);color:var(--danger);border:1px solid rgba(248,113,113,.2);border-bottom:none}
+.code-col-label.good{background:rgba(52,211,153,.1);color:var(--accent);border:1px solid rgba(52,211,153,.2);border-bottom:none}
 .num{color:#fb923c}
 
 /* Async demo */
@@ -261,6 +269,28 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <li><code>itertools.groupby(data, key)</code> — group consecutive runs</li>
       </ul>
       <div class="callout"><p>For large CSV files or database cursors, generators let you process rows one at a time — you never need to load the full dataset into RAM.</p></div>
+      <h3>Why doesn't yield hold onto the row?</h3>
+      <p><code>yield</code> doesn't delete the row — Python's <strong>reference counting</strong> does. When the loop variable <code>row</code> is rebound to the next item, nothing points to the old row anymore, so its memory is freed automatically.</p>
+      <p>Compare what's alive in memory during each loop iteration:</p>
+      <div class="code-compare">
+        <div class="code-col">
+          <span class="code-col-label bad">List — all rows live simultaneously</span>
+          <pre><code><span class="kw">rows</span> = [process(r) <span class="kw">for</span> r <span class="kw">in</span> file]
+<span class="cmt"># ☠ 10M objects in RAM right now</span>
+<span class="kw">for</span> row <span class="kw">in</span> rows:
+    save(row)
+<span class="cmt"># list still holds every reference</span></code></pre>
+        </div>
+        <div class="code-col">
+          <span class="code-col-label good">Generator — one row at a time</span>
+          <pre><code><span class="kw">rows</span> = (process(r) <span class="kw">for</span> r <span class="kw">in</span> file)
+<span class="cmt"># nothing runs yet — just a promise</span>
+<span class="kw">for</span> row <span class="kw">in</span> rows:
+    save(row)
+<span class="cmt"># row 1 freed before row 2 exists</span></code></pre>
+        </div>
+      </div>
+      <p>The generator <em>pauses</em> after each <code>yield</code>. The next item isn't produced until the loop asks for it — at which point the previous item has already been handed off and can be collected.</p>
     </div>
 
     <div class="demo-panel">
