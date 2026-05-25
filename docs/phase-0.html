@@ -1103,9 +1103,18 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
     </div>
   </div>
 
-  <div class="lesson-nav">
+  <div id="phase0CompleteBox" style="margin-top:24px;padding:20px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.3);border-radius:12px;text-align:center;display:none">
+    <div style="font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:6px">Phase 0 Complete!</div>
+    <div style="font-size:.85rem;color:var(--muted);margin-bottom:14px">Phase 01 — Linux &amp; Git is now unlocked on the roadmap.</div>
+    <a href="index.html" class="big-btn primary" style="text-decoration:none;display:inline-block">← Back to Roadmap</a>
+  </div>
+  <div style="margin-top:16px;text-align:center">
+    <button class="big-btn accent" id="markDoneBtn0" onclick="markPhase0Done()" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:var(--accent)">✓ Mark Phase Complete &amp; Unlock Phase 01</button>
+  </div>
+
+  <div class="lesson-nav" style="margin-top:24px">
     <button class="big-btn ghost" onclick="goLesson(4)">← Back</button>
-    <span style="color:var(--accent);font-size:.85rem;font-weight:600">🎉 Phase 0 Complete!</span>
+    <span></span>
   </div>
 </div>
 
@@ -2033,6 +2042,12 @@ function restartQuiz() {
   initQuiz();
 }
 
+function markPhase0Done() {
+  localStorage.setItem('phase0done', '1');
+  document.getElementById('phase0CompleteBox').style.display = 'block';
+  document.getElementById('markDoneBtn0').style.display = 'none';
+}
+
 function updateQuizProgress() {
   const pct = (quizAnswers.length / questions.length) * 100;
   document.getElementById('quizPBar').style.width = pct + '%';
@@ -2065,6 +2080,12 @@ function toggleTheme() {
 (function(){
   const saved = parseInt(localStorage.getItem('phase0lesson') || '0', 10);
   if (saved > 0 && saved <= 5) goLesson(saved);
+  if (localStorage.getItem('phase0done') === '1') {
+    const box = document.getElementById('phase0CompleteBox');
+    const btn = document.getElementById('markDoneBtn0');
+    if (box) box.style.display = 'block';
+    if (btn) btn.style.display = 'none';
+  }
 })();
 
 // ============================================================

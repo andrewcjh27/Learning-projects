@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 02 — Python for Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1f;--surface:#0e1628;--card:#121c30;--border:#1e2d47;--border-b:#2d4470;
+  --primary:#4f8ef7;--primary-dim:rgba(79,142,247,.12);--primary-glow:rgba(79,142,247,.3);
+  --secondary:#a78bfa;--accent:#34d399;--warning:#fbbf24;--danger:#f87171;--orange:#fb923c;
+  --text:#dde8f5;--muted:#7a8faa;--dim:#3d5070;
+  --font:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;--r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-back{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-back:hover{color:var(--primary)}
+.nav-sep{color:var(--dim)}
+.nav-title{font-weight:600;font-size:.9rem}
+.lesson-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0}
+.lesson-tab{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;white-space:nowrap;background:transparent;color:var(--muted)}
+.lesson-tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.lesson-tab.active{background:var(--primary-dim);color:var(--primary);border:1px solid var(--primary-glow)}
+@media(max-width:640px){nav{flex-direction:column;height:auto;padding:10px 16px;gap:6px}.lesson-tabs{width:100%}}
+
+.phase-hero{padding:48px 32px 32px;max-width:1100px;margin:0 auto}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.phase-hero h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;letter-spacing:-.04em;margin-bottom:8px;background:linear-gradient(135deg,#fff 40%,#fb923c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.phase-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+.phase-progress{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.pp-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.pp-step.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.pp-step.done{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.pp-step:not(.active):not(.done){color:var(--dim)}
+.pp-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.lesson-section{display:none;max-width:1100px;margin:0 auto;padding:32px 32px 80px}
+.lesson-section.active{display:block}
+.lesson-header{margin-bottom:32px}
+.lesson-num{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-family:var(--mono)}
+.lesson-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.lesson-desc{color:var(--muted);max-width:680px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.split-wide{grid-template-columns:2fr 3fr}
+
+.prose h3{font-size:1rem;font-weight:600;margin:20px 0 8px;color:var(--text)}
+.prose h3:first-child{margin-top:0}
+.prose p{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.prose ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.prose li{font-size:.9rem;color:var(--muted);padding-left:16px;position:relative}
+.prose li::before{content:'›';position:absolute;left:0;color:var(--primary)}
+.prose strong{color:var(--text);font-weight:600}
+.prose .callout{background:var(--primary-dim);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 16px;margin:12px 0}
+.prose .callout p{color:var(--text);margin:0}
+.prose code{font-family:var(--mono);font-size:.82rem;background:rgba(79,142,247,.1);padding:2px 6px;border-radius:4px;color:var(--primary)}
+
+.concepts-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:20px}
+.concepts-box h4{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.concept-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.concept-item:last-child{border-bottom:none}
+.concept-key{font-family:var(--mono);font-size:.75rem;color:var(--primary);font-weight:500;white-space:nowrap;min-width:120px}
+.concept-val{font-size:.8rem;color:var(--muted)}
+
+.demo-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:relative}
+.demo-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.demo-title span{color:var(--accent);font-size:.7rem;font-weight:600}
+
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.btn:hover{border-color:var(--border-b);color:var(--text)}
+.btn.active,.btn.primary{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.btn.accent{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.btn.secondary{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:var(--secondary)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+.lesson-nav{display:flex;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.big-btn{padding:12px 24px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font)}
+.big-btn.primary{background:var(--primary);color:#fff}
+.big-btn.primary:hover{background:#6fa2ff;box-shadow:0 4px 20px rgba(79,142,247,.4)}
+.big-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.big-btn.ghost:hover{color:var(--text);border-color:var(--border-b)}
+
+/* QUIZ */
+.quiz-wrap{max-width:720px;margin:0 auto}
+.quiz-progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:32px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary));border-radius:2px;transition:width .4s ease}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.q-text{font-size:1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:12px 16px;border-radius:var(--r-sm);border:1px solid var(--border);cursor:pointer;font-size:.88rem;transition:all .2s;background:var(--surface)}
+.option:hover:not(.locked){border-color:var(--border-b);background:rgba(255,255,255,.03)}
+.option.correct{border-color:var(--accent)!important;background:rgba(52,211,153,.1)!important;color:var(--accent)}
+.option.wrong{border-color:var(--danger)!important;background:rgba(248,113,113,.1)!important;color:var(--danger)}
+.option.locked{cursor:default}
+.explanation{margin-top:16px;padding:14px 16px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:var(--r-sm);font-size:.84rem;color:var(--text);line-height:1.6;display:none}
+.explanation.visible{display:block;animation:slideUp .3s ease}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.quiz-score{text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);display:none}
+.quiz-score.visible{display:block;animation:slideUp .4s ease}
+.score-num{font-size:4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-msg{font-size:1.1rem;color:var(--muted);margin-bottom:24px}
+
+/* Light mode */
+[data-theme="light"]{
+  --bg:#f4f6fc;--surface:#eaecf5;--card:#ffffff;--border:#cdd5e4;--border-b:#aab5cc;
+  --primary:#3a6fd8;--primary-dim:rgba(58,111,216,.1);--primary-glow:rgba(58,111,216,.25);
+  --secondary:#6d28d9;--accent:#059669;--warning:#d97706;--danger:#dc2626;--orange:#ea580c;
+  --text:#111827;--muted:#475569;--dim:#94a3b8;
+}
+[data-theme="light"] body{background:var(--bg)}
+[data-theme="light"] nav{background:rgba(244,246,252,.95)}
+[data-theme="light"] .phase-hero h1{background:linear-gradient(135deg,#111827 40%,#ea580c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="light"] .callout{background:rgba(58,111,216,.07);border-color:rgba(58,111,216,.3)}
+[data-theme="light"] code{background:rgba(0,0,0,.07);color:#1e3a8a}
+.theme-toggle{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 13px;color:var(--muted);cursor:pointer;font-size:.8rem;font-family:var(--font);transition:all .2s;white-space:nowrap;flex-shrink:0}
+.theme-toggle:hover{color:var(--text);border-color:var(--primary)}
+@media(max-width:640px){.phase-hero,.lesson-section{padding-left:20px;padding-right:20px}}
+
+/* =============================================
+   PHASE-2 SPECIFIC STYLES
+   ============================================= */
+
+/* Memory bar chart */
+.mem-bars{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.mem-col{display:flex;flex-direction:column;gap:8px}
+.mem-col-title{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.mem-bar-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;height:160px;display:flex;flex-direction:column;justify-content:flex-end;position:relative}
+.mem-bar-fill{width:100%;background:linear-gradient(180deg,var(--primary),#2563eb);border-radius:var(--r-sm) var(--r-sm) 0 0;transition:height 1.2s cubic-bezier(.25,.8,.25,1);height:0%}
+.mem-bar-fill.orange{background:linear-gradient(180deg,var(--orange),#c2410c)}
+.mem-bar-label{position:absolute;top:8px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:.78rem;font-weight:600;color:var(--text);opacity:0;transition:opacity .4s .8s}
+.mem-bar-label.visible{opacity:1}
+.mem-subtitle{font-size:.75rem;color:var(--muted);text-align:center;margin-top:4px}
+
+/* Pydantic demo */
+.payload-btns{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.payload-btn{padding:10px 14px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:.8rem;cursor:pointer;text-align:left;transition:all .2s;font-family:var(--mono)}
+.payload-btn:hover{border-color:var(--border-b);color:var(--text)}
+.payload-btn.selected{border-color:var(--primary-glow);background:var(--primary-dim);color:var(--primary)}
+.payload-display{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.78rem;color:#a8c0d8;line-height:1.7;min-height:120px;white-space:pre;overflow-x:auto}
+.validation-result{margin-top:12px;padding:14px 16px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;display:none;animation:slideUp .3s ease}
+.validation-result.visible{display:block}
+.validation-result.valid{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:var(--accent)}
+.validation-result.invalid{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:var(--danger)}
+
+/* Code comparison panels */
+.code-compare-ops{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.code-compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){.code-compare-grid{grid-template-columns:1fr}}
+.code-panel{border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--border)}
+.code-panel-header{padding:8px 14px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.code-panel-header.pandas{background:#1a1a2e;color:#fbbf24}
+.code-panel-header.polars{background:#0d1a14;color:#34d399}
+.code-panel pre{background:#0a0f1a;padding:14px;font-family:var(--mono);font-size:.76rem;color:#a8c0d8;line-height:1.75;white-space:pre;overflow-x:auto;min-height:140px}
+.kw{color:#a78bfa}
+.fn{color:#4f8ef7}
+.str{color:#34d399}
+.cm{color:#4a6280}
+.num{color:#fb923c}
+
+/* Async demo */
+.endpoint-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.endpoint-row{display:flex;align-items:center;gap:10px}
+.endpoint-name{font-family:var(--mono);font-size:.75rem;color:var(--muted);min-width:130px}
+.endpoint-bar-track{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;height:14px}
+.endpoint-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));border-radius:10px;width:0%;transition:none}
+.endpoint-time{font-family:var(--mono);font-size:.72rem;color:var(--dim);min-width:44px;text-align:right}
+.async-total{font-family:var(--mono);font-size:.95rem;font-weight:600;color:var(--text);margin-top:12px;min-height:28px}
+.async-mode-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;margin-left:8px}
+.async-mode-badge.sync-badge{background:rgba(248,113,113,.15);color:var(--danger)}
+.async-mode-badge.async-badge{background:rgba(52,211,153,.15);color:var(--accent)}
+
+/* LRU Cache visualiser */
+.fib-display{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.fib-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;text-align:center}
+.fib-box-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:8px}
+.fib-count{font-size:2.4rem;font-weight:800;font-family:var(--mono);color:var(--text);transition:all .1s}
+.fib-count.red{color:var(--danger)}
+.fib-count.green{color:var(--accent)}
+.fib-count.animating{transform:scale(1.15)}
+.fib-label{font-size:.75rem;color:var(--muted);margin-top:4px}
+.fib-slider-row{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.fib-slider-row label{font-size:.82rem;color:var(--muted);white-space:nowrap}
+.fib-slider-row input[type=range]{flex:1;accent-color:var(--primary)}
+.fib-n-display{font-family:var(--mono);font-size:.9rem;font-weight:600;color:var(--primary);min-width:32px;text-align:center}
+</style>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← Roadmap</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Phase 02 — Python for Data</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="lesson-tabs" id="lessonTabs">
+      <button class="lesson-tab active" onclick="goLesson(0)">1. Generators</button>
+      <button class="lesson-tab" onclick="goLesson(1)">2. Type Hints</button>
+      <button class="lesson-tab" onclick="goLesson(2)">3. Polars</button>
+      <button class="lesson-tab" onclick="goLesson(3)">4. Async</button>
+      <button class="lesson-tab" onclick="goLesson(4)">5. Decorators</button>
+      <button class="lesson-tab" onclick="goLesson(5)">✦ Quiz</button>
+    </div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
+  </div>
+</nav>
+
+<div class="phase-hero">
+  <div class="breadcrumb"><a href="index.html">Roadmap</a> › Phase 02</div>
+  <h1>Python for Data</h1>
+  <p>Generators, type hints, Polars, async patterns, and decorators — the advanced Python toolkit for building fast, reliable data pipelines.</p>
+  <div class="phase-progress" id="phaseProgress">
+    <div class="pp-step active" onclick="goLesson(0)"><div class="pp-dot"></div>Generators</div>
+    <div class="pp-step" onclick="goLesson(1)"><div class="pp-dot"></div>Type Hints</div>
+    <div class="pp-step" onclick="goLesson(2)"><div class="pp-dot"></div>Polars</div>
+    <div class="pp-step" onclick="goLesson(3)"><div class="pp-dot"></div>Async</div>
+    <div class="pp-step" onclick="goLesson(4)"><div class="pp-dot"></div>Decorators</div>
+    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>Quiz</div>
+  </div>
+</div>
+
+<!-- ==================== LESSON 0: GENERATORS & ITERATORS ==================== -->
+<section class="lesson-section active" id="lesson-0">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 01</div>
+    <div class="lesson-title">Generators &amp; Iterators</div>
+    <div class="lesson-desc">Lazy evaluation with <code>yield</code> — produce values on demand and process datasets that don't fit in memory.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>What is a generator?</h3>
+      <p>A <strong>generator</strong> is a function that uses <code>yield</code> instead of <code>return</code>. Each call to <code>next()</code> resumes execution until the next <code>yield</code>, then pauses again. The function body does not run until you iterate over the generator.</p>
+      <h3>Lazy evaluation</h3>
+      <p>Regular list comprehensions build the entire list in memory at once. A generator expression <code>(x*2 for x in range(1_000_000))</code> produces items one at a time, holding only the current value in memory — roughly <strong>100 bytes</strong> vs <strong>8 MB</strong> for a list of 1M integers.</p>
+      <ul>
+        <li><code>yield</code> — turns a function into a generator factory</li>
+        <li><code>next(gen)</code> — advance by one item</li>
+        <li><code>for x in gen</code> — consume all items lazily</li>
+        <li><code>(expr for x in iterable)</code> — generator expression</li>
+      </ul>
+      <h3>itertools</h3>
+      <p>The <strong>itertools</strong> module provides lazy combinators that work on any iterable without materialising intermediate results.</p>
+      <ul>
+        <li><code>itertools.chain(a, b)</code> — concatenate iterables</li>
+        <li><code>itertools.islice(gen, n)</code> — take first n items</li>
+        <li><code>itertools.groupby(data, key)</code> — group consecutive runs</li>
+      </ul>
+      <div class="callout"><p>For large CSV files or database cursors, generators let you process rows one at a time — you never need to load the full dataset into RAM.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Memory Comparison Visualiser <span>interactive</span></div>
+      <div class="mem-bars">
+        <div class="mem-col">
+          <div class="mem-col-title">List Comprehension</div>
+          <div class="mem-bar-wrap">
+            <div class="mem-bar-fill orange" id="listBar"></div>
+            <div class="mem-bar-label" id="listLabel">~8 MB</div>
+          </div>
+          <div class="mem-subtitle" id="listSub">1M integers in memory</div>
+        </div>
+        <div class="mem-col">
+          <div class="mem-col-title">Generator Expression</div>
+          <div class="mem-bar-wrap">
+            <div class="mem-bar-fill" id="genBar"></div>
+            <div class="mem-bar-label" id="genLabel">~112 bytes</div>
+          </div>
+          <div class="mem-subtitle" id="genSub">lazy — one item at a time</div>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn primary" id="memStepBtn" onclick="memStep()">▶ Step Animation</button>
+        <button class="btn" onclick="memReset()">↺ Reset</button>
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.6;margin-top:8px" id="memExplain">
+        Click "Step Animation" to build each bar. The list comprehension allocates all 1M items at once; the generator stays tiny.
+      </div>
+
+      <div style="margin-top:20px;background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.76rem;color:#a8c0d8;line-height:1.8">
+        <span style="color:#4a6280"># list comprehension — eager</span><br>
+        squares = [x**2 <span style="color:#a78bfa">for</span> x <span style="color:#a78bfa">in</span> <span style="color:#4f8ef7">range</span>(<span style="color:#fb923c">1_000_000</span>)]  <span style="color:#4a6280"># 8 MB</span><br><br>
+        <span style="color:#4a6280"># generator expression — lazy</span><br>
+        squares = (x**2 <span style="color:#a78bfa">for</span> x <span style="color:#a78bfa">in</span> <span style="color:#4f8ef7">range</span>(<span style="color:#fb923c">1_000_000</span>))  <span style="color:#4a6280"># ~112 B</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">yield</div><div class="concept-val">Pauses execution and emits a value; resumes on next next() call</div></div>
+    <div class="concept-item"><div class="concept-key">Generator expr</div><div class="concept-val">(expr for x in it) — like a list comp but lazy, O(1) memory</div></div>
+    <div class="concept-item"><div class="concept-key">itertools.chain</div><div class="concept-val">Lazily concatenates multiple iterables without copying</div></div>
+    <div class="concept-item"><div class="concept-key">itertools.islice</div><div class="concept-val">Take the first n items from any iterator without consuming the rest</div></div>
+    <div class="concept-item"><div class="concept-key">itertools.groupby</div><div class="concept-val">Groups consecutive identical keys — data must be sorted by key first</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <div></div>
+    <button class="big-btn primary" onclick="goLesson(1)">Next: Type Hints →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 1: TYPE HINTS & PYDANTIC ==================== -->
+<section class="lesson-section" id="lesson-1">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 02</div>
+    <div class="lesson-title">Type Hints &amp; Pydantic</div>
+    <div class="lesson-desc">Annotate your code, validate data at the boundary, and catch bugs before they reach production.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>Python type hints</h3>
+      <p>Type hints (PEP 484) are annotations that tell readers — and tools — what types a function expects and returns. Python itself doesn't enforce them at runtime, but <strong>mypy</strong> does static analysis.</p>
+      <ul>
+        <li><code>def process(data: list[dict]) -> pd.DataFrame</code></li>
+        <li><code>Optional[str]</code> — either str or None</li>
+        <li><code>Union[int, str]</code> — one of several types</li>
+        <li><code>TypeVar('T')</code> — generic type parameter</li>
+      </ul>
+      <h3>Pydantic</h3>
+      <p><strong>Pydantic</strong> enforces type hints at runtime. Define a model class inheriting from <code>BaseModel</code>; Pydantic validates and coerces data on instantiation, raising a <code>ValidationError</code> with field-level messages when something is wrong.</p>
+      <ul>
+        <li><code>model.model_dump()</code> — serialise to dict</li>
+        <li>Coercion: <code>"42"</code> becomes <code>42</code> for an <code>int</code> field</li>
+        <li>Strict types, custom validators, nested models</li>
+      </ul>
+      <div class="callout"><p>Validate data at the entry point of your pipeline. A <code>ValidationError</code> on row 1 is infinitely better than a silent wrong answer on row 1 000 000.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Pydantic Validator <span>try 3 payloads</span></div>
+
+      <div style="background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.76rem;color:#a8c0d8;line-height:1.75;margin-bottom:16px">
+        <span style="color:#a78bfa">class</span> <span style="color:#fbbf24">UserEvent</span>(<span style="color:#4f8ef7">BaseModel</span>):<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;id: <span style="color:#4f8ef7">int</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;event: <span style="color:#4f8ef7">str</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;timestamp: <span style="color:#4f8ef7">datetime</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;value: <span style="color:#4f8ef7">float</span>
+      </div>
+
+      <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px">Select an incoming JSON payload:</div>
+      <div class="payload-btns">
+        <button class="payload-btn" onclick="selectPayload(0,this)">Payload A — valid event</button>
+        <button class="payload-btn" onclick="selectPayload(1,this)">Payload B — wrong type (id is a string)</button>
+        <button class="payload-btn" onclick="selectPayload(2,this)">Payload C — missing required field</button>
+      </div>
+
+      <div class="payload-display" id="payloadDisplay">Select a payload above to inspect it…</div>
+      <div class="validation-result" id="validationResult"></div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">PEP 484</div><div class="concept-val">The Python Enhancement Proposal that introduced type hint syntax</div></div>
+    <div class="concept-item"><div class="concept-key">mypy</div><div class="concept-val">Static type checker — finds type mismatches without running the code</div></div>
+    <div class="concept-item"><div class="concept-key">Optional[T]</div><div class="concept-val">Shorthand for Union[T, None] — the field may be absent</div></div>
+    <div class="concept-item"><div class="concept-key">BaseModel</div><div class="concept-val">Pydantic base class; subclass it to define a validated data schema</div></div>
+    <div class="concept-item"><div class="concept-key">ValidationError</div><div class="concept-val">Raised by Pydantic with a list of per-field errors and human-readable messages</div></div>
+    <div class="concept-item"><div class="concept-key">model_dump()</div><div class="concept-val">Serialise a Pydantic model instance to a plain Python dict</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(0)">← Generators</button>
+    <button class="big-btn primary" onclick="goLesson(2)">Next: Polars →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 2: POLARS VS PANDAS ==================== -->
+<section class="lesson-section" id="lesson-2">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 03</div>
+    <div class="lesson-title">Polars vs Pandas</div>
+    <div class="lesson-desc">Why a Rust-backed columnar dataframe library can be 10–100× faster than Pandas for production workloads.</div>
+  </div>
+
+  <div class="prose" style="max-width:700px;margin-bottom:28px">
+    <h3>Why Pandas can be slow</h3>
+    <p>Pandas stores data as Python objects row-by-row internally for mixed types. Operations loop through Python objects, which means interpreter overhead on every row. It is single-threaded and eager by default.</p>
+    <h3>What Polars does differently</h3>
+    <p><strong>Polars</strong> is written in Rust and uses the <strong>Apache Arrow</strong> columnar memory format. Operations vectorise over contiguous typed arrays, run in parallel across CPU cores by default, and the <strong>lazy API</strong> (<code>pl.scan_csv().filter().collect()</code>) builds a query plan that Polars optimises before executing.</p>
+    <ul>
+      <li>Columnar storage — SIMD-friendly, cache-efficient</li>
+      <li>Parallel execution with no extra configuration</li>
+      <li>Lazy evaluation — query optimiser rewrites your plan</li>
+      <li>Zero-copy interop with PyArrow and NumPy</li>
+    </ul>
+    <div class="callout"><p>Use Pandas for interactive exploration and small datasets. Switch to Polars for anything that takes more than a few seconds or processes files larger than a few hundred MB.</p></div>
+  </div>
+
+  <div class="demo-panel">
+    <div class="demo-title">Pandas vs Polars — Side-by-Side Syntax <span>select an operation</span></div>
+    <div class="code-compare-ops" id="compareOps">
+      <button class="btn active" onclick="setOp(0,this)">Filter rows</button>
+      <button class="btn" onclick="setOp(1,this)">Group + aggregate</button>
+      <button class="btn" onclick="setOp(2,this)">Join two tables</button>
+      <button class="btn" onclick="setOp(3,this)">Read CSV</button>
+    </div>
+    <div class="code-compare-grid">
+      <div class="code-panel">
+        <div class="code-panel-header pandas">🐼 Pandas</div>
+        <pre id="pandasCode"></pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header polars">⚡ Polars</div>
+        <pre id="polarsCode"></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">Apache Arrow</div><div class="concept-val">Columnar in-memory format shared across languages; zero-copy interop</div></div>
+    <div class="concept-item"><div class="concept-key">Lazy API</div><div class="concept-val">pl.scan_* builds a query plan; .collect() triggers optimised execution</div></div>
+    <div class="concept-item"><div class="concept-key">Eager API</div><div class="concept-val">pl.read_* or pd.read_* — executes immediately like standard Pandas</div></div>
+    <div class="concept-item"><div class="concept-key">Parallelism</div><div class="concept-val">Polars uses Rayon thread pool; group-by and joins run multi-core automatically</div></div>
+    <div class="concept-item"><div class="concept-key">Expressions</div><div class="concept-val">pl.col("x").filter(...).over("group") — composable, optimisable column ops</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(1)">← Type Hints</button>
+    <button class="big-btn primary" onclick="goLesson(3)">Next: Async →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 3: ASYNC & CONCURRENCY ==================== -->
+<section class="lesson-section" id="lesson-3">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 04</div>
+    <div class="lesson-title">Async &amp; Concurrency</div>
+    <div class="lesson-desc">Single-threaded cooperative multitasking with <code>asyncio</code> — the right tool for I/O-bound workloads.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>The GIL recap</h3>
+      <p>The <strong>Global Interpreter Lock</strong> means only one Python thread runs bytecode at a time. Threads help with I/O-bound work (the GIL is released during I/O) but not CPU-bound work.</p>
+      <h3>asyncio event loop</h3>
+      <p><strong>asyncio</strong> is single-threaded cooperative multitasking. An <code>async def</code> function is a coroutine — it runs until it hits an <code>await</code>, at which point control returns to the event loop so another coroutine can progress.</p>
+      <ul>
+        <li><code>async def fetch(url)</code> — define a coroutine</li>
+        <li><code>await response.json()</code> — yield control until done</li>
+        <li><code>asyncio.gather(*tasks)</code> — run many coroutines concurrently</li>
+        <li><code>aiohttp</code> — async HTTP client built on asyncio</li>
+      </ul>
+      <h3>When async helps</h3>
+      <p>Async shines when you have <strong>many I/O-bound tasks</strong>: hundreds of HTTP requests, database queries, file reads. For CPU-bound work use <code>multiprocessing</code> or <code>ProcessPoolExecutor</code>.</p>
+      <div class="callout"><p>Never call a blocking function (requests.get, time.sleep) inside a coroutine — it blocks the entire event loop. Use <code>asyncio.sleep</code> and <code>aiohttp</code> instead.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Async vs Sync Fetch Simulator <span>interactive</span></div>
+      <div class="endpoint-list" id="endpointList"></div>
+      <div class="async-total" id="asyncTotal"></div>
+      <div class="btn-group" style="margin-top:14px">
+        <button class="btn" id="syncRunBtn" onclick="runFetch('sync')">▶ Run Sync</button>
+        <button class="btn accent" id="asyncRunBtn" onclick="runFetch('async')">⚡ Run Async</button>
+      </div>
+      <div style="font-size:.76rem;color:var(--muted);margin-top:10px;line-height:1.6">
+        Sync: each request waits for the previous to finish. Async: all requests in-flight simultaneously — total time ≈ slowest request.
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">async def</div><div class="concept-val">Defines a coroutine — returns a coroutine object, doesn't run immediately</div></div>
+    <div class="concept-item"><div class="concept-key">await</div><div class="concept-val">Suspends the coroutine until the awaitable completes; yields control to the loop</div></div>
+    <div class="concept-item"><div class="concept-key">asyncio.gather()</div><div class="concept-val">Schedules multiple coroutines concurrently; returns all results as a list</div></div>
+    <div class="concept-item"><div class="concept-key">aiohttp</div><div class="concept-val">Async HTTP client/server — never blocks the event loop during network I/O</div></div>
+    <div class="concept-item"><div class="concept-key">ThreadPoolExecutor</div><div class="concept-val">concurrent.futures — run blocking I/O in threads without rewriting as async</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(2)">← Polars</button>
+    <button class="big-btn primary" onclick="goLesson(4)">Next: Decorators →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 4: DECORATORS & FUNCTOOLS ==================== -->
+<section class="lesson-section" id="lesson-4">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 05</div>
+    <div class="lesson-title">Decorators &amp; Functools</div>
+    <div class="lesson-desc">Wrap functions to add logging, caching, retry logic, and more — without changing the function body.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>What is a decorator?</h3>
+      <p>A <strong>decorator</strong> is a function that takes a function and returns a new function. The <code>@decorator</code> syntax is shorthand for <code>fn = decorator(fn)</code>. Use <code>functools.wraps</code> inside your decorator to preserve the original function's <code>__name__</code> and <code>__doc__</code>.</p>
+      <h3>functools highlights</h3>
+      <ul>
+        <li><code>@functools.lru_cache(maxsize=128)</code> — memoises calls, keyed by args</li>
+        <li><code>@functools.cache</code> — unbounded memoisation (Python 3.9+)</li>
+        <li><code>functools.partial(fn, arg)</code> — pre-fill arguments to create new callables</li>
+        <li><code>@dataclass</code> — auto-generate <code>__init__</code>, <code>__repr__</code>, <code>__eq__</code></li>
+      </ul>
+      <h3>Real-world patterns</h3>
+      <ul>
+        <li><code>@timer</code> — log execution time of expensive functions</li>
+        <li><code>@retry(n=3)</code> — retry failed HTTP requests automatically</li>
+        <li><code>@rate_limit</code> — enforce API rate limits transparently</li>
+        <li><code>@lru_cache</code> — eliminate redundant DB or API calls</li>
+      </ul>
+      <div class="callout"><p>Memoisation turns an exponential-time recursive Fibonacci into linear time. For <code>fib(10)</code>, the naive version makes 177 calls; with <code>@lru_cache</code> it makes just 11.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">LRU Cache Visualiser — Fibonacci <span>interactive</span></div>
+
+      <div class="fib-slider-row">
+        <label>n =</label>
+        <input type="range" min="5" max="15" value="10" id="fibSlider" oninput="updateFibN()">
+        <div class="fib-n-display" id="fibNDisplay">10</div>
+      </div>
+
+      <div class="fib-display">
+        <div class="fib-box">
+          <div class="fib-box-title">Without Cache</div>
+          <div class="fib-count red" id="fibNoCache">—</div>
+          <div class="fib-label">function calls</div>
+        </div>
+        <div class="fib-box">
+          <div class="fib-box-title">With LRU Cache</div>
+          <div class="fib-count green" id="fibWithCache">—</div>
+          <div class="fib-label">function calls</div>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn" style="border-color:rgba(248,113,113,.3);color:var(--danger)" id="fibNoCacheBtn" onclick="runFibNoCache()">▶ Run Without Cache</button>
+        <button class="btn accent" id="fibCacheBtn" onclick="runFibWithCache()">▶ Run With Cache</button>
+      </div>
+
+      <div style="margin-top:16px;background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.76rem;color:#a8c0d8;line-height:1.8">
+        <span style="color:#a78bfa">import</span> functools<br><br>
+        <span style="color:#a78bfa">@functools</span>.<span style="color:#4f8ef7">lru_cache</span>(<span style="color:#4f8ef7">maxsize</span>=<span style="color:#fb923c">None</span>)<br>
+        <span style="color:#a78bfa">def</span> <span style="color:#4f8ef7">fib</span>(n):<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#a78bfa">if</span> n &lt;= <span style="color:#fb923c">1</span>: <span style="color:#a78bfa">return</span> n<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#a78bfa">return</span> <span style="color:#4f8ef7">fib</span>(n-<span style="color:#fb923c">1</span>) + <span style="color:#4f8ef7">fib</span>(n-<span style="color:#fb923c">2</span>)
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">@decorator</div><div class="concept-val">Syntactic sugar for fn = decorator(fn); stacks with multiple decorators</div></div>
+    <div class="concept-item"><div class="concept-key">functools.wraps</div><div class="concept-val">Copies __name__, __doc__ from wrapped function — essential for debugging</div></div>
+    <div class="concept-item"><div class="concept-key">lru_cache</div><div class="concept-val">Least-Recently-Used cache; evicts oldest entry when maxsize is reached</div></div>
+    <div class="concept-item"><div class="concept-key">partial</div><div class="concept-val">functools.partial(fn, x=1) returns a new callable with x pre-filled</div></div>
+    <div class="concept-item"><div class="concept-key">@dataclass</div><div class="concept-val">Auto-generates __init__, __repr__, __eq__ from class field annotations</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(3)">← Async</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
+  </div>
+</section>
+
+<!-- ==================== QUIZ ==================== -->
+<section class="lesson-section" id="lesson-5">
+  <div class="lesson-header">
+    <div class="lesson-num">Phase 02 Quiz</div>
+    <div class="lesson-title">Test Your Knowledge</div>
+    <div class="lesson-desc">4 questions covering generators, Pydantic, asyncio, and decorators.</div>
+  </div>
+
+  <div class="quiz-wrap">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizFill" style="width:0%"></div></div>
+    <div id="quizCards"></div>
+    <div class="quiz-nav" id="quizNav" style="display:none">
+      <div></div>
+      <button class="big-btn primary" id="quizNextBtn" onclick="quizNext()">Next Question →</button>
+    </div>
+    <div class="quiz-score" id="quizScore">
+      <div class="score-num" id="scoreNum">0/4</div>
+      <div class="score-msg" id="scoreMsg"></div>
+      <button class="big-btn primary" onclick="quizRestart()">Retake Quiz</button>
+    </div>
+  </div>
+
+  <div class="lesson-nav" style="max-width:720px;margin:0 auto">
+    <button class="big-btn ghost" onclick="goLesson(4)">← Decorators</button>
+    <div></div>
+  </div>
+</section>
+
+<script>
+// =============================================
+// THEME
+// =============================================
+function toggleTheme(){
+  const html=document.documentElement;
+  const isLight=html.getAttribute('data-theme')==='light';
+  if(isLight){html.removeAttribute('data-theme');localStorage.setItem('theme','dark');document.getElementById('themeToggle').textContent='☀ Light';}
+  else{html.setAttribute('data-theme','light');localStorage.setItem('theme','light');document.getElementById('themeToggle').textContent='⬤ Dark';}
+}
+(function(){
+  const t=localStorage.getItem('theme');
+  document.getElementById('themeToggle').textContent=t==='light'?'⬤ Dark':'☀ Light';
+})();
+
+// =============================================
+// NAVIGATION
+// =============================================
+const TOTAL_LESSONS=6;
+function goLesson(n){
+  document.querySelectorAll('.lesson-section').forEach((s,i)=>{
+    s.classList.toggle('active',i===n);
+  });
+  document.querySelectorAll('.lesson-tab').forEach((t,i)=>{
+    t.classList.toggle('active',i===n);
+  });
+  document.querySelectorAll('.pp-step').forEach((s,i)=>{
+    s.classList.remove('active','done');
+    if(i===n) s.classList.add('active');
+    else if(i<n) s.classList.add('done');
+  });
+  localStorage.setItem('phase2lesson',n);
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===5) initQuiz();
+}
+
+// =============================================
+// LESSON 0 — MEMORY VISUALISER
+// =============================================
+let memPhase=0;
+function memStep(){
+  if(memPhase===0){
+    // animate list bar
+    document.getElementById('listBar').style.height='92%';
+    document.getElementById('listLabel').classList.add('visible');
+    document.getElementById('memExplain').textContent='List comprehension: Python allocates ~56 bytes per integer × 1M = ~8 MB all at once.';
+    memPhase=1;
+  } else if(memPhase===1){
+    // animate gen bar
+    document.getElementById('genBar').style.height='2%';
+    document.getElementById('genLabel').classList.add('visible');
+    document.getElementById('memExplain').textContent='Generator expression: only the generator object itself exists in memory — about 112 bytes, regardless of how many items it will produce.';
+    document.getElementById('memStepBtn').textContent='✓ Done';
+    document.getElementById('memStepBtn').disabled=true;
+    memPhase=2;
+  }
+}
+function memReset(){
+  document.getElementById('listBar').style.height='0%';
+  document.getElementById('genBar').style.height='0%';
+  document.getElementById('listLabel').classList.remove('visible');
+  document.getElementById('genLabel').classList.remove('visible');
+  document.getElementById('memExplain').textContent='Click "Step Animation" to build each bar. The list comprehension allocates all 1M items at once; the generator stays tiny.';
+  document.getElementById('memStepBtn').textContent='▶ Step Animation';
+  document.getElementById('memStepBtn').disabled=false;
+  memPhase=0;
+}
+
+// =============================================
+// LESSON 1 — PYDANTIC DEMO
+// =============================================
+const payloads=[
+  {
+    json:`{
+  "id": 42,
+  "event": "page_view",
+  "timestamp": "2024-03-15T10:30:00Z",
+  "value": 1.0
+}`,
+    valid:true,
+    msg:'✓ Valid — model parsed successfully\nUserEvent(id=42, event="page_view", timestamp=datetime(2024,3,15,10,30), value=1.0)'
+  },
+  {
+    json:`{
+  "id": "not-a-number",
+  "event": "purchase",
+  "timestamp": "2024-03-15T10:30:00Z",
+  "value": 99.99
+}`,
+    valid:false,
+    msg:'✗ ValidationError — 1 validation error\nField: id\nError: Input should be a valid integer, unable to parse string as an integer\nInput: "not-a-number"'
+  },
+  {
+    json:`{
+  "id": 7,
+  "event": "signup"
+}`,
+    valid:false,
+    msg:'✗ ValidationError — 2 validation errors\nField: timestamp\nError: Field required\nField: value\nError: Field required'
+  }
+];
+function selectPayload(i,btn){
+  document.querySelectorAll('.payload-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('payloadDisplay').textContent=payloads[i].json;
+  const res=document.getElementById('validationResult');
+  res.className='validation-result visible '+(payloads[i].valid?'valid':'invalid');
+  res.textContent=payloads[i].msg;
+}
+
+// =============================================
+// LESSON 2 — POLARS VS PANDAS CODE COMPARE
+// =============================================
+const ops=[
+  {
+    label:'Filter rows',
+    pandas:`import pandas as pd
+
+df = pd.read_csv("sales.csv")
+
+# Filter rows where amount > 1000
+result = df[df["amount"] > 1000]
+
+# Equivalent with .query()
+result = df.query("amount > 1000")
+
+print(result.head())`,
+    polars:`import polars as pl
+
+df = pl.read_csv("sales.csv")
+
+# Filter rows where amount > 1000
+result = df.filter(pl.col("amount") > 1000)
+
+# Lazy version — query plan optimised
+result = (
+    pl.scan_csv("sales.csv")
+      .filter(pl.col("amount") > 1000)
+      .collect()
+)
+
+print(result.head())`
+  },
+  {
+    label:'Group + aggregate',
+    pandas:`import pandas as pd
+
+df = pd.read_csv("sales.csv")
+
+# Group by region, sum amount
+result = (
+    df.groupby("region")["amount"]
+      .agg(["sum", "mean", "count"])
+      .reset_index()
+)
+
+print(result)`,
+    polars:`import polars as pl
+
+df = pl.read_csv("sales.csv")
+
+# Group by region, sum amount
+result = (
+    df.group_by("region")
+      .agg([
+          pl.col("amount").sum().alias("total"),
+          pl.col("amount").mean().alias("avg"),
+          pl.col("amount").count().alias("n"),
+      ])
+)
+
+print(result)`
+  },
+  {
+    label:'Join two tables',
+    pandas:`import pandas as pd
+
+orders = pd.read_csv("orders.csv")
+users  = pd.read_csv("users.csv")
+
+# Left join on user_id
+result = orders.merge(
+    users,
+    on="user_id",
+    how="left"
+)
+
+print(result.shape)`,
+    polars:`import polars as pl
+
+orders = pl.read_csv("orders.csv")
+users  = pl.read_csv("users.csv")
+
+# Left join on user_id
+result = orders.join(
+    users,
+    on="user_id",
+    how="left"
+)
+
+# Runs in parallel across CPU cores
+print(result.shape)`
+  },
+  {
+    label:'Read CSV',
+    pandas:`import pandas as pd
+
+# Eager — loads everything into memory
+df = pd.read_csv(
+    "bigfile.csv",
+    usecols=["id", "amount", "region"],
+    dtype={"amount": float}
+)
+
+print(df.dtypes)
+print(f"Memory: {df.memory_usage().sum()/1e6:.1f} MB")`,
+    polars:`import polars as pl
+
+# Lazy — only reads what's needed
+df = (
+    pl.scan_csv("bigfile.csv")
+      .select(["id", "amount", "region"])
+      .with_columns(
+          pl.col("amount").cast(pl.Float64)
+      )
+      .collect()  # execute optimised plan
+)
+
+print(df.schema)
+print(f"Shape: {df.shape}")`
+  }
+];
+
+let currentOp=0;
+function setOp(i,btn){
+  currentOp=i;
+  document.querySelectorAll('#compareOps .btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOp();
+}
+function renderOp(){
+  document.getElementById('pandasCode').textContent=ops[currentOp].pandas;
+  document.getElementById('polarsCode').textContent=ops[currentOp].polars;
+}
+
+// =============================================
+// LESSON 3 — ASYNC FETCH SIMULATOR
+// =============================================
+const endpoints=[
+  {name:'/api/users',      latency:800},
+  {name:'/api/products',   latency:500},
+  {name:'/api/orders',     latency:1200},
+  {name:'/api/inventory',  latency:300},
+  {name:'/api/analytics',  latency:700},
+];
+let fetchRunning=false;
+
+function buildEndpointList(){
+  const el=document.getElementById('endpointList');
+  el.innerHTML=endpoints.map((ep,i)=>`
+    <div class="endpoint-row">
+      <div class="endpoint-name">${ep.name}</div>
+      <div class="endpoint-bar-track"><div class="endpoint-bar-fill" id="epbar-${i}"></div></div>
+      <div class="endpoint-time" id="eptime-${i}">—</div>
+    </div>
+  `).join('');
+}
+
+function resetBars(){
+  endpoints.forEach((_,i)=>{
+    const bar=document.getElementById('epbar-'+i);
+    bar.style.transition='none';
+    bar.style.width='0%';
+    document.getElementById('eptime-'+i).textContent='—';
+  });
+  document.getElementById('asyncTotal').textContent='';
+}
+
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function runFetch(mode){
+  if(fetchRunning)return;
+  fetchRunning=true;
+  document.getElementById('syncRunBtn').disabled=true;
+  document.getElementById('asyncRunBtn').disabled=true;
+  resetBars();
+  await delay(80); // let reset render
+
+  const totalEl=document.getElementById('asyncTotal');
+  const badge=`<span class="async-mode-badge ${mode==='sync'?'sync-badge':'async-badge'}">${mode.toUpperCase()}</span>`;
+  totalEl.innerHTML='Running… '+badge;
+
+  const maxLatency=Math.max(...endpoints.map(e=>e.latency));
+  const t0=performance.now();
+
+  if(mode==='sync'){
+    for(let i=0;i<endpoints.length;i++){
+      const ep=endpoints[i];
+      const bar=document.getElementById('epbar-'+i);
+      bar.style.transition=`width ${ep.latency}ms linear`;
+      bar.style.width='100%';
+      await delay(ep.latency);
+      document.getElementById('eptime-'+i).textContent=(ep.latency/1000).toFixed(2)+'s';
+    }
+  } else {
+    // async — all in parallel
+    await Promise.all(endpoints.map(async(ep,i)=>{
+      const bar=document.getElementById('epbar-'+i);
+      bar.style.transition=`width ${ep.latency}ms linear`;
+      bar.style.width='100%';
+      await delay(ep.latency);
+      document.getElementById('eptime-'+i).textContent=(ep.latency/1000).toFixed(2)+'s';
+    }));
+  }
+
+  const elapsed=((performance.now()-t0)/1000).toFixed(2);
+  const syncTotal=(endpoints.reduce((a,e)=>a+e.latency,0)/1000).toFixed(2);
+  totalEl.innerHTML=`Total time: <strong>${elapsed}s</strong> ${badge} ${mode==='async'?`<span style="color:var(--muted);font-size:.78rem;font-weight:400">(sync would take ~${syncTotal}s)</span>`:''}`;
+
+  fetchRunning=false;
+  document.getElementById('syncRunBtn').disabled=false;
+  document.getElementById('asyncRunBtn').disabled=false;
+}
+
+// =============================================
+// LESSON 4 — FIB LRU CACHE VISUALISER
+// =============================================
+let fibN=10;
+let fibAnimating=false;
+
+function updateFibN(){
+  fibN=parseInt(document.getElementById('fibSlider').value);
+  document.getElementById('fibNDisplay').textContent=fibN;
+  document.getElementById('fibNoCache').textContent='—';
+  document.getElementById('fibWithCache').textContent='—';
+}
+
+function countFibCalls(n,memo=null){
+  let calls=0;
+  if(memo){
+    const cache={};
+    function fibMemo(k){
+      calls++;
+      if(k<=1)return k;
+      if(cache[k]!==undefined)return cache[k];
+      cache[k]=fibMemo(k-1)+fibMemo(k-2);
+      return cache[k];
+    }
+    fibMemo(n);
+  } else {
+    function fibNaive(k){calls++;if(k<=1)return k;return fibNaive(k-1)+fibNaive(k-2);}
+    fibNaive(n);
+  }
+  return calls;
+}
+
+async function animateCount(elId,target,className){
+  const el=document.getElementById(elId);
+  const steps=30;
+  const stepVal=target/steps;
+  for(let i=1;i<=steps;i++){
+    el.textContent=Math.round(stepVal*i);
+    el.classList.add('animating');
+    await delay(18);
+    el.classList.remove('animating');
+  }
+  el.textContent=target;
+}
+
+async function runFibNoCache(){
+  if(fibAnimating)return;
+  fibAnimating=true;
+  document.getElementById('fibNoCacheBtn').disabled=true;
+  document.getElementById('fibCacheBtn').disabled=true;
+  const calls=countFibCalls(fibN,null);
+  await animateCount('fibNoCache',calls,'red');
+  fibAnimating=false;
+  document.getElementById('fibNoCacheBtn').disabled=false;
+  document.getElementById('fibCacheBtn').disabled=false;
+}
+
+async function runFibWithCache(){
+  if(fibAnimating)return;
+  fibAnimating=true;
+  document.getElementById('fibNoCacheBtn').disabled=true;
+  document.getElementById('fibCacheBtn').disabled=true;
+  const calls=countFibCalls(fibN,true);
+  await animateCount('fibWithCache',calls,'green');
+  fibAnimating=false;
+  document.getElementById('fibNoCacheBtn').disabled=false;
+  document.getElementById('fibCacheBtn').disabled=false;
+}
+
+// =============================================
+// QUIZ
+// =============================================
+const questions=[
+  {
+    q:'A generator expression uses how much memory compared to a list comprehension for 1 million items?',
+    opts:[
+      'The same amount (Python objects either way)',
+      'About 4× more (generator has overhead)',
+      'A tiny fraction — it yields items one at a time',
+      '2× less, but still proportional to n'
+    ],
+    correct:2,
+    explain:'A generator expression holds only its internal state (~112 bytes). A list comprehension materialises all 1M objects in RAM — roughly 8 MB for integers.'
+  },
+  {
+    q:'What does Pydantic do when you instantiate a model with a wrong field type?',
+    opts:[
+      'Silently coerces it to the right type always',
+      'Raises a ValidationError with the field name and reason',
+      'Logs a warning and continues',
+      'Returns None for that field'
+    ],
+    correct:1,
+    explain:'Pydantic raises a ValidationError listing every field that failed validation, along with a human-readable reason for each failure. Some coercions (e.g. "42" → 42) succeed, but fundamentally incompatible types (e.g. "hello" → int) always raise.'
+  },
+  {
+    q:'asyncio.gather() runs tasks:',
+    opts:[
+      'On multiple CPU cores simultaneously',
+      'Concurrently on one thread, switching on each await',
+      'In a thread pool automatically',
+      'Sequentially in the order listed'
+    ],
+    correct:1,
+    explain:'asyncio is single-threaded. gather() schedules all coroutines on the same event loop; they interleave at each await point. For true multi-core parallelism you need multiprocessing or ProcessPoolExecutor.'
+  },
+  {
+    q:'@functools.lru_cache speeds up recursive functions by:',
+    opts:[
+      'Running them in parallel',
+      'Storing previously computed results to avoid recomputation',
+      'Compiling them to C',
+      'Removing recursion automatically'
+    ],
+    correct:1,
+    explain:'lru_cache stores the return value for each unique set of arguments. Subsequent calls with the same arguments return the cached value in O(1) instead of recomputing — turning exponential recursion into linear time for Fibonacci.'
+  }
+];
+
+let quizState={current:0,score:0,answered:false};
+
+function initQuiz(){
+  quizState={current:0,score:0,answered:false};
+  document.getElementById('quizScore').classList.remove('visible');
+  document.getElementById('quizNav').style.display='none';
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q=questions[quizState.current];
+  document.getElementById('quizFill').style.width=((quizState.current/questions.length)*100)+'%';
+  document.getElementById('quizCards').innerHTML=`
+    <div class="question-card">
+      <div class="q-num">Question ${quizState.current+1} of ${questions.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="optionsList">
+        ${q.opts.map((o,i)=>`<div class="option" onclick="selectOption(${i})">${o}</div>`).join('')}
+      </div>
+      <div class="explanation" id="explanation">${q.explain}</div>
+    </div>`;
+  document.getElementById('quizNav').style.display='none';
+  quizState.answered=false;
+}
+
+function selectOption(i){
+  if(quizState.answered)return;
+  quizState.answered=true;
+  const q=questions[quizState.current];
+  const opts=document.querySelectorAll('.option');
+  opts.forEach((o,idx)=>{
+    o.classList.add('locked');
+    if(idx===q.correct) o.classList.add('correct');
+    else if(idx===i) o.classList.add('wrong');
+  });
+  if(i===q.correct) quizState.score++;
+  document.getElementById('explanation').classList.add('visible');
+  const nav=document.getElementById('quizNav');
+  nav.style.display='flex';
+  const btn=document.getElementById('quizNextBtn');
+  if(quizState.current===questions.length-1){
+    btn.textContent='See Results →';
+  } else {
+    btn.textContent='Next Question →';
+  }
+}
+
+function quizNext(){
+  if(quizState.current<questions.length-1){
+    quizState.current++;
+    renderQuestion();
+  } else {
+    showScore();
+  }
+}
+
+function showScore(){
+  document.getElementById('quizCards').innerHTML='';
+  document.getElementById('quizNav').style.display='none';
+  document.getElementById('quizFill').style.width='100%';
+  const s=document.getElementById('quizScore');
+  s.classList.add('visible');
+  document.getElementById('scoreNum').textContent=`${quizState.score}/${questions.length}`;
+  const pct=quizState.score/questions.length;
+  let msg='';
+  if(pct===1) msg='Perfect score! You have a solid grasp of Python data tooling.';
+  else if(pct>=.75) msg='Great work — review the explanations for any you missed.';
+  else if(pct>=.5) msg='Good start — revisit the lessons and try again.';
+  else msg='Keep going — re-read the lessons and give it another shot!';
+  document.getElementById('scoreMsg').textContent=msg;
+  localStorage.setItem('phase2done','1');
+  // append back link
+  if(!document.getElementById('backToRoadmap')){
+    const link=document.createElement('a');
+    link.id='backToRoadmap';
+    link.href='index.html';
+    link.textContent='← Back to Roadmap';
+    link.style.cssText='display:inline-block;margin-top:20px;color:var(--primary);text-decoration:none;font-weight:600;font-size:.9rem';
+    s.appendChild(link);
+  }
+}
+
+function quizRestart(){
+  initQuiz();
+}
+
+// =============================================
+// INIT
+// =============================================
+(function init(){
+  // restore last lesson
+  const saved=localStorage.getItem('phase2lesson');
+  const n=saved?parseInt(saved):0;
+  goLesson(n);
+
+  // init demos
+  buildEndpointList();
+  renderOp();
+})();
+</script>
+</body>
+</html>
