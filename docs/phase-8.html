@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 08 — Modern Data Stack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1f;--surface:#0e1628;--card:#121c30;--border:#1e2d47;--border-b:#2d4470;
+  --primary:#4f8ef7;--primary-dim:rgba(79,142,247,.12);--primary-glow:rgba(79,142,247,.3);
+  --secondary:#a78bfa;--accent:#34d399;--warning:#fbbf24;--danger:#f87171;--orange:#fb923c;
+  --text:#dde8f5;--muted:#7a8faa;--dim:#3d5070;
+  --font:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;--r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-back{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-back:hover{color:var(--primary)}
+.nav-sep{color:var(--dim)}
+.nav-title{font-weight:600;font-size:.9rem}
+.lesson-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0}
+.lesson-tab{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;white-space:nowrap;background:transparent;color:var(--muted)}
+.lesson-tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.lesson-tab.active{background:var(--primary-dim);color:var(--primary);border:1px solid var(--primary-glow)}
+@media(max-width:640px){nav{flex-direction:column;height:auto;padding:10px 16px;gap:6px}.lesson-tabs{width:100%}}
+
+.phase-hero{padding:48px 32px 32px;max-width:1100px;margin:0 auto}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.phase-hero h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;letter-spacing:-.04em;margin-bottom:8px;background:linear-gradient(135deg,#fff 40%,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.phase-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+.phase-progress{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.pp-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.pp-step.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.pp-step.done{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.pp-step:not(.active):not(.done){color:var(--dim)}
+.pp-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.lesson-section{display:none;max-width:1100px;margin:0 auto;padding:32px 32px 80px}
+.lesson-section.active{display:block}
+.lesson-header{margin-bottom:32px}
+.lesson-num{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-family:var(--mono)}
+.lesson-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.lesson-desc{color:var(--muted);max-width:680px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.split-wide{grid-template-columns:2fr 3fr}
+
+.prose h3{font-size:1rem;font-weight:600;margin:20px 0 8px;color:var(--text)}
+.prose h3:first-child{margin-top:0}
+.prose p{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.prose ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.prose li{font-size:.9rem;color:var(--muted);padding-left:16px;position:relative}
+.prose li::before{content:'›';position:absolute;left:0;color:var(--primary)}
+.prose strong{color:var(--text);font-weight:600}
+.prose .callout{background:var(--primary-dim);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 16px;margin:12px 0}
+.prose .callout p{color:var(--text);margin:0}
+.prose code{font-family:var(--mono);font-size:.82rem;background:rgba(79,142,247,.1);padding:2px 6px;border-radius:4px;color:var(--primary)}
+
+.concepts-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:20px}
+.concepts-box h4{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.concept-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.concept-item:last-child{border-bottom:none}
+.concept-key{font-family:var(--mono);font-size:.75rem;color:var(--primary);font-weight:500;white-space:nowrap;min-width:120px}
+.concept-val{font-size:.8rem;color:var(--muted)}
+
+.demo-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:relative}
+.demo-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.demo-title span{color:var(--accent);font-size:.7rem;font-weight:600}
+
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.btn:hover{border-color:var(--border-b);color:var(--text)}
+.btn.active,.btn.primary{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.btn.accent{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.btn.secondary{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:var(--secondary)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+.lesson-nav{display:flex;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.big-btn{padding:12px 24px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font)}
+.big-btn.primary{background:var(--primary);color:#fff}
+.big-btn.primary:hover{background:#6fa2ff;box-shadow:0 4px 20px rgba(79,142,247,.4)}
+.big-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.big-btn.ghost:hover{color:var(--text);border-color:var(--border-b)}
+
+/* QUIZ */
+.quiz-wrap{max-width:720px;margin:0 auto}
+.quiz-progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:32px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary));border-radius:2px;transition:width .4s ease}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.q-text{font-size:1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:12px 16px;border-radius:var(--r-sm);border:1px solid var(--border);cursor:pointer;font-size:.88rem;transition:all .2s;background:var(--surface)}
+.option:hover:not(.locked){border-color:var(--border-b);background:rgba(255,255,255,.03)}
+.option.correct{border-color:var(--accent)!important;background:rgba(52,211,153,.1)!important;color:var(--accent)}
+.option.wrong{border-color:var(--danger)!important;background:rgba(248,113,113,.1)!important;color:var(--danger)}
+.option.locked{cursor:default}
+.explanation{margin-top:16px;padding:14px 16px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:var(--r-sm);font-size:.84rem;color:var(--text);line-height:1.6;display:none}
+.explanation.visible{display:block;animation:slideUp .3s ease}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.quiz-score{text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);display:none}
+.quiz-score.visible{display:block;animation:slideUp .4s ease}
+.score-num{font-size:4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-msg{font-size:1.1rem;color:var(--muted);margin-bottom:24px}
+
+/* Light mode */
+[data-theme="light"]{
+  --bg:#f4f6fc;--surface:#eaecf5;--card:#ffffff;--border:#cdd5e4;--border-b:#aab5cc;
+  --primary:#3a6fd8;--primary-dim:rgba(58,111,216,.1);--primary-glow:rgba(58,111,216,.25);
+  --secondary:#6d28d9;--accent:#059669;--warning:#d97706;--danger:#dc2626;--orange:#ea580c;
+  --text:#111827;--muted:#475569;--dim:#94a3b8;
+}
+[data-theme="light"] body{background:var(--bg)}
+[data-theme="light"] nav{background:rgba(244,246,252,.95)}
+[data-theme="light"] .phase-hero h1{background:linear-gradient(135deg,#111827 40%,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="light"] .callout{background:rgba(58,111,216,.07);border-color:rgba(58,111,216,.3)}
+[data-theme="light"] code{background:rgba(0,0,0,.07);color:#1e3a8a}
+.theme-toggle{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 13px;color:var(--muted);cursor:pointer;font-size:.8rem;font-family:var(--font);transition:all .2s;white-space:nowrap;flex-shrink:0}
+.theme-toggle:hover{color:var(--text);border-color:var(--primary)}
+@media(max-width:640px){.phase-hero,.lesson-section{padding-left:20px;padding-right:20px}}
+
+/* =============================================
+   TERMINAL SIMULATOR
+   ============================================= */
+.terminal-wrap{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);font-family:var(--mono);font-size:.82rem;overflow:hidden}
+.terminal-bar{background:#1a2540;padding:8px 14px;display:flex;align-items:center;gap:6px}
+.term-dot{width:10px;height:10px;border-radius:50%}
+.terminal-output{padding:14px;min-height:220px;max-height:280px;overflow-y:auto;color:#cde;line-height:1.8}
+.term-line{display:flex;flex-direction:column;margin-bottom:2px}
+.term-prompt-line{color:#4ade80;white-space:pre}
+.term-out-line{color:#a8c0d8;white-space:pre-wrap;word-break:break-all}
+.term-err-line{color:#f87171;white-space:pre-wrap}
+.terminal-input-row{display:flex;align-items:center;padding:8px 14px;border-top:1px solid var(--border);gap:6px}
+.term-ps1{color:#4ade80;white-space:nowrap;flex-shrink:0;font-family:var(--mono);font-size:.82rem}
+.terminal-input{background:transparent;border:none;outline:none;color:#cde;font-family:var(--mono);font-size:.82rem;flex:1;caret-color:#4ade80}
+.term-cmds{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.term-cmd-chip{padding:3px 9px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:.72rem;font-family:var(--mono);cursor:pointer;transition:all .15s}
+.term-cmd-chip:hover{border-color:var(--primary-glow);color:var(--primary)}
+
+/* =============================================
+   SCRIPT STEPPER
+   ============================================= */
+.script-block{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;font-family:var(--mono);font-size:.8rem}
+.script-header{background:#1a2540;padding:8px 14px;font-size:.7rem;color:var(--muted);display:flex;justify-content:space-between}
+.script-body{padding:8px 0}
+.script-line{display:flex;padding:3px 14px;gap:12px;transition:background .2s}
+.script-line:hover{background:rgba(255,255,255,.02)}
+.script-line.sl-active{background:rgba(79,142,247,.12);border-left:2px solid var(--primary)}
+.script-line.sl-done{background:rgba(52,211,153,.05)}
+.sl-num{color:var(--dim);min-width:20px;text-align:right;user-select:none;flex-shrink:0}
+.sl-text{color:#cde;white-space:pre}
+.sl-comment{color:#4a6280}
+.sl-keyword{color:#a78bfa}
+.sl-string{color:#34d399}
+.sl-var{color:#fbbf24}
+.script-output-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;margin-top:12px;font-family:var(--mono);font-size:.78rem;min-height:80px}
+.script-output-line{color:#4ade80;animation:slideUp .25s ease}
+.script-output-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:8px}
+
+/* =============================================
+   TMUX DIAGRAM
+   ============================================= */
+.tmux-window{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;user-select:none}
+.tmux-statusbar{background:#1a3a1a;padding:5px 14px;font-family:var(--mono);font-size:.72rem;color:#4ade80;display:flex;justify-content:space-between}
+.tmux-tabs{display:flex;gap:4px;padding:4px 8px;background:#0d1a0d;border-bottom:1px solid #1a3a1a}
+.tmux-tab{padding:2px 10px;font-family:var(--mono);font-size:.7rem;color:var(--muted);cursor:pointer;border-radius:3px}
+.tmux-tab.active-win{background:#1a3a1a;color:#4ade80}
+.tmux-panes{display:flex;height:180px;gap:1px;background:#1a2540;padding:1px}
+.tmux-pane{flex:1;background:#0a0f1a;padding:8px 10px;font-family:var(--mono);font-size:.72rem;color:#7a9ab8;display:flex;flex-direction:column;gap:4px;overflow:hidden;position:relative}
+.tmux-pane.pane-active{border:1px solid #4ade8055}
+.pane-title{color:#4ade80;font-size:.65rem;position:absolute;top:4px;right:6px;opacity:.6}
+.pane-line{color:#7a9ab8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pane-line.pane-cmd{color:#cde}
+.pane-line.pane-prompt{color:#4ade80}
+.tmux-info{font-size:.75rem;color:var(--muted);margin-top:8px}
+
+/* =============================================
+   GIT GRAPH
+   ============================================= */
+.git-graph-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;overflow-x:auto}
+.git-graph-wrap svg{min-width:420px;width:100%;overflow:visible}
+.git-step-desc{font-size:.8rem;color:var(--muted);padding:10px 12px;background:var(--card);border-radius:var(--r-sm);border:1px solid var(--border);min-height:44px;margin-top:10px;line-height:1.5}
+.git-legend{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap}
+.git-legend-item{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)}
+.git-legend-dot{width:10px;height:10px;border-radius:50%}
+
+/* =============================================
+   CRON BUILDER
+   ============================================= */
+.cron-fields{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+.cron-field{display:flex;flex-direction:column;gap:4px}
+.cron-field label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);text-align:center}
+.cron-field input{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 4px;text-align:center;font-family:var(--mono);font-size:.88rem;color:var(--text);outline:none;transition:border-color .2s;width:100%}
+.cron-field input:focus{border-color:var(--primary-glow)}
+.cron-preview{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;font-family:var(--mono);font-size:1rem;color:#4ade80;letter-spacing:.05em;margin-bottom:10px;text-align:center}
+.cron-desc{font-size:.82rem;color:var(--text);padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);min-height:40px;line-height:1.5}
+.cron-presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.cron-preset{padding:4px 10px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:.72rem;font-family:var(--mono);cursor:pointer;transition:all .15s}
+.cron-preset:hover{border-color:var(--accent);color:var(--accent)}
+
+/* =============================================
+   PHASE 8 SPECIFIC
+   ============================================= */
+
+/* ELT Pipeline Diagram */
+.elt-pipeline{display:flex;flex-direction:column;gap:0}
+.elt-stages{display:flex;align-items:center;gap:0;overflow-x:auto;padding:16px 0}
+.elt-stage{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:110px;flex-shrink:0}
+.elt-box{padding:10px 14px;border-radius:var(--r-sm);border:2px solid var(--border);background:var(--surface);text-align:center;width:100px;transition:all .35s;cursor:default}
+.elt-box .elt-icon{font-size:1.3rem;margin-bottom:4px}
+.elt-box .elt-label{font-size:.7rem;font-weight:700;color:var(--muted);transition:color .35s}
+.elt-box .elt-sub{font-size:.6rem;color:var(--dim);margin-top:2px;transition:color .35s}
+.elt-box.highlighted{border-color:var(--accent);background:rgba(52,211,153,.1);}
+.elt-box.highlighted .elt-label{color:var(--accent)}
+.elt-box.highlighted .elt-sub{color:var(--accent);opacity:.8}
+.elt-arrow{color:var(--dim);font-size:1.2rem;flex-shrink:0;padding:0 4px;transition:color .35s}
+.elt-arrow.highlighted{color:var(--accent)}
+.elt-desc-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;font-size:.82rem;color:var(--text);min-height:64px;line-height:1.6;margin-top:8px;transition:all .3s}
+.elt-stepper-btns{display:flex;gap:8px;margin-top:12px;align-items:center}
+.elt-step-counter{font-size:.75rem;color:var(--muted);margin-left:auto;font-family:var(--mono)}
+
+/* dbt DAG SVG */
+.dbt-dag-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;overflow:hidden}
+.dbt-dag-wrap svg{width:100%;height:320px}
+.dbt-node{cursor:pointer;transition:all .2s}
+.dbt-node rect{transition:all .2s}
+.dbt-node:hover rect{filter:brightness(1.3)}
+.dbt-node.active rect{stroke-width:2.5!important}
+.dbt-sql-box{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.72rem;color:#a8c0d8;margin-top:10px;min-height:80px;line-height:1.7;overflow-x:auto;white-space:pre}
+.dbt-node-info{font-size:.78rem;color:var(--muted);margin-top:8px;padding:8px 12px;background:var(--card);border-radius:var(--r-sm);border:1px solid var(--border)}
+
+/* Snowflake Calculator */
+.sf-calc{display:flex;flex-direction:column;gap:16px}
+.sf-slider-wrap{display:flex;flex-direction:column;gap:8px}
+.sf-slider-label{display:flex;justify-content:space-between;align-items:center}
+.sf-size-badge{font-family:var(--mono);font-size:1.1rem;font-weight:700;color:var(--accent)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:var(--border);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg);box-shadow:0 0 8px rgba(52,211,153,.4)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg)}
+.sf-metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sf-metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;text-align:center}
+.sf-metric .sf-metric-val{font-size:1.5rem;font-weight:700;color:var(--accent);font-family:var(--mono)}
+.sf-metric .sf-metric-label{font-size:.7rem;color:var(--muted);margin-top:4px}
+.sf-metric .sf-metric-sub{font-size:.65rem;color:var(--dim);margin-top:2px}
+.sf-formula{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;font-family:var(--mono);font-size:.75rem;color:#a8c0d8;line-height:1.8}
+.sf-table{width:100%;border-collapse:collapse;font-size:.75rem;margin-top:8px}
+.sf-table th{color:var(--dim);font-weight:600;padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.sf-table td{padding:5px 10px;border-bottom:1px solid rgba(30,45,71,.5);color:var(--muted);font-family:var(--mono)}
+.sf-table tr.sf-active-row td{color:var(--accent);background:rgba(52,211,153,.06)}
+.sf-hours-wrap{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.sf-hours-label{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+.sf-hours-badge{font-family:var(--mono);font-weight:700;color:var(--warning)}
+
+/* Airflow DAG */
+.af-dag-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;overflow:hidden}
+.af-dag-wrap svg{width:100%;height:260px}
+.af-node{cursor:pointer}
+.af-node rect{transition:all .2s}
+.af-node:hover rect{filter:brightness(1.25)}
+.af-node.active rect{stroke-width:2.5!important}
+.af-code-box{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.72rem;color:#a8c0d8;margin-top:10px;min-height:90px;line-height:1.7;overflow-x:auto;white-space:pre}
+.af-task-info{font-size:.78rem;color:var(--muted);margin-top:8px;padding:8px 12px;background:var(--card);border-radius:var(--r-sm);border:1px solid var(--border)}
+
+/* Star Schema */
+.star-schema-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;overflow:hidden}
+.star-schema-wrap svg{width:100%;height:340px}
+.star-node{cursor:pointer}
+.star-node rect{transition:all .2s}
+.star-node:hover rect{filter:brightness(1.2)}
+.star-node.active rect{stroke-width:2.5!important}
+.star-detail-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-top:10px;font-size:.78rem;min-height:100px}
+.star-detail-box h5{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:8px}
+.star-col-list{display:flex;flex-direction:column;gap:4px}
+.star-col{display:flex;gap:8px;align-items:center}
+.star-col-name{font-family:var(--mono);font-size:.72rem;color:var(--primary);min-width:140px}
+.star-col-type{font-size:.68rem;color:var(--dim);font-family:var(--mono)}
+.star-col-note{font-size:.68rem;color:var(--muted)}
+.scd-toggle{display:flex;gap:8px;margin-bottom:10px}
+.scd-btn{padding:5px 12px;border-radius:12px;font-size:.72rem;font-weight:600;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--muted);transition:all .2s;font-family:var(--font)}
+.scd-btn.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+</style>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← Roadmap</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Phase 08 — Modern Data Stack</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="lesson-tabs" id="lessonTabs">
+      <button class="lesson-tab active" onclick="goLesson(0)">1. Overview</button>
+      <button class="lesson-tab" onclick="goLesson(1)">2. dbt</button>
+      <button class="lesson-tab" onclick="goLesson(2)">3. Snowflake</button>
+      <button class="lesson-tab" onclick="goLesson(3)">4. Airflow</button>
+      <button class="lesson-tab" onclick="goLesson(4)">5. Star Schema</button>
+      <button class="lesson-tab" onclick="goLesson(5)">✦ Quiz</button>
+    </div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
+  </div>
+</nav>
+
+<div class="phase-hero">
+  <div class="breadcrumb"><a href="index.html">Roadmap</a> › Phase 08</div>
+  <h1>Modern Data Stack</h1>
+  <p>Master the industry-standard ELT pipeline — from ingestion with Fivetran/Airbyte, transformation with dbt, cloud warehousing on Snowflake, orchestration with Airflow, to analytics-ready star schemas.</p>
+  <div class="phase-progress" id="phaseProgress">
+    <div class="pp-step active" onclick="goLesson(0)"><div class="pp-dot"></div>Overview</div>
+    <div class="pp-step" onclick="goLesson(1)"><div class="pp-dot"></div>dbt</div>
+    <div class="pp-step" onclick="goLesson(2)"><div class="pp-dot"></div>Snowflake</div>
+    <div class="pp-step" onclick="goLesson(3)"><div class="pp-dot"></div>Airflow</div>
+    <div class="pp-step" onclick="goLesson(4)"><div class="pp-dot"></div>Star Schema</div>
+    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>Quiz</div>
+  </div>
+</div>
+
+<!-- ==================== LESSON 0: OVERVIEW ==================== -->
+<section class="lesson-section active" id="lesson-0">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 01</div>
+    <div class="lesson-title">The Modern Data Stack Overview</div>
+    <div class="lesson-desc">How data moves from production databases to business dashboards in 2024 — and why ELT replaced ETL.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>ELT vs ETL</h3>
+      <p>The old <strong>ETL</strong> (Extract-Transform-Load) approach processed data before loading it into the warehouse — requiring bespoke transformation pipelines running on separate infrastructure.</p>
+      <p>Modern <strong>ELT</strong> (Extract-Load-Transform) loads raw data first, then transforms it inside the warehouse using SQL. Cloud warehouses like Snowflake and BigQuery are cheap to store data in and fast to query, so transforming in-place is both cheaper and simpler.</p>
+      <h3>The standard pipeline</h3>
+      <ul>
+        <li><strong>Extract + Load</strong> — Fivetran or Airbyte pulls data from 200+ sources and loads it raw into your warehouse on a schedule</li>
+        <li><strong>Transform</strong> — dbt writes SQL models that turn raw data into clean, business-ready tables</li>
+        <li><strong>Visualise</strong> — Looker, Metabase, or Tableau connect to the transformed tables</li>
+      </ul>
+      <h3>Medallion Architecture</h3>
+      <ul>
+        <li><strong>Bronze</strong> — raw, unchanged data as ingested (append-only)</li>
+        <li><strong>Silver</strong> — cleaned, deduplicated, type-cast data</li>
+        <li><strong>Gold</strong> — business-logic aggregations ready for dashboards</li>
+      </ul>
+      <div class="callout"><p>The big insight: cloud storage is ~$23/TB/month on S3. It costs almost nothing to keep raw data. So load everything raw first, then transform — you can always re-transform if business logic changes.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">ELT Pipeline Walkthrough <span>interactive</span></div>
+      <div class="elt-pipeline">
+        <div class="elt-stages" id="eltStages">
+          <!-- Sources -->
+          <div class="elt-stage">
+            <div class="elt-box" id="elt-0">
+              <div class="elt-icon">🗄️</div>
+              <div class="elt-label">Data Sources</div>
+              <div class="elt-sub">Postgres · S3 · Salesforce</div>
+            </div>
+          </div>
+          <div class="elt-arrow" id="elt-arr-0">→</div>
+          <!-- Fivetran -->
+          <div class="elt-stage">
+            <div class="elt-box" id="elt-1">
+              <div class="elt-icon">🔌</div>
+              <div class="elt-label">Fivetran</div>
+              <div class="elt-sub">Extract + Load</div>
+            </div>
+          </div>
+          <div class="elt-arrow" id="elt-arr-1">→</div>
+          <!-- Raw schema -->
+          <div class="elt-stage">
+            <div class="elt-box" id="elt-2">
+              <div class="elt-icon">❄️</div>
+              <div class="elt-label">Snowflake Raw</div>
+              <div class="elt-sub">raw_schema</div>
+            </div>
+          </div>
+          <div class="elt-arrow" id="elt-arr-2">→</div>
+          <!-- dbt -->
+          <div class="elt-stage">
+            <div class="elt-box" id="elt-3">
+              <div class="elt-icon">🔧</div>
+              <div class="elt-label">dbt</div>
+              <div class="elt-sub">Transform (SQL)</div>
+            </div>
+          </div>
+          <div class="elt-arrow" id="elt-arr-3">→</div>
+          <!-- Mart schema -->
+          <div class="elt-stage">
+            <div class="elt-box" id="elt-4">
+              <div class="elt-icon">❄️</div>
+              <div class="elt-label">Snowflake Mart</div>
+              <div class="elt-sub">mart_schema</div>
+            </div>
+          </div>
+          <div class="elt-arrow" id="elt-arr-4">→</div>
+          <!-- Looker -->
+          <div class="elt-stage">
+            <div class="elt-box" id="elt-5">
+              <div class="elt-icon">📊</div>
+              <div class="elt-label">Looker</div>
+              <div class="elt-sub">Visualise</div>
+            </div>
+          </div>
+        </div>
+        <div class="elt-desc-box" id="eltDesc">Click "Next" to walk through each stage of the pipeline.</div>
+        <div class="elt-stepper-btns">
+          <button class="btn primary" onclick="eltNext()">Next →</button>
+          <button class="btn ghost" onclick="eltReset()">Reset</button>
+          <span class="elt-step-counter" id="eltCounter">0 / 6</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Key Concepts</h4>
+    <div class="concept-item"><div class="concept-key">ELT</div><div class="concept-val">Extract-Load-Transform — load raw data first, then transform inside the warehouse using SQL</div></div>
+    <div class="concept-item"><div class="concept-key">Fivetran / Airbyte</div><div class="concept-val">Managed connectors that replicate source data into your warehouse on a schedule with zero custom code</div></div>
+    <div class="concept-item"><div class="concept-key">dbt</div><div class="concept-val">SQL-first transformation framework — models are SELECT queries; dbt handles CREATE TABLE/VIEW</div></div>
+    <div class="concept-item"><div class="concept-key">Medallion</div><div class="concept-val">Bronze (raw) → Silver (cleaned) → Gold (business-ready) — three-layer data architecture</div></div>
+    <div class="concept-item"><div class="concept-key">Snowflake / BigQuery</div><div class="concept-val">Cloud data warehouses — columnar storage, MPP compute, scale to petabytes, pay-per-query</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <span></span>
+    <button class="big-btn primary" onclick="goLesson(1)">Next: dbt →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 1: dbt ==================== -->
+<section class="lesson-section" id="lesson-1">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 02</div>
+    <div class="lesson-title">dbt — data build tool</div>
+    <div class="lesson-desc">Write SELECT queries, dbt handles the rest. Build a dependency graph of SQL models that transforms raw data into analytics-ready tables.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>What is dbt?</h3>
+      <p>dbt lets analytics engineers write <strong>models</strong> — plain <code>.sql</code> files containing a single SELECT query. dbt materialises each model as a table or view in your warehouse, handling all the DDL (<code>CREATE TABLE AS</code>, <code>DROP</code>, <code>SWAP</code>) automatically.</p>
+      <h3>ref() and the DAG</h3>
+      <p>Instead of hard-coding table names, you use <code>{{ ref('stg_orders') }}</code>. dbt resolves these references to build a <strong>DAG</strong> (Directed Acyclic Graph) and executes models in the correct order — staging before marts, sources before everything.</p>
+      <h3>Materializations</h3>
+      <ul>
+        <li><strong>view</strong> — default, no data stored, always fresh</li>
+        <li><strong>table</strong> — full refresh every run, faster queries</li>
+        <li><strong>incremental</strong> — only process new/updated rows using a <code>unique_key</code></li>
+        <li><strong>ephemeral</strong> — like a CTE, never written to disk</li>
+      </ul>
+      <h3>Tests</h3>
+      <ul>
+        <li><code>not_null</code> — no NULLs in a column</li>
+        <li><code>unique</code> — no duplicate values</li>
+        <li><code>accepted_values</code> — column only contains allowed values</li>
+        <li><code>relationships</code> — foreign key integrity between models</li>
+      </ul>
+      <div class="callout"><p>dbt's superpower is <strong>lineage</strong>: every model knows its parents and children. When something breaks, you can trace it through the graph in seconds.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">dbt DAG Visualiser <span>click a node</span></div>
+      <div class="dbt-dag-wrap">
+        <svg id="dbtDag" viewBox="0 0 560 300">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#3d5070"/>
+            </marker>
+            <marker id="arr-active" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#34d399"/>
+            </marker>
+          </defs>
+          <!-- Edges -->
+          <g id="dbtEdges">
+            <!-- raw_orders → stg_orders -->
+            <line x1="110" y1="60" x2="220" y2="100" stroke="#3d5070" stroke-width="1.5" marker-end="url(#arr)" id="e0"/>
+            <!-- raw_customers → stg_customers -->
+            <line x1="110" y1="220" x2="220" y2="200" stroke="#3d5070" stroke-width="1.5" marker-end="url(#arr)" id="e1"/>
+            <!-- stg_orders → int_order_items -->
+            <line x1="320" y1="100" x2="380" y2="155" stroke="#3d5070" stroke-width="1.5" marker-end="url(#arr)" id="e2"/>
+            <!-- stg_customers → int_order_items -->
+            <line x1="320" y1="200" x2="380" y2="165" stroke="#3d5070" stroke-width="1.5" marker-end="url(#arr)" id="e3"/>
+            <!-- int_order_items → mart_revenue -->
+            <line x1="470" y1="160" x2="510" y2="160" stroke="#3d5070" stroke-width="1.5" marker-end="url(#arr)" id="e4"/>
+          </g>
+          <!-- Source nodes -->
+          <g class="dbt-node" id="dbt-raw_orders" onclick="dbtClick('raw_orders')">
+            <rect x="10" y="36" width="100" height="48" rx="6" fill="#0e1628" stroke="#1e2d47" stroke-width="1.5"/>
+            <text x="60" y="56" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="JetBrains Mono,monospace">SOURCE</text>
+            <text x="60" y="72" text-anchor="middle" fill="#dde8f5" font-size="10" font-family="JetBrains Mono,monospace">raw_orders</text>
+          </g>
+          <g class="dbt-node" id="dbt-raw_customers" onclick="dbtClick('raw_customers')">
+            <rect x="10" y="196" width="100" height="48" rx="6" fill="#0e1628" stroke="#1e2d47" stroke-width="1.5"/>
+            <text x="60" y="216" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="JetBrains Mono,monospace">SOURCE</text>
+            <text x="60" y="232" text-anchor="middle" fill="#dde8f5" font-size="10" font-family="JetBrains Mono,monospace">raw_customers</text>
+          </g>
+          <!-- Staging nodes -->
+          <g class="dbt-node" id="dbt-stg_orders" onclick="dbtClick('stg_orders')">
+            <rect x="210" y="76" width="110" height="48" rx="6" fill="#0e1628" stroke="#4f8ef7" stroke-width="1.5"/>
+            <text x="265" y="96" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="JetBrains Mono,monospace">STAGING</text>
+            <text x="265" y="112" text-anchor="middle" fill="#dde8f5" font-size="10" font-family="JetBrains Mono,monospace">stg_orders</text>
+          </g>
+          <g class="dbt-node" id="dbt-stg_customers" onclick="dbtClick('stg_customers')">
+            <rect x="210" y="176" width="110" height="48" rx="6" fill="#0e1628" stroke="#4f8ef7" stroke-width="1.5"/>
+            <text x="265" y="196" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="JetBrains Mono,monospace">STAGING</text>
+            <text x="265" y="212" text-anchor="middle" fill="#dde8f5" font-size="10" font-family="JetBrains Mono,monospace">stg_customers</text>
+          </g>
+          <!-- Intermediate -->
+          <g class="dbt-node" id="dbt-int_order_items" onclick="dbtClick('int_order_items')">
+            <rect x="360" y="136" width="120" height="48" rx="6" fill="#0e1628" stroke="#a78bfa" stroke-width="1.5"/>
+            <text x="420" y="156" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="JetBrains Mono,monospace">INTERMEDIATE</text>
+            <text x="420" y="172" text-anchor="middle" fill="#dde8f5" font-size="10" font-family="JetBrains Mono,monospace">int_order_items</text>
+          </g>
+          <!-- Mart -->
+          <g class="dbt-node" id="dbt-mart_revenue" onclick="dbtClick('mart_revenue')">
+            <rect x="490" y="136" width="60" height="48" rx="6" fill="#0e1628" stroke="#34d399" stroke-width="1.5"/>
+            <text x="520" y="156" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="JetBrains Mono,monospace">MART</text>
+            <text x="520" y="172" text-anchor="middle" fill="#dde8f5" font-size="10" font-family="JetBrains Mono,monospace">revenue</text>
+          </g>
+          <!-- Legend -->
+          <rect x="10" y="262" width="10" height="10" rx="2" fill="none" stroke="#1e2d47" stroke-width="1.5"/>
+          <text x="24" y="271" fill="#3d5070" font-size="9" font-family="Inter,sans-serif">source</text>
+          <rect x="70" y="262" width="10" height="10" rx="2" fill="none" stroke="#4f8ef7" stroke-width="1.5"/>
+          <text x="84" y="271" fill="#3d5070" font-size="9" font-family="Inter,sans-serif">staging</text>
+          <rect x="135" y="262" width="10" height="10" rx="2" fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+          <text x="149" y="271" fill="#3d5070" font-size="9" font-family="Inter,sans-serif">intermediate</text>
+          <rect x="230" y="262" width="10" height="10" rx="2" fill="none" stroke="#34d399" stroke-width="1.5"/>
+          <text x="244" y="271" fill="#3d5070" font-size="9" font-family="Inter,sans-serif">mart</text>
+        </svg>
+      </div>
+      <div class="dbt-node-info" id="dbtNodeInfo">Click any node to see its SQL definition and dependencies.</div>
+      <div class="dbt-sql-box" id="dbtSqlBox">-- Select a node above to view its SQL model</div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>dbt Concepts</h4>
+    <div class="concept-item"><div class="concept-key">{{ ref() }}</div><div class="concept-val">Builds a dependency — dbt ensures the referenced model runs first and substitutes the correct table name</div></div>
+    <div class="concept-item"><div class="concept-key">{{ source() }}</div><div class="concept-val">References a raw source table declared in sources.yml — enables source freshness checks</div></div>
+    <div class="concept-item"><div class="concept-key">Materialization</div><div class="concept-val">view, table, incremental, ephemeral — controls how dbt writes (or doesn't write) each model to the warehouse</div></div>
+    <div class="concept-item"><div class="concept-key">dbt test</div><div class="concept-val">YAML-declared data quality checks: not_null, unique, accepted_values, relationships — run with `dbt test`</div></div>
+    <div class="concept-item"><div class="concept-key">dbt docs</div><div class="concept-val">`dbt docs generate && dbt docs serve` — interactive lineage graph and column descriptions in a web UI</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(0)">← Overview</button>
+    <button class="big-btn primary" onclick="goLesson(2)">Next: Snowflake →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 2: SNOWFLAKE ==================== -->
+<section class="lesson-section" id="lesson-2">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 03</div>
+    <div class="lesson-title">Snowflake Architecture</div>
+    <div class="lesson-desc">Separated storage and compute, virtual warehouses, Time Travel, and zero-copy cloning — how Snowflake changed data warehousing.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>Storage vs Compute Separation</h3>
+      <p>Snowflake stores data on S3 in a proprietary compressed columnar format. <strong>Virtual warehouses</strong> are separate MPP compute clusters that query that data. You can spin up multiple warehouses for different workloads — one for ETL, one for BI, one for data science — all reading the same data without contention.</p>
+      <h3>Virtual Warehouse Sizes</h3>
+      <ul>
+        <li><strong>XS / S / M / L / XL</strong> — each size doubles the credit consumption and (roughly) halves query time for complex queries</li>
+        <li><strong>Auto-suspend</strong> — warehouse shuts down after N minutes of inactivity (typically 1-5 min)</li>
+        <li><strong>Auto-resume</strong> — first query wakes the warehouse in ~5 seconds</li>
+      </ul>
+      <h3>Key Features</h3>
+      <ul>
+        <li><strong>Time Travel</strong> — query or restore data as it was up to 90 days ago: <code>SELECT * FROM orders AT(offset => -3600)</code></li>
+        <li><strong>Zero-Copy Clone</strong> — clone a table, schema, or entire database instantly with no data copied; clones share micro-partitions until they diverge</li>
+        <li><strong>Micro-partitions</strong> — 50–500 MB columnar chunks with automatic clustering metadata for partition pruning</li>
+        <li><strong>Data Sharing</strong> — share live data across accounts with no ETL, no data copying</li>
+      </ul>
+      <div class="callout"><p>Auto-suspend is the most important cost lever. A warehouse running idle at L size costs ~$16/hour or ~$11,520/month. Suspend after 60 seconds of idle and that drops to nearly zero.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Virtual Warehouse Cost Calculator <span>live</span></div>
+      <div class="sf-calc">
+        <div class="sf-slider-wrap">
+          <div class="sf-slider-label">
+            <span style="font-size:.8rem;color:var(--muted)">Warehouse size</span>
+            <span class="sf-size-badge" id="sfSizeBadge">M</span>
+          </div>
+          <input type="range" id="sfSizeSlider" min="0" max="7" value="2" oninput="sfUpdate()">
+          <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--dim);font-family:var(--mono)">
+            <span>XS</span><span>S</span><span>M</span><span>L</span><span>XL</span><span>2XL</span><span>3XL</span><span>4XL</span>
+          </div>
+        </div>
+        <div class="sf-hours-wrap">
+          <div class="sf-hours-label">
+            <span>Active hours per day</span>
+            <span class="sf-hours-badge" id="sfHoursBadge">4 hrs</span>
+          </div>
+          <input type="range" id="sfHoursSlider" min="1" max="24" value="4" oninput="sfUpdate()">
+        </div>
+        <div class="sf-metrics">
+          <div class="sf-metric">
+            <div class="sf-metric-val" id="sfCreditsHr">4</div>
+            <div class="sf-metric-label">Credits / hour</div>
+            <div class="sf-metric-sub">@ $3.00 / credit</div>
+          </div>
+          <div class="sf-metric">
+            <div class="sf-metric-val" id="sfCostDay">$36</div>
+            <div class="sf-metric-label">Cost / day (active)</div>
+            <div class="sf-metric-sub" id="sfAutoSuspendNote">saving ~$480/day vs 24/7</div>
+          </div>
+          <div class="sf-metric">
+            <div class="sf-metric-val" id="sfCostMonth">$1,080</div>
+            <div class="sf-metric-label">Monthly estimate</div>
+            <div class="sf-metric-sub">30-day month</div>
+          </div>
+          <div class="sf-metric">
+            <div class="sf-metric-val" id="sfSaving">83%</div>
+            <div class="sf-metric-label">Auto-suspend saving</div>
+            <div class="sf-metric-sub">vs always-on</div>
+          </div>
+        </div>
+        <div class="sf-formula" id="sfFormula">Cost = 4 credits/hr × $3.00 × 4 hrs/day × 30 days = $1,440/mo</div>
+        <table class="sf-table">
+          <thead><tr><th>Size</th><th>Credits/hr</th><th>$/hr</th><th>Nodes</th></tr></thead>
+          <tbody id="sfTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Snowflake Architecture</h4>
+    <div class="concept-item"><div class="concept-key">Storage layer</div><div class="concept-val">Compressed columnar data on S3 — billed per TB/month, independent of compute</div></div>
+    <div class="concept-item"><div class="concept-key">Virtual warehouse</div><div class="concept-val">MPP compute cluster billed per credit-second; auto-suspends when idle</div></div>
+    <div class="concept-item"><div class="concept-key">Time Travel</div><div class="concept-val">Query historical data at any point within the retention window (1 day Standard, 90 days Enterprise)</div></div>
+    <div class="concept-item"><div class="concept-key">Zero-copy clone</div><div class="concept-val">Clone any object instantly — clones share underlying micro-partitions until a write causes divergence</div></div>
+    <div class="concept-item"><div class="concept-key">Micro-partitions</div><div class="concept-val">50–500 MB compressed chunks; Snowflake tracks min/max per column for aggressive partition pruning</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(1)">← dbt</button>
+    <button class="big-btn primary" onclick="goLesson(3)">Next: Airflow →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 3: AIRFLOW ==================== -->
+<section class="lesson-section" id="lesson-3">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 04</div>
+    <div class="lesson-title">Airflow Orchestration</div>
+    <div class="lesson-desc">Define, schedule, and monitor complex data pipelines as Python-coded DAGs. Never lose a job to a missing dependency again.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>What is Airflow?</h3>
+      <p>Apache Airflow is a platform to programmatically author, schedule, and monitor workflows. Pipelines are defined as <strong>DAGs</strong> in Python — code that describes tasks and their dependencies, not the data itself.</p>
+      <h3>Core Concepts</h3>
+      <ul>
+        <li><strong>DAG</strong> — a Python file defining tasks and their dependencies; scheduled with a cron expression</li>
+        <li><strong>Operator</strong> — the unit of work: <code>PythonOperator</code>, <code>BashOperator</code>, <code>S3ToSnowflakeOperator</code></li>
+        <li><strong>Sensor</strong> — a special operator that waits until a condition is met (file appears, external DAG completes)</li>
+        <li><strong>XCom</strong> — cross-communication; tasks can push/pull small values (keep under 48KB)</li>
+        <li><strong>Task instance</strong> — one run of one task in one DAG run; states: queued, running, success, failed, skipped</li>
+      </ul>
+      <h3>Best Practices</h3>
+      <ul>
+        <li><strong>Idempotent tasks</strong> — re-running any task N times produces the same result</li>
+        <li><strong>Atomic tasks</strong> — either fully succeed or fail, never partial writes</li>
+        <li><strong>Short-circuit operators</strong> for conditional paths that skip downstream tasks</li>
+        <li><strong>SLA miss alerts</strong> — get notified when a task takes longer than expected</li>
+      </ul>
+      <div class="callout"><p>Managed Airflow options: <strong>MWAA</strong> (AWS Managed Workflows for Apache Airflow), <strong>Cloud Composer</strong> (GCP), <strong>Astronomer</strong> (Kubernetes-native). All eliminate the pain of managing the Airflow metadata DB and workers yourself.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Airflow DAG Visualiser <span>click a task</span></div>
+      <div class="af-dag-wrap">
+        <svg id="afDag" viewBox="0 0 560 230">
+          <defs>
+            <marker id="af-arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="#3d5070"/>
+            </marker>
+          </defs>
+          <!-- Edges -->
+          <!-- start → extract_salesforce -->
+          <line x1="80" y1="115" x2="150" y2="75" stroke="#3d5070" stroke-width="1.5" marker-end="url(#af-arr)"/>
+          <!-- start → extract_postgres -->
+          <line x1="80" y1="115" x2="150" y2="155" stroke="#3d5070" stroke-width="1.5" marker-end="url(#af-arr)"/>
+          <!-- extract_salesforce → wait_for_files -->
+          <line x1="260" y1="75" x2="310" y2="105" stroke="#3d5070" stroke-width="1.5" marker-end="url(#af-arr)"/>
+          <!-- extract_postgres → wait_for_files -->
+          <line x1="260" y1="155" x2="310" y2="125" stroke="#3d5070" stroke-width="1.5" marker-end="url(#af-arr)"/>
+          <!-- wait_for_files → dbt_run -->
+          <line x1="400" y1="115" x2="430" y2="115" stroke="#3d5070" stroke-width="1.5" marker-end="url(#af-arr)"/>
+          <!-- dbt_run → send_report -->
+          <line x1="490" y1="115" x2="510" y2="115" stroke="#3d5070" stroke-width="1.5" marker-end="url(#af-arr)"/>
+          <!-- send_report → end (just an arrow to right edge) -->
+          <line x1="540" y1="115" x2="555" y2="115" stroke="#3d5070" stroke-width="1.5" marker-end="url(#af-arr)"/>
+
+          <!-- start node -->
+          <g class="af-node" id="af-start" onclick="afClick('start')">
+            <rect x="20" y="95" width="60" height="40" rx="20" fill="#0e1628" stroke="#3d5070" stroke-width="1.5"/>
+            <text x="50" y="111" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="Inter,sans-serif">start</text>
+            <text x="50" y="124" text-anchor="middle" fill="#dde8f5" font-size="8" font-family="JetBrains Mono,monospace">DummyOp</text>
+          </g>
+
+          <!-- extract_salesforce -->
+          <g class="af-node" id="af-extract_salesforce" onclick="afClick('extract_salesforce')">
+            <rect x="145" y="52" width="115" height="46" rx="8" fill="#0e1628" stroke="#4f8ef7" stroke-width="1.5"/>
+            <text x="202" y="70" text-anchor="middle" fill="#7a8faa" font-size="8" font-family="Inter,sans-serif">extract</text>
+            <text x="202" y="84" text-anchor="middle" fill="#dde8f5" font-size="9" font-family="JetBrains Mono,monospace">salesforce</text>
+            <text x="202" y="95" text-anchor="middle" fill="#3d5070" font-size="8" font-family="Inter,sans-serif">PythonOperator</text>
+          </g>
+
+          <!-- extract_postgres -->
+          <g class="af-node" id="af-extract_postgres" onclick="afClick('extract_postgres')">
+            <rect x="145" y="132" width="115" height="46" rx="8" fill="#0e1628" stroke="#4f8ef7" stroke-width="1.5"/>
+            <text x="202" y="150" text-anchor="middle" fill="#7a8faa" font-size="8" font-family="Inter,sans-serif">extract</text>
+            <text x="202" y="164" text-anchor="middle" fill="#dde8f5" font-size="9" font-family="JetBrains Mono,monospace">postgres</text>
+            <text x="202" y="175" text-anchor="middle" fill="#3d5070" font-size="8" font-family="Inter,sans-serif">PythonOperator</text>
+          </g>
+
+          <!-- wait_for_files -->
+          <g class="af-node" id="af-wait_for_files" onclick="afClick('wait_for_files')">
+            <rect x="300" y="92" width="100" height="46" rx="8" fill="#0e1628" stroke="#fbbf24" stroke-width="1.5"/>
+            <text x="350" y="110" text-anchor="middle" fill="#7a8faa" font-size="8" font-family="Inter,sans-serif">wait for</text>
+            <text x="350" y="124" text-anchor="middle" fill="#dde8f5" font-size="9" font-family="JetBrains Mono,monospace">files</text>
+            <text x="350" y="135" text-anchor="middle" fill="#3d5070" font-size="8" font-family="Inter,sans-serif">S3KeySensor</text>
+          </g>
+
+          <!-- dbt_run -->
+          <g class="af-node" id="af-dbt_run" onclick="afClick('dbt_run')">
+            <rect x="420" y="92" width="70" height="46" rx="8" fill="#0e1628" stroke="#34d399" stroke-width="1.5"/>
+            <text x="455" y="110" text-anchor="middle" fill="#7a8faa" font-size="8" font-family="Inter,sans-serif">dbt run</text>
+            <text x="455" y="125" text-anchor="middle" fill="#dde8f5" font-size="9" font-family="JetBrains Mono,monospace">dbt_run</text>
+            <text x="455" y="136" text-anchor="middle" fill="#3d5070" font-size="8" font-family="Inter,sans-serif">BashOp</text>
+          </g>
+
+          <!-- send_report (right edge, small) -->
+          <g class="af-node" id="af-send_report" onclick="afClick('send_report')">
+            <rect x="500" y="96" width="52" height="38" rx="8" fill="#0e1628" stroke="#a78bfa" stroke-width="1.5"/>
+            <text x="526" y="112" text-anchor="middle" fill="#dde8f5" font-size="8" font-family="JetBrains Mono,monospace">report</text>
+            <text x="526" y="126" text-anchor="middle" fill="#3d5070" font-size="7.5" font-family="Inter,sans-serif">SlackOp</text>
+          </g>
+
+          <!-- Critical path label -->
+          <text x="280" y="220" text-anchor="middle" fill="#3d5070" font-size="9" font-family="Inter,sans-serif">← extract_salesforce and extract_postgres run in parallel →</text>
+        </svg>
+      </div>
+      <div class="af-task-info" id="afTaskInfo">Click any task box to see its operator type and code.</div>
+      <div class="af-code-box" id="afCodeBox">-- Select a task above to view its Python definition</div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Airflow Concepts</h4>
+    <div class="concept-item"><div class="concept-key">DAG</div><div class="concept-val">Python file defining tasks and dependencies; scheduled via cron string, e.g. "0 6 * * *" = daily at 6am</div></div>
+    <div class="concept-item"><div class="concept-key">Operator</div><div class="concept-val">Blueprint for a task: PythonOperator, BashOperator, SqlOperator, S3ToSnowflakeOperator, etc.</div></div>
+    <div class="concept-item"><div class="concept-key">Sensor</div><div class="concept-val">Polls until a condition is met (file appears, API returns 200, external DAG completes) — pokes every N seconds</div></div>
+    <div class="concept-item"><div class="concept-key">XCom</div><div class="concept-val">Key-value store for passing small data between tasks in the same DAG run — not for large datasets</div></div>
+    <div class="concept-item"><div class="concept-key">Executor</div><div class="concept-val">LocalExecutor (single machine), CeleryExecutor (distributed workers), KubernetesExecutor (pod-per-task)</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(2)">← Snowflake</button>
+    <button class="big-btn primary" onclick="goLesson(4)">Next: Star Schema →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 4: STAR SCHEMA ==================== -->
+<section class="lesson-section" id="lesson-4">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 05</div>
+    <div class="lesson-title">Star Schema &amp; Analytics Engineering</div>
+    <div class="lesson-desc">Design warehouse schemas that are fast to query, easy to understand, and handle historical changes correctly.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>Analytics Engineering</h3>
+      <p>Analytics engineering sits between data engineering (building pipelines) and data analysis (running queries). Analytics engineers own the transformation layer — turning raw data into clean, documented, tested models that analysts can trust.</p>
+      <h3>Star Schema</h3>
+      <ul>
+        <li><strong>Fact tables</strong> — records of events (orders, page views, clicks). Append-only, immutable. Contain only foreign keys and measurable facts (amount, quantity, duration)</li>
+        <li><strong>Dimension tables</strong> — entities (customers, products, dates). Updated in place or via SCD</li>
+        <li><strong>Grain</strong> — the most important design decision: what does one row represent? Define it explicitly before writing DDL</li>
+      </ul>
+      <h3>SCD Type 2</h3>
+      <p>Slowly Changing Dimensions track history. When a customer changes their address, instead of overwriting, SCD Type 2 adds a new row with <code>valid_from</code> / <code>valid_to</code> timestamps. The old row's <code>valid_to</code> is set to now, and the new row's <code>valid_to</code> is <code>NULL</code> (or 9999-12-31) for the current record.</p>
+      <h3>Metrics Layer</h3>
+      <p>Define metrics once in code — <strong>dbt Semantic Layer / MetricFlow</strong> — rather than in every dashboard. Revenue, retention rate, ARPU: defined in YAML, available to all BI tools via a semantic API.</p>
+      <div class="callout"><p>The biggest star schema mistake: putting descriptive attributes in the fact table. Keep facts lean (FKs + measures only). Put customer name, region, segment in dim_customer — that's what dimensions are for.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Star Schema Explorer <span>click a table</span></div>
+      <div class="scd-toggle">
+        <button class="scd-btn active" id="scdCurrentBtn" onclick="setSCDMode('current')">Current View</button>
+        <button class="scd-btn" id="scdType2Btn" onclick="setSCDMode('scd2')">SCD Type 2 View</button>
+      </div>
+      <div class="star-schema-wrap">
+        <svg id="starSvg" viewBox="0 0 560 300">
+          <!-- Edges from fact to dims -->
+          <line x1="220" y1="150" x2="130" y2="80" stroke="#1e2d47" stroke-width="1.5" id="se0"/>
+          <line x1="220" y1="150" x2="130" y2="220" stroke="#1e2d47" stroke-width="1.5" id="se1"/>
+          <line x1="340" y1="150" x2="430" y2="80" stroke="#1e2d47" stroke-width="1.5" id="se2"/>
+          <line x1="340" y1="150" x2="430" y2="220" stroke="#1e2d47" stroke-width="1.5" id="se3"/>
+          <line x1="280" y1="126" x2="280" y2="50" stroke="#1e2d47" stroke-width="1.5" id="se4"/>
+
+          <!-- fact_orders (centre) -->
+          <g class="star-node" id="star-fact_orders" onclick="starClick('fact_orders')">
+            <rect x="200" y="110" width="160" height="80" rx="8" fill="#0e1628" stroke="#34d399" stroke-width="1.5"/>
+            <text x="280" y="133" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="Inter,sans-serif">FACT</text>
+            <text x="280" y="150" text-anchor="middle" fill="#dde8f5" font-size="11" font-weight="bold" font-family="Inter,sans-serif">fact_orders</text>
+            <text x="280" y="165" text-anchor="middle" fill="#3d5070" font-size="8.5" font-family="JetBrains Mono,monospace">grain: one row = one order</text>
+            <text x="280" y="178" text-anchor="middle" fill="#3d5070" font-size="8" font-family="Inter,sans-serif">click to explore columns</text>
+          </g>
+
+          <!-- dim_customer (left top) -->
+          <g class="star-node" id="star-dim_customer" onclick="starClick('dim_customer')">
+            <rect x="30" y="50" width="110" height="60" rx="8" fill="#0e1628" stroke="#4f8ef7" stroke-width="1.5"/>
+            <text x="85" y="70" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="Inter,sans-serif">DIM</text>
+            <text x="85" y="85" text-anchor="middle" fill="#dde8f5" font-size="10" font-weight="bold" font-family="Inter,sans-serif">dim_customer</text>
+            <text x="85" y="99" text-anchor="middle" fill="#3d5070" font-size="8" font-family="Inter,sans-serif">click to view</text>
+          </g>
+
+          <!-- dim_product (left bottom) -->
+          <g class="star-node" id="star-dim_product" onclick="starClick('dim_product')">
+            <rect x="30" y="190" width="110" height="60" rx="8" fill="#0e1628" stroke="#4f8ef7" stroke-width="1.5"/>
+            <text x="85" y="210" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="Inter,sans-serif">DIM</text>
+            <text x="85" y="225" text-anchor="middle" fill="#dde8f5" font-size="10" font-weight="bold" font-family="Inter,sans-serif">dim_product</text>
+            <text x="85" y="239" text-anchor="middle" fill="#3d5070" font-size="8" font-family="Inter,sans-serif">click to view</text>
+          </g>
+
+          <!-- dim_date (top centre) -->
+          <g class="star-node" id="star-dim_date" onclick="starClick('dim_date')">
+            <rect x="220" y="10" width="120" height="50" rx="8" fill="#0e1628" stroke="#4f8ef7" stroke-width="1.5"/>
+            <text x="280" y="30" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="Inter,sans-serif">DIM</text>
+            <text x="280" y="46" text-anchor="middle" fill="#dde8f5" font-size="10" font-weight="bold" font-family="Inter,sans-serif">dim_date</text>
+          </g>
+
+          <!-- dim_campaign (right top) -->
+          <g class="star-node" id="star-dim_campaign" onclick="starClick('dim_campaign')">
+            <rect x="420" y="50" width="110" height="60" rx="8" fill="#0e1628" stroke="#4f8ef7" stroke-width="1.5"/>
+            <text x="475" y="70" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="Inter,sans-serif">DIM</text>
+            <text x="475" y="85" text-anchor="middle" fill="#dde8f5" font-size="10" font-weight="bold" font-family="Inter,sans-serif">dim_campaign</text>
+            <text x="475" y="99" text-anchor="middle" fill="#3d5070" font-size="8" font-family="Inter,sans-serif">click to view</text>
+          </g>
+
+          <!-- dim_channel or placeholder right bottom -->
+          <g class="star-node" id="star-dim_channel" onclick="starClick('dim_channel')">
+            <rect x="420" y="190" width="110" height="60" rx="8" fill="#0e1628" stroke="#4f8ef7" stroke-width="1.5"/>
+            <text x="475" y="210" text-anchor="middle" fill="#7a8faa" font-size="9" font-family="Inter,sans-serif">DIM</text>
+            <text x="475" y="225" text-anchor="middle" fill="#dde8f5" font-size="10" font-weight="bold" font-family="Inter,sans-serif">dim_channel</text>
+            <text x="475" y="239" text-anchor="middle" fill="#3d5070" font-size="8" font-family="Inter,sans-serif">click to view</text>
+          </g>
+        </svg>
+      </div>
+      <div class="star-detail-box" id="starDetailBox">
+        <h5>Select a table</h5>
+        <div style="color:var(--muted);font-size:.8rem;margin-top:8px">Click any table in the diagram to see its columns and data types.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Analytics Engineering Concepts</h4>
+    <div class="concept-item"><div class="concept-key">Grain</div><div class="concept-val">What one row in a fact table represents — must be defined before building; changes require a new fact table</div></div>
+    <div class="concept-item"><div class="concept-key">Fact table</div><div class="concept-val">Append-only event records containing only foreign keys and numeric measures — never descriptive text</div></div>
+    <div class="concept-item"><div class="concept-key">Dimension table</div><div class="concept-val">Entity descriptors (who, what, where, when) — relatively small, slow-changing, joined to fact tables</div></div>
+    <div class="concept-item"><div class="concept-key">SCD Type 2</div><div class="concept-val">Track dimension history by adding valid_from/valid_to columns instead of overwriting rows</div></div>
+    <div class="concept-item"><div class="concept-key">Metrics layer</div><div class="concept-val">dbt Semantic Layer / MetricFlow — define revenue, retention etc. once in YAML, query from any BI tool</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(3)">← Airflow</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
+  </div>
+</section>
+
+<!-- ==================== QUIZ ==================== -->
+<section class="lesson-section" id="lesson-5">
+  <div class="lesson-header">
+    <div class="lesson-num">Quiz</div>
+    <div class="lesson-title">Test Your Knowledge</div>
+    <div class="lesson-desc">4 questions covering the Modern Data Stack — ELT, dbt, Snowflake, and star schema fundamentals.</div>
+  </div>
+
+  <div class="quiz-wrap">
+    <div class="quiz-progress-bar">
+      <div class="quiz-progress-fill" id="quizFill" style="width:0%"></div>
+    </div>
+
+    <!-- Q1 -->
+    <div class="question-card" id="qcard-0">
+      <div class="q-num">Question 1 of 4</div>
+      <div class="q-text">In the ELT pattern, when does transformation happen?</div>
+      <div class="options" id="qopts-0">
+        <div class="option" onclick="pickAnswer(0,0)">Before loading into the warehouse (in the pipeline)</div>
+        <div class="option" onclick="pickAnswer(0,1)">During extraction from the source</div>
+        <div class="option" onclick="pickAnswer(0,2)">After loading raw data into the warehouse, using SQL</div>
+        <div class="option" onclick="pickAnswer(0,3)">Simultaneously with loading</div>
+      </div>
+      <div class="explanation" id="qexp-0">In ELT, raw data is loaded first — transformation happens <strong>after</strong> loading, inside the warehouse using SQL (via dbt or similar tools). This is the opposite of old ETL where transformation happened in the pipeline before reaching the warehouse.</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question-card" id="qcard-1">
+      <div class="q-num">Question 2 of 4</div>
+      <div class="q-text">In dbt, <code>{{ ref('stg_orders') }}</code> does what?</div>
+      <div class="options" id="qopts-1">
+        <div class="option" onclick="pickAnswer(1,0)">Runs the stg_orders model immediately</div>
+        <div class="option" onclick="pickAnswer(1,1)">Creates a dependency so dbt builds stg_orders before the current model</div>
+        <div class="option" onclick="pickAnswer(1,2)">Imports Python functions from stg_orders</div>
+        <div class="option" onclick="pickAnswer(1,3)">Copies data from stg_orders into the current model</div>
+      </div>
+      <div class="explanation" id="qexp-1"><code>ref()</code> tells dbt about a <strong>dependency</strong>. dbt uses all ref() calls to build a DAG and execute models in the correct order. At runtime, it also resolves to the correct environment-specific table name (dev vs prod schema).</div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question-card" id="qcard-2">
+      <div class="q-num">Question 3 of 4</div>
+      <div class="q-text">Snowflake's "separation of storage and compute" means:</div>
+      <div class="options" id="qopts-2">
+        <div class="option" onclick="pickAnswer(2,0)">Data is stored in RAM for speed</div>
+        <div class="option" onclick="pickAnswer(2,1)">You can scale compute up/down independently of how much data you store</div>
+        <div class="option" onclick="pickAnswer(2,2)">Storage is always free</div>
+        <div class="option" onclick="pickAnswer(2,3)">You need separate accounts for storage and queries</div>
+      </div>
+      <div class="explanation" id="qexp-2">Snowflake stores data on S3 (billed per TB) and runs compute on virtual warehouses (billed per credit-second). You can suspend warehouses when idle (cost drops to near zero) while retaining all your data — you only pay for compute when you query.</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question-card" id="qcard-3">
+      <div class="q-num">Question 4 of 4</div>
+      <div class="q-text">A fact table's "grain" defines:</div>
+      <div class="options" id="qopts-3">
+        <div class="option" onclick="pickAnswer(3,0)">The primary key column name</div>
+        <div class="option" onclick="pickAnswer(3,1)">The lowest level of detail one row represents</div>
+        <div class="option" onclick="pickAnswer(3,2)">The number of dimension tables it connects to</div>
+        <div class="option" onclick="pickAnswer(3,3)">The partitioning strategy</div>
+      </div>
+      <div class="explanation" id="qexp-3">The <strong>grain</strong> is the most critical design decision for a fact table. It precisely defines what one row represents — e.g., "one order line item" vs "one order". All foreign keys and measures must be consistent with the declared grain.</div>
+    </div>
+
+    <div class="quiz-nav">
+      <button class="big-btn ghost" id="quizPrevBtn" onclick="quizPrev()" disabled>← Prev</button>
+      <button class="big-btn primary" id="quizNextBtn" onclick="quizNext()">Next →</button>
+    </div>
+
+    <div class="quiz-score" id="quizScore">
+      <div class="score-num" id="scoreNum">0/4</div>
+      <div class="score-msg" id="scoreMsg"></div>
+      <button class="big-btn primary" onclick="quizRetry()" style="margin:0 auto;display:block">Retry Quiz</button>
+      <button class="big-btn accent" onclick="markPhase8Done()" style="margin:12px auto 0;display:block;background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.4);color:var(--accent);padding:12px 28px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer">Mark Phase Complete ✓</button>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(4)">← Star Schema</button>
+    <span></span>
+  </div>
+</section>
+
+<script>
+// ─── Theme ───────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const html=document.documentElement;
+  const isLight=html.getAttribute('data-theme')==='light';
+  if(isLight){html.removeAttribute('data-theme');localStorage.setItem('theme','dark');document.getElementById('themeToggle').textContent='☀ Light';}
+  else{html.setAttribute('data-theme','light');localStorage.setItem('theme','light');document.getElementById('themeToggle').textContent='☾ Dark';}
+}
+(function(){const t=localStorage.getItem('theme');document.getElementById('themeToggle').textContent=t==='light'?'☾ Dark':'☀ Light';})();
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+function goLesson(n){
+  localStorage.setItem('phase8lesson', n);
+  document.querySelectorAll('.lesson-section').forEach((s,i)=>{s.classList.toggle('active',i===n);});
+  document.querySelectorAll('.lesson-tab').forEach((t,i)=>{t.classList.toggle('active',i===n);});
+  document.querySelectorAll('.pp-step').forEach((s,i)=>{
+    s.classList.toggle('active',i===n);
+    if(i<n)s.classList.add('done'); else s.classList.remove('done');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ─── ELT Pipeline Stepper ────────────────────────────────────────────────────
+const eltDescs=[
+  '<strong>Data Sources</strong> — production databases (Postgres, MySQL), SaaS tools (Salesforce, HubSpot), and file stores (S3) all contain valuable business data that needs to reach the warehouse.',
+  '<strong>Fivetran / Airbyte</strong> extracts data from each source via pre-built connectors and loads it directly into the warehouse. No custom code — just configure the connector and it replicates on schedule.',
+  '<strong>Snowflake Raw Schema</strong> — raw, unmodified copies of source tables land here. Bronze layer. Every column from the source is preserved; no transformations applied yet.',
+  '<strong>dbt runs SQL models</strong> inside Snowflake to clean, join, and aggregate the raw data. Models run in dependency order — staging models first, then intermediate, then marts.',
+  '<strong>Snowflake Mart Schema</strong> — clean, business-logic-applied tables in the Gold layer. Analysts and BI tools query these tables, not the raw ones.',
+  '<strong>Looker / Metabase</strong> connects directly to the mart schema to build dashboards. Refreshed automatically; no manual exports or Excel files.'
+];
+let eltStep=-1;
+function eltNext(){
+  if(eltStep>=5)return;
+  eltStep++;
+  for(let i=0;i<=5;i++){
+    const box=document.getElementById('elt-'+i);
+    box.classList.toggle('highlighted',i===eltStep);
+    const arr=document.getElementById('elt-arr-'+i);
+    if(arr)arr.classList.toggle('highlighted',i===eltStep);
+  }
+  document.getElementById('eltDesc').innerHTML=eltDescs[eltStep];
+  document.getElementById('eltCounter').textContent=(eltStep+1)+' / 6';
+  if(eltStep>=5)document.querySelector('[onclick="eltNext()"]').disabled=true;
+}
+function eltReset(){
+  eltStep=-1;
+  for(let i=0;i<=5;i++){
+    const box=document.getElementById('elt-'+i);
+    if(box)box.classList.remove('highlighted');
+    const arr=document.getElementById('elt-arr-'+i);
+    if(arr)arr.classList.remove('highlighted');
+  }
+  document.getElementById('eltDesc').textContent='Click "Next" to walk through each stage of the pipeline.';
+  document.getElementById('eltCounter').textContent='0 / 6';
+  document.querySelector('[onclick="eltNext()"]').disabled=false;
+}
+
+// ─── dbt DAG ──────────────────────────────────────────────────────────────────
+const dbtNodes={
+  raw_orders:{
+    info:'Source: raw_orders — Fivetran-replicated table from Postgres orders table. Not a dbt model — declared in sources.yml.',
+    sql:`-- sources.yml (not a model)
+sources:
+  - name: raw
+    schema: raw_schema
+    tables:
+      - name: raw_orders
+        loaded_at_field: _fivetran_synced
+        freshness:
+          warn_after: {count: 6, period: hour}`
+  },
+  raw_customers:{
+    info:'Source: raw_customers — Fivetran-replicated from Postgres customers table. Declared in sources.yml alongside raw_orders.',
+    sql:`-- sources.yml (not a model)
+sources:
+  - name: raw
+    schema: raw_schema
+    tables:
+      - name: raw_customers
+        loaded_at_field: _fivetran_synced`
+  },
+  stg_orders:{
+    info:'Staging model: stg_orders — clean and type-cast raw_orders. One-to-one with source, no business logic. Materialized as a view.',
+    sql:`-- models/staging/stg_orders.sql
+{{ config(materialized='view') }}
+
+with source as (
+  select * from {{ source('raw', 'raw_orders') }}
+),
+renamed as (
+  select
+    order_id::varchar       as order_id,
+    customer_id::varchar    as customer_id,
+    ordered_at::timestamp   as ordered_at,
+    status::varchar         as status,
+    amount_cents::integer   as amount_cents,
+    amount_cents / 100.0    as amount_usd
+  from source
+  where order_id is not null
+)
+select * from renamed`
+  },
+  stg_customers:{
+    info:'Staging model: stg_customers — clean and rename raw_customers columns. Materialized as view.',
+    sql:`-- models/staging/stg_customers.sql
+{{ config(materialized='view') }}
+
+with source as (
+  select * from {{ source('raw', 'raw_customers') }}
+),
+renamed as (
+  select
+    customer_id::varchar    as customer_id,
+    first_name::varchar     as first_name,
+    last_name::varchar      as last_name,
+    email::varchar          as email,
+    created_at::timestamp   as created_at,
+    country::varchar        as country
+  from source
+)
+select * from renamed`
+  },
+  int_order_items:{
+    info:'Intermediate model: int_order_items — joins staging models and adds derived columns. Materialized as ephemeral (CTE).',
+    sql:`-- models/intermediate/int_order_items.sql
+{{ config(materialized='ephemeral') }}
+
+with orders as (
+  select * from {{ ref('stg_orders') }}
+),
+customers as (
+  select * from {{ ref('stg_customers') }}
+),
+joined as (
+  select
+    o.order_id,
+    o.ordered_at,
+    o.amount_usd,
+    o.status,
+    c.customer_id,
+    c.first_name || ' ' || c.last_name as customer_name,
+    c.country
+  from orders o
+  left join customers c using (customer_id)
+)
+select * from joined`
+  },
+  mart_revenue:{
+    info:'Mart model: mart_revenue — business-ready daily revenue aggregation. Materialized as table, refreshed daily by Airflow.',
+    sql:`-- models/marts/mart_revenue.sql
+{{ config(materialized='table') }}
+
+with orders as (
+  select * from {{ ref('int_order_items') }}
+  where status = 'completed'
+),
+daily as (
+  select
+    date_trunc('day', ordered_at) as order_date,
+    country,
+    count(distinct order_id)      as order_count,
+    count(distinct customer_id)   as customer_count,
+    sum(amount_usd)               as total_revenue_usd
+  from orders
+  group by 1, 2
+)
+select * from daily`
+  }
+};
+function dbtClick(id){
+  const node=dbtNodes[id];
+  if(!node)return;
+  document.querySelectorAll('.dbt-node').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById('dbt-'+id);
+  if(el)el.classList.add('active');
+  document.getElementById('dbtNodeInfo').textContent=node.info;
+  document.getElementById('dbtSqlBox').textContent=node.sql;
+}
+
+// ─── Snowflake Calculator ─────────────────────────────────────────────────────
+const sfSizes=['XS','S','M','L','XL','2XL','3XL','4XL'];
+const sfCredits=[1,2,4,8,16,32,64,128];
+const sfNodes=['1 node','2 nodes','4 nodes','8 nodes','16 nodes','32 nodes','64 nodes','128 nodes'];
+const COST_PER_CREDIT=3.00;
+
+function sfUpdate(){
+  const sizeIdx=parseInt(document.getElementById('sfSizeSlider').value);
+  const hours=parseInt(document.getElementById('sfHoursSlider').value);
+  const credits=sfCredits[sizeIdx];
+  const costPerHr=credits*COST_PER_CREDIT;
+  const costDay=costPerHr*hours;
+  const costMonth=costDay*30;
+  const costAlwaysOn=costPerHr*24*30;
+  const saving=Math.round((1-costMonth/costAlwaysOn)*100);
+
+  document.getElementById('sfSizeBadge').textContent=sfSizes[sizeIdx];
+  document.getElementById('sfHoursBadge').textContent=hours+' hr'+(hours>1?'s':'');
+  document.getElementById('sfCreditsHr').textContent=credits;
+  document.getElementById('sfCostDay').textContent='$'+costDay.toLocaleString(undefined,{maximumFractionDigits:0});
+  document.getElementById('sfCostMonth').textContent='$'+costMonth.toLocaleString(undefined,{maximumFractionDigits:0});
+  document.getElementById('sfSaving').textContent=saving+'%';
+  document.getElementById('sfAutoSuspendNote').textContent='saving $'+(costAlwaysOn-costMonth).toLocaleString(undefined,{maximumFractionDigits:0})+'/mo vs 24/7';
+  document.getElementById('sfFormula').textContent=
+    `Cost = ${credits} credits/hr × $${COST_PER_CREDIT.toFixed(2)} × ${hours} hrs/day × 30 days = $${costMonth.toLocaleString(undefined,{maximumFractionDigits:0})}/mo\nAlways-on cost = $${costAlwaysOn.toLocaleString(undefined,{maximumFractionDigits:0})}/mo → Auto-suspend saves ${saving}%`;
+
+  // Table
+  const tbody=document.getElementById('sfTableBody');
+  tbody.innerHTML=sfSizes.map((s,i)=>`
+    <tr class="${i===sizeIdx?'sf-active-row':''}">
+      <td>${s}</td>
+      <td>${sfCredits[i]}</td>
+      <td>$${(sfCredits[i]*COST_PER_CREDIT).toFixed(2)}</td>
+      <td>${sfNodes[i]}</td>
+    </tr>`).join('');
+}
+sfUpdate();
+
+// ─── Airflow DAG ──────────────────────────────────────────────────────────────
+const afTasks={
+  start:{
+    info:'start — DummyOperator marking the DAG entry point. Used as a visual anchor for multiple upstream tasks.',
+    code:`from airflow.operators.dummy import DummyOperator
+
+start = DummyOperator(
+    task_id='start',
+    dag=dag,
+)`
+  },
+  extract_salesforce:{
+    info:'extract_salesforce — PythonOperator that calls the Salesforce API and writes the result to S3. Runs in parallel with extract_postgres.',
+    code:`from airflow.operators.python import PythonOperator
+
+def extract_salesforce_fn(**ctx):
+    import boto3, requests
+    data = requests.get(
+        'https://myorg.salesforce.com/services/data/v57.0/sobjects/Opportunity',
+        headers={'Authorization': f'Bearer {get_sf_token()}'}
+    ).json()
+    s3 = boto3.client('s3')
+    s3.put_object(
+        Bucket='my-data-lake',
+        Key=f'salesforce/opps/{ctx["ds"]}.json',
+        Body=json.dumps(data)
+    )
+
+extract_salesforce = PythonOperator(
+    task_id='extract_salesforce',
+    python_callable=extract_salesforce_fn,
+    dag=dag,
+)`
+  },
+  extract_postgres:{
+    info:'extract_postgres — PythonOperator that dumps a Postgres table to S3 as Parquet. Runs in parallel with extract_salesforce.',
+    code:`from airflow.operators.python import PythonOperator
+
+def extract_postgres_fn(**ctx):
+    import pandas as pd
+    from sqlalchemy import create_engine
+    engine = create_engine(Variable.get('POSTGRES_CONN'))
+    df = pd.read_sql(
+        f"SELECT * FROM orders WHERE created_at::date = '{ctx['ds']}'",
+        engine
+    )
+    df.to_parquet(f'/tmp/orders_{ctx["ds"]}.parquet')
+    upload_to_s3(f'/tmp/orders_{ctx["ds"]}.parquet',
+                 f's3://my-data-lake/postgres/orders/{ctx["ds"]}.parquet')
+
+extract_postgres = PythonOperator(
+    task_id='extract_postgres',
+    python_callable=extract_postgres_fn,
+    dag=dag,
+)`
+  },
+  wait_for_files:{
+    info:'wait_for_files — S3KeySensor that polls every 60 seconds until both S3 files exist. Prevents dbt from running before extraction is complete.',
+    code:`from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
+
+wait_for_files = S3KeySensor(
+    task_id='wait_for_files',
+    bucket_name='my-data-lake',
+    bucket_key=[
+        f'salesforce/opps/{ds}.json',
+        f'postgres/orders/{ds}.parquet',
+    ],
+    aws_conn_id='aws_default',
+    poke_interval=60,   # check every 60s
+    timeout=3600,        # fail after 1 hour
+    dag=dag,
+)`
+  },
+  dbt_run:{
+    info:'dbt_run — BashOperator that runs `dbt run` inside the warehouse. Uses environment variables for Snowflake credentials.',
+    code:`from airflow.operators.bash import BashOperator
+
+dbt_run = BashOperator(
+    task_id='dbt_run',
+    bash_command="""
+        cd /opt/dbt/my_project &&
+        dbt run --profiles-dir /opt/dbt/profiles
+            --target prod
+            --select marts
+    """,
+    env={
+        'DBT_USER': Variable.get('SNOWFLAKE_USER'),
+        'DBT_PASSWORD': Variable.get('SNOWFLAKE_PASSWORD'),
+        'DBT_ACCOUNT': Variable.get('SNOWFLAKE_ACCOUNT'),
+    },
+    dag=dag,
+)`
+  },
+  send_report:{
+    info:'send_report — SlackAPIPostOperator sends a daily summary message to #data-team once the dbt run completes successfully.',
+    code:`from airflow.providers.slack.operators.slack import SlackAPIPostOperator
+
+send_report = SlackAPIPostOperator(
+    task_id='send_report',
+    slack_conn_id='slack_default',
+    channel='#data-team',
+    text=(
+        ":white_check_mark: Daily pipeline complete for "
+        "{{ ds }}. dbt models refreshed."
+    ),
+    dag=dag,
+)`
+  }
+};
+function afClick(id){
+  const task=afTasks[id];
+  if(!task)return;
+  document.querySelectorAll('.af-node').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById('af-'+id);
+  if(el)el.classList.add('active');
+  document.getElementById('afTaskInfo').textContent=task.info;
+  document.getElementById('afCodeBox').textContent=task.code;
+}
+
+// ─── Star Schema ──────────────────────────────────────────────────────────────
+let scdMode='current';
+function setSCDMode(mode){
+  scdMode=mode;
+  document.getElementById('scdCurrentBtn').classList.toggle('active',mode==='current');
+  document.getElementById('scdType2Btn').classList.toggle('active',mode==='scd2');
+  // Refresh detail if dim_customer is currently shown
+  const box=document.getElementById('starDetailBox');
+  if(box.dataset.node==='dim_customer')starClick('dim_customer');
+  if(box.dataset.node)starClick(box.dataset.node);
+}
+
+const starTables={
+  fact_orders:{
+    label:'fact_orders — FACT TABLE',
+    desc:'Grain: one row = one order line item. Append-only; never updated after insert.',
+    current:[
+      ['order_id','VARCHAR PK','surrogate key'],
+      ['customer_id','VARCHAR FK','→ dim_customer'],
+      ['product_id','VARCHAR FK','→ dim_product'],
+      ['date_key','DATE FK','→ dim_date'],
+      ['campaign_id','VARCHAR FK','→ dim_campaign'],
+      ['channel_id','VARCHAR FK','→ dim_channel'],
+      ['quantity','INTEGER','items ordered'],
+      ['unit_price_usd','NUMERIC(10,2)','price at time of order'],
+      ['discount_usd','NUMERIC(10,2)','discount applied'],
+      ['total_usd','NUMERIC(10,2)','quantity × unit_price − discount'],
+      ['ordered_at','TIMESTAMP','event timestamp'],
+    ]
+  },
+  dim_customer:{
+    label:'dim_customer — DIMENSION TABLE',
+    desc:'Customer entity. SCD Type 2 tracks address and segment changes over time.',
+    current:[
+      ['customer_id','VARCHAR PK','natural key from source'],
+      ['first_name','VARCHAR',''],
+      ['last_name','VARCHAR',''],
+      ['email','VARCHAR',''],
+      ['country','VARCHAR',''],
+      ['segment','VARCHAR','e.g. Enterprise / SMB'],
+      ['signup_date','DATE',''],
+    ],
+    scd2:[
+      ['customer_sk','BIGINT PK','surrogate key (auto-increment)'],
+      ['customer_id','VARCHAR','natural key from source'],
+      ['first_name','VARCHAR',''],
+      ['last_name','VARCHAR',''],
+      ['email','VARCHAR',''],
+      ['country','VARCHAR',''],
+      ['segment','VARCHAR','SCD tracked column'],
+      ['signup_date','DATE',''],
+      ['valid_from','TIMESTAMP','when this version became active'],
+      ['valid_to','TIMESTAMP','NULL = current record'],
+      ['is_current','BOOLEAN','shortcut: valid_to IS NULL'],
+    ]
+  },
+  dim_product:{
+    label:'dim_product — DIMENSION TABLE',
+    desc:'Product catalogue. Slowly changing — new rows added when products are updated.',
+    current:[
+      ['product_id','VARCHAR PK',''],
+      ['product_name','VARCHAR',''],
+      ['category','VARCHAR','e.g. Electronics / Apparel'],
+      ['subcategory','VARCHAR',''],
+      ['brand','VARCHAR',''],
+      ['cost_usd','NUMERIC(10,2)',''],
+      ['is_active','BOOLEAN',''],
+    ]
+  },
+  dim_date:{
+    label:'dim_date — DATE DIMENSION',
+    desc:'Pre-populated calendar table. One row per day from 2015-01-01 to 2030-12-31. Never changes.',
+    current:[
+      ['date_key','DATE PK',''],
+      ['day_of_week','INTEGER','0=Sunday'],
+      ['day_name','VARCHAR','Monday…Sunday'],
+      ['week_of_year','INTEGER',''],
+      ['month_num','INTEGER','1–12'],
+      ['month_name','VARCHAR','January…December'],
+      ['quarter','INTEGER','1–4'],
+      ['year','INTEGER',''],
+      ['is_weekend','BOOLEAN',''],
+      ['is_holiday','BOOLEAN','US federal holidays'],
+    ]
+  },
+  dim_campaign:{
+    label:'dim_campaign — DIMENSION TABLE',
+    desc:'Marketing campaign attributes. New rows added per campaign launch.',
+    current:[
+      ['campaign_id','VARCHAR PK',''],
+      ['campaign_name','VARCHAR',''],
+      ['channel','VARCHAR','email / paid / organic'],
+      ['start_date','DATE',''],
+      ['end_date','DATE','NULL = ongoing'],
+      ['budget_usd','NUMERIC(12,2)',''],
+      ['owner','VARCHAR','team owner'],
+    ]
+  },
+  dim_channel:{
+    label:'dim_channel — DIMENSION TABLE',
+    desc:'Sales channel lookup. Small static table — in-store, online, partner, wholesale.',
+    current:[
+      ['channel_id','VARCHAR PK',''],
+      ['channel_name','VARCHAR','Online / In-store / Partner'],
+      ['region','VARCHAR',''],
+      ['is_digital','BOOLEAN',''],
+    ]
+  }
+};
+function starClick(id){
+  const tbl=starTables[id];
+  if(!tbl)return;
+  const box=document.getElementById('starDetailBox');
+  box.dataset.node=id;
+  document.querySelectorAll('.star-node').forEach(n=>n.classList.remove('active'));
+  const el=document.getElementById('star-'+id);
+  if(el)el.classList.add('active');
+
+  const cols=(scdMode==='scd2'&&tbl.scd2)?tbl.scd2:tbl.current;
+  const label=tbl.label+(scdMode==='scd2'&&tbl.scd2?' — SCD Type 2':'');
+  box.innerHTML=`<h5>${label}</h5>
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:10px">${tbl.desc}</div>
+    <div class="star-col-list">${cols.map(c=>`<div class="star-col">
+      <span class="star-col-name">${c[0]}</span>
+      <span class="star-col-type">${c[1]}</span>
+      <span class="star-col-note">${c[2]}</span>
+    </div>`).join('')}</div>`;
+}
+
+// ─── Quiz ─────────────────────────────────────────────────────────────────────
+const correctAnswers=[2,1,1,1];
+const quizState={current:0,answers:Array(4).fill(null),locked:Array(4).fill(false)};
+
+function pickAnswer(q,opt){
+  if(quizState.locked[q])return;
+  quizState.locked[q]=true;
+  quizState.answers[q]=opt;
+  const opts=document.querySelectorAll(`#qopts-${q} .option`);
+  opts.forEach((o,i)=>{
+    o.classList.add('locked');
+    if(i===correctAnswers[q])o.classList.add('correct');
+    else if(i===opt&&opt!==correctAnswers[q])o.classList.add('wrong');
+  });
+  document.getElementById(`qexp-${q}`).classList.add('visible');
+  updateQuizProgress();
+}
+
+function updateQuizProgress(){
+  const answered=quizState.answers.filter(a=>a!==null).length;
+  document.getElementById('quizFill').style.width=(answered/4*100)+'%';
+}
+
+function quizNext(){
+  if(quizState.current<3){
+    quizState.current++;
+    showQuizCard(quizState.current);
+  } else {
+    showScore();
+  }
+}
+
+function quizPrev(){
+  if(quizState.current>0){
+    quizState.current--;
+    showQuizCard(quizState.current);
+  }
+}
+
+function showQuizCard(n){
+  document.querySelectorAll('.question-card').forEach((c,i)=>{c.style.display=i===n?'block':'none';});
+  document.getElementById('quizPrevBtn').disabled=n===0;
+  document.getElementById('quizNextBtn').textContent=n===3?'See Results →':'Next →';
+}
+
+function showScore(){
+  document.querySelectorAll('.question-card').forEach(c=>{c.style.display='none';});
+  document.querySelector('.quiz-nav').style.display='none';
+  const correct=quizState.answers.filter((a,i)=>a===correctAnswers[i]).length;
+  const scoreEl=document.getElementById('quizScore');
+  scoreEl.classList.add('visible');
+  document.getElementById('scoreNum').textContent=correct+'/4';
+  document.getElementById('scoreMsg').textContent=
+    correct===4?'Perfect score! You have the Modern Data Stack down cold.':
+    correct>=3?'Great job! Review any questions you missed above.':
+    correct>=2?'Solid foundation — review the sections you found tricky.':
+    'Keep studying — re-read the lessons and try again!';
+  localStorage.setItem('phase8done','1');
+  // Append back-to-roadmap link
+  if(!document.getElementById('p8BackLink')){
+    const link=document.createElement('a');
+    link.id='p8BackLink';
+    link.href='index.html';
+    link.textContent='← Back to Roadmap';
+    link.style.cssText='display:block;margin:18px auto 0;text-align:center;color:var(--primary);font-size:.9rem;font-weight:600;text-decoration:none';
+    scoreEl.appendChild(link);
+  }
+}
+
+function quizRetry(){
+  quizState.current=0;
+  quizState.answers=Array(4).fill(null);
+  quizState.locked=Array(4).fill(false);
+  document.querySelectorAll('.question-card').forEach(c=>{
+    c.style.display='';
+  });
+  document.querySelectorAll('.option').forEach(o=>{
+    o.classList.remove('correct','wrong','locked');
+  });
+  document.querySelectorAll('.explanation').forEach(e=>{e.classList.remove('visible');});
+  document.getElementById('quizScore').classList.remove('visible');
+  document.querySelector('.quiz-nav').style.display='';
+  document.getElementById('quizFill').style.width='0%';
+  showQuizCard(0);
+}
+
+function markPhase8Done(){
+  localStorage.setItem('phase8done','1');
+  const btn=event.target;
+  btn.textContent='Phase Complete ✓';
+  btn.disabled=true;
+  btn.style.opacity='.6';
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(function init(){
+  const saved=localStorage.getItem('phase8lesson');
+  if(saved!==null)goLesson(parseInt(saved));
+  else goLesson(0);
+  showQuizCard(0);
+})();
+</script>
+</body>
+</html>
