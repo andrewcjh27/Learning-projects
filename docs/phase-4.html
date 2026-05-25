@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 04 — Databases</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1f;--surface:#0e1628;--card:#121c30;--border:#1e2d47;--border-b:#2d4470;
+  --primary:#4f8ef7;--primary-dim:rgba(79,142,247,.12);--primary-glow:rgba(79,142,247,.3);
+  --secondary:#a78bfa;--accent:#34d399;--warning:#fbbf24;--danger:#f87171;--orange:#fb923c;
+  --text:#dde8f5;--muted:#7a8faa;--dim:#3d5070;
+  --font:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;--r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-back{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-back:hover{color:var(--primary)}
+.nav-sep{color:var(--dim)}
+.nav-title{font-weight:600;font-size:.9rem}
+.lesson-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0}
+.lesson-tab{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;white-space:nowrap;background:transparent;color:var(--muted)}
+.lesson-tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.lesson-tab.active{background:var(--primary-dim);color:var(--primary);border:1px solid var(--primary-glow)}
+@media(max-width:640px){nav{flex-direction:column;height:auto;padding:10px 16px;gap:6px}.lesson-tabs{width:100%}}
+
+.phase-hero{padding:48px 32px 32px;max-width:1100px;margin:0 auto}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.phase-hero h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;letter-spacing:-.04em;margin-bottom:8px;background:linear-gradient(135deg,#fff 40%,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.phase-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+.phase-progress{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.pp-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.pp-step.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.pp-step.done{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.pp-step:not(.active):not(.done){color:var(--dim)}
+.pp-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.lesson-section{display:none;max-width:1100px;margin:0 auto;padding:32px 32px 80px}
+.lesson-section.active{display:block}
+.lesson-header{margin-bottom:32px}
+.lesson-num{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-family:var(--mono)}
+.lesson-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.lesson-desc{color:var(--muted);max-width:680px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.split-wide{grid-template-columns:2fr 3fr}
+
+.prose h3{font-size:1rem;font-weight:600;margin:20px 0 8px;color:var(--text)}
+.prose h3:first-child{margin-top:0}
+.prose p{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.prose ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.prose li{font-size:.9rem;color:var(--muted);padding-left:16px;position:relative}
+.prose li::before{content:'›';position:absolute;left:0;color:var(--primary)}
+.prose strong{color:var(--text);font-weight:600}
+.prose .callout{background:var(--primary-dim);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 16px;margin:12px 0}
+.prose .callout p{color:var(--text);margin:0}
+.prose code{font-family:var(--mono);font-size:.82rem;background:rgba(79,142,247,.1);padding:2px 6px;border-radius:4px;color:var(--primary)}
+
+.concepts-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:20px}
+.concepts-box h4{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.concept-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.concept-item:last-child{border-bottom:none}
+.concept-key{font-family:var(--mono);font-size:.75rem;color:var(--primary);font-weight:500;white-space:nowrap;min-width:120px}
+.concept-val{font-size:.8rem;color:var(--muted)}
+
+.demo-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:relative}
+.demo-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.demo-title span{color:var(--accent);font-size:.7rem;font-weight:600}
+
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.btn:hover{border-color:var(--border-b);color:var(--text)}
+.btn.active,.btn.primary{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.btn.accent{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.btn.secondary{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:var(--secondary)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+.lesson-nav{display:flex;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.big-btn{padding:12px 24px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font)}
+.big-btn.primary{background:var(--primary);color:#fff}
+.big-btn.primary:hover{background:#6fa2ff;box-shadow:0 4px 20px rgba(79,142,247,.4)}
+.big-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.big-btn.ghost:hover{color:var(--text);border-color:var(--border-b)}
+
+/* QUIZ */
+.quiz-wrap{max-width:720px;margin:0 auto}
+.quiz-progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:32px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary));border-radius:2px;transition:width .4s ease}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.q-text{font-size:1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:12px 16px;border-radius:var(--r-sm);border:1px solid var(--border);cursor:pointer;font-size:.88rem;transition:all .2s;background:var(--surface)}
+.option:hover:not(.locked){border-color:var(--border-b);background:rgba(255,255,255,.03)}
+.option.correct{border-color:var(--accent)!important;background:rgba(52,211,153,.1)!important;color:var(--accent)}
+.option.wrong{border-color:var(--danger)!important;background:rgba(248,113,113,.1)!important;color:var(--danger)}
+.option.locked{cursor:default}
+.explanation{margin-top:16px;padding:14px 16px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:var(--r-sm);font-size:.84rem;color:var(--text);line-height:1.6;display:none}
+.explanation.visible{display:block;animation:slideUp .3s ease}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.quiz-score{text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);display:none}
+.quiz-score.visible{display:block;animation:slideUp .4s ease}
+.score-num{font-size:4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-msg{font-size:1.1rem;color:var(--muted);margin-bottom:24px}
+
+/* Light mode */
+[data-theme="light"]{
+  --bg:#f4f6fc;--surface:#eaecf5;--card:#ffffff;--border:#cdd5e4;--border-b:#aab5cc;
+  --primary:#3a6fd8;--primary-dim:rgba(58,111,216,.1);--primary-glow:rgba(58,111,216,.25);
+  --secondary:#6d28d9;--accent:#059669;--warning:#d97706;--danger:#dc2626;--orange:#ea580c;
+  --text:#111827;--muted:#475569;--dim:#94a3b8;
+}
+[data-theme="light"] body{background:var(--bg)}
+[data-theme="light"] nav{background:rgba(244,246,252,.95)}
+[data-theme="light"] .phase-hero h1{background:linear-gradient(135deg,#111827 40%,#d97706);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="light"] .callout{background:rgba(58,111,216,.07);border-color:rgba(58,111,216,.3)}
+[data-theme="light"] code{background:rgba(0,0,0,.07);color:#1e3a8a}
+.theme-toggle{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 13px;color:var(--muted);cursor:pointer;font-size:.8rem;font-family:var(--font);transition:all .2s;white-space:nowrap;flex-shrink:0}
+.theme-toggle:hover{color:var(--text);border-color:var(--primary)}
+@media(max-width:640px){.phase-hero,.lesson-section{padding-left:20px;padding-right:20px}}
+
+/* =============================================
+   PHASE 4 SPECIFIC — SQL QUERY EXPLORER
+   ============================================= */
+.hero-gradient h1{background:linear-gradient(135deg,#fff 40%,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.schema-box{background:#080e1e;border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.72rem;color:#8ab;line-height:1.7;margin-bottom:12px}
+.schema-box .tb{color:#fbbf24;font-weight:700}
+.schema-box .pk{color:#4f8ef7}
+.schema-box .fk{color:#a78bfa}
+.schema-box .col{color:#7a9ab8}
+.sql-pre{background:#080e1e;border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-family:var(--mono);font-size:.78rem;line-height:1.7;overflow-x:auto;margin-bottom:12px}
+.sql-pre .kw{color:#4f8ef7}
+.sql-pre .str{color:#34d399}
+.sql-pre .cmt{color:#4a6280}
+.sql-pre .fn{color:#fbbf24}
+.sql-pre .num{color:#fb923c}
+.mock-table{width:100%;border-collapse:collapse;font-size:.75rem;font-family:var(--mono);margin-top:4px}
+.mock-table th{background:rgba(79,142,247,.12);color:var(--primary);padding:6px 10px;border:1px solid var(--border);text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em}
+.mock-table td{padding:6px 10px;border:1px solid var(--border);color:var(--muted)}
+.mock-table tr:hover td{background:rgba(255,255,255,.02)}
+.result-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:6px;margin-top:10px}
+
+/* =============================================
+   PHASE 4 SPECIFIC — OLAP/OLTP VISUALISER
+   ============================================= */
+.store-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-bottom:12px}
+.store-cell{padding:8px 4px;border-radius:4px;border:1px solid var(--border);text-align:center;font-family:var(--mono);font-size:.6rem;color:var(--dim);transition:all .35s;background:rgba(255,255,255,.02)}
+.store-cell.col-header{background:rgba(79,142,247,.08);color:var(--primary);font-weight:700;font-size:.6rem}
+.store-cell.lit-row{background:rgba(251,191,36,.18);border-color:rgba(251,191,36,.5);color:var(--warning)}
+.store-cell.lit-col{background:rgba(52,211,153,.2);border-color:rgba(52,211,153,.5);color:var(--accent)}
+.store-cell.dim{opacity:.18}
+.bytes-counter{font-family:var(--mono);font-size:1.1rem;font-weight:700;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);text-align:center;margin-top:8px;transition:color .3s}
+.bytes-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:4px}
+
+/* =============================================
+   PHASE 4 SPECIFIC — REDIS EXPLORER
+   ============================================= */
+.redis-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.redis-tab{padding:7px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);font-size:.78rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.redis-tab:hover{border-color:var(--border-b);color:var(--text)}
+.redis-tab.active{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.35);color:var(--warning)}
+.redis-cli{background:#080e1e;border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;font-family:var(--mono);font-size:.76rem;line-height:1.8;margin-bottom:12px}
+.redis-cli .cmd-line{color:#4ade80}
+.redis-cli .resp-line{color:#8ab}
+.redis-cli .comment-line{color:#4a6280}
+.redis-vis{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-size:.82rem;min-height:100px}
+.rv-key{display:inline-block;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:4px;padding:2px 8px;font-family:var(--mono);font-size:.75rem;color:var(--warning);margin-right:6px}
+.rv-arrow{color:var(--dim);margin:0 8px}
+.rv-val{font-family:var(--mono);font-size:.8rem;color:var(--accent)}
+.rv-list{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.rv-list-item{display:flex;align-items:center;gap:6px;padding:4px 8px;background:rgba(79,142,247,.06);border-radius:4px;font-family:var(--mono);font-size:.75rem}
+.rv-idx{color:var(--dim);min-width:24px}
+.rv-score{color:var(--primary);min-width:50px}
+.rv-member{color:var(--text)}
+.rv-hash-row{display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.75rem}
+.rv-hash-row:last-child{border-bottom:none}
+.rv-hash-field{color:var(--primary);min-width:100px}
+.rv-hash-val{color:var(--muted)}
+
+/* =============================================
+   PHASE 4 SPECIFIC — COLUMN PRUNING (Parquet)
+   ============================================= */
+.col-pruning-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:16px}
+.col-block{border-radius:6px;padding:10px 4px;text-align:center;font-family:var(--mono);font-size:.65rem;font-weight:600;opacity:.22;border:1px solid var(--border);transition:all .45s;cursor:default;line-height:1.4}
+.col-block.active{opacity:1;box-shadow:0 0 14px currentColor}
+.col-block.dim{opacity:.12}
+.pruning-stats{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+.pruning-stat{flex:1;min-width:100px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;text-align:center}
+.pruning-stat-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:4px}
+.pruning-stat-val{font-family:var(--mono);font-size:1rem;font-weight:700}
+
+/* =============================================
+   PHASE 4 SPECIFIC — STAR SCHEMA SVG
+   ============================================= */
+.star-schema-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;overflow:visible}
+.star-schema-wrap svg{width:100%;height:360px;overflow:visible}
+.dim-popup{display:none;position:absolute;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-size:.78rem;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:100}
+.dim-popup.visible{display:block}
+.dim-popup-title{font-weight:700;font-size:.85rem;margin-bottom:8px;color:var(--text)}
+.dim-popup-col{padding:3px 0;color:var(--muted);font-family:var(--mono);font-size:.72rem;border-bottom:1px solid var(--border)}
+.dim-popup-col:last-child{border-bottom:none}
+.dim-popup-col .pk-tag{color:var(--warning);font-size:.65rem;margin-left:4px}
+.schema-query{background:#080e1e;border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;font-family:var(--mono);font-size:.74rem;line-height:1.7;margin-top:12px;overflow-x:auto}
+.schema-query .kw{color:#4f8ef7}
+.schema-query .tbl{color:#fbbf24}
+.schema-query .col2{color:#34d399}
+.star-schema-container{position:relative}
+</style>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← Roadmap</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Phase 04 — Databases</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="lesson-tabs" id="lessonTabs">
+      <button class="lesson-tab active" onclick="goLesson(0)">1. SQL</button>
+      <button class="lesson-tab" onclick="goLesson(1)">2. Postgres vs DuckDB</button>
+      <button class="lesson-tab" onclick="goLesson(2)">3. Redis</button>
+      <button class="lesson-tab" onclick="goLesson(3)">4. Parquet</button>
+      <button class="lesson-tab" onclick="goLesson(4)">5. Schema</button>
+      <button class="lesson-tab" onclick="goLesson(5)">✦ Quiz</button>
+    </div>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
+  </div>
+</nav>
+
+<div class="phase-hero hero-gradient">
+  <div class="breadcrumb"><a href="index.html">Roadmap</a> › Phase 04</div>
+  <h1>Databases</h1>
+  <p>From relational SQL to columnar analytics, in-memory caches, and lakehouse formats — the storage layer that every data system is built on.</p>
+  <div class="phase-progress" id="phaseProgress">
+    <div class="pp-step active" onclick="goLesson(0)"><div class="pp-dot"></div>SQL Fundamentals</div>
+    <div class="pp-step" onclick="goLesson(1)"><div class="pp-dot"></div>Postgres vs DuckDB</div>
+    <div class="pp-step" onclick="goLesson(2)"><div class="pp-dot"></div>Redis</div>
+    <div class="pp-step" onclick="goLesson(3)"><div class="pp-dot"></div>Parquet &amp; Delta Lake</div>
+    <div class="pp-step" onclick="goLesson(4)"><div class="pp-dot"></div>Schema Design</div>
+    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>Quiz</div>
+  </div>
+</div>
+
+<!-- ==================== LESSON 0: SQL FUNDAMENTALS ==================== -->
+<section class="lesson-section active" id="lesson-0">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 01</div>
+    <div class="lesson-title">SQL Fundamentals</div>
+    <div class="lesson-desc">The relational model, query structure, JOINs, CTEs, and window functions — the language every database speaks.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>The Relational Model</h3>
+      <p>Data is stored in <strong>tables</strong> (relations) made of <strong>rows</strong> (records) and <strong>columns</strong> (attributes). A <strong>primary key</strong> uniquely identifies each row. A <strong>foreign key</strong> references a primary key in another table, creating a link between tables.</p>
+
+      <h3>Basic Query Structure</h3>
+      <p><code>SELECT</code> chooses columns, <code>FROM</code> names the table, <code>WHERE</code> filters rows, <code>GROUP BY</code> aggregates, <code>HAVING</code> filters groups, <code>ORDER BY</code> sorts, <code>LIMIT</code> caps results. The database evaluates these in logical order: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT.</p>
+
+      <h3>JOINs</h3>
+      <ul>
+        <li><strong>INNER JOIN</strong> — only rows with matching keys in both tables</li>
+        <li><strong>LEFT JOIN</strong> — all rows from left, NULLs where no match on right</li>
+        <li><strong>RIGHT JOIN</strong> — all rows from right, NULLs where no match on left</li>
+        <li><strong>CROSS JOIN</strong> — cartesian product, every combination</li>
+      </ul>
+
+      <h3>CTEs &amp; Window Functions</h3>
+      <p>A <strong>CTE</strong> (<code>WITH cte AS (...)</code>) names a subquery for readability. <strong>Window functions</strong> like <code>ROW_NUMBER()</code> and <code>SUM() OVER (PARTITION BY ...)</code> compute per-row results within a group without collapsing rows — unlike <code>GROUP BY</code>.</p>
+
+      <h3>Indexes</h3>
+      <p>A <strong>B-tree index</strong> on a column keeps values sorted in a tree structure, turning an O(n) scan into O(log n) lookup. Add an index on any column frequently used in <code>WHERE</code> or <code>JOIN</code> conditions. The tradeoff: indexes consume disk space and slow down writes.</p>
+
+      <div class="callout"><p><strong>Tip:</strong> Use <code>EXPLAIN ANALYZE</code> in PostgreSQL to see whether the query planner uses your index, and how long each step takes.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">SQL Query Explorer <span>interactive</span></div>
+
+      <div class="schema-box">
+        <span class="tb">customers</span> (<span class="pk">customer_id</span>, name, city, tier)<br>
+        <span class="tb">orders</span> &nbsp;&nbsp;&nbsp;(<span class="pk">order_id</span>, <span class="fk">customer_id</span>, order_date, total)<br>
+        <span class="tb">products</span> &nbsp;(<span class="pk">product_id</span>, name, category, price)<br>
+        <span class="tb">order_items</span> (<span class="pk">item_id</span>, <span class="fk">order_id</span>, <span class="fk">product_id</span>, qty)
+      </div>
+
+      <div class="btn-group" id="sqlBtnGroup">
+        <button class="btn active" onclick="showQuery(0)">Simple SELECT</button>
+        <button class="btn" onclick="showQuery(1)">LEFT JOIN</button>
+        <button class="btn" onclick="showQuery(2)">GROUP BY</button>
+        <button class="btn" onclick="showQuery(3)">CTE</button>
+        <button class="btn" onclick="showQuery(4)">Window Function</button>
+      </div>
+
+      <div id="sqlQueryDisplay"></div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Key SQL Clauses</h4>
+    <div class="concept-item"><div class="concept-key">SELECT … FROM</div><div class="concept-val">Choose columns from a table; use * for all columns</div></div>
+    <div class="concept-item"><div class="concept-key">WHERE</div><div class="concept-val">Filter rows before aggregation; uses =, !=, &lt;, &gt;, LIKE, IN, BETWEEN</div></div>
+    <div class="concept-item"><div class="concept-key">GROUP BY + HAVING</div><div class="concept-val">Collapse rows into groups; HAVING filters groups (like WHERE for aggregates)</div></div>
+    <div class="concept-item"><div class="concept-key">JOIN … ON</div><div class="concept-val">Combine rows from two tables on a matching key</div></div>
+    <div class="concept-item"><div class="concept-key">WITH cte AS (…)</div><div class="concept-val">Named subquery — run once, reference multiple times in the main query</div></div>
+    <div class="concept-item"><div class="concept-key">OVER (PARTITION BY)</div><div class="concept-val">Window function: compute aggregate per group while keeping individual rows</div></div>
+    <div class="concept-item"><div class="concept-key">CREATE INDEX ON tbl(col)</div><div class="concept-val">B-tree index speeds up WHERE/JOIN on that column at the cost of write overhead</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <span></span>
+    <button class="big-btn primary" onclick="goLesson(1)">Next: Postgres vs DuckDB →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 1: POSTGRESQL VS DUCKDB ==================== -->
+<section class="lesson-section" id="lesson-1">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 02</div>
+    <div class="lesson-title">PostgreSQL vs DuckDB</div>
+    <div class="lesson-desc">OLTP row-oriented databases vs OLAP columnar engines — choosing the right tool changes query speed by orders of magnitude.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>OLTP — PostgreSQL</h3>
+      <p><strong>Online Transaction Processing</strong> databases like PostgreSQL are optimised for many small, concurrent reads and writes. They store data <strong>row by row</strong> — so fetching a single customer record reads exactly one row off disk. Key properties: ACID transactions, referential integrity, concurrent writers.</p>
+      <p>Best for: application backends, user data, shopping carts, order systems — anything where you read/write individual rows frequently.</p>
+
+      <h3>OLAP — DuckDB</h3>
+      <p><strong>Online Analytical Processing</strong> engines like DuckDB are optimised for full-column scans across millions of rows. They store data <strong>column by column</strong> — so <code>SELECT SUM(sales) FROM ...</code> reads only the sales column, skipping all other data. DuckDB runs in-process (no server), reads Parquet natively, and can query 500M rows on a laptop.</p>
+      <p>Best for: analytics dashboards, aggregations, data science, reading Parquet/CSV files at scale.</p>
+
+      <h3>Why Column Storage Wins for Analytics</h3>
+      <p>A query <code>SELECT region, SUM(sales) FROM orders GROUP BY region</code> only needs 2 of 10 columns. Row store reads all 10 for every row. Column store reads only 2 columns — an 80% reduction in I/O. With compression on homogeneous columns, the gain can be even greater.</p>
+
+      <div class="callout"><p><strong>Rule of thumb:</strong> Concurrent small reads/writes → PostgreSQL. Analytical scans over many rows → DuckDB (or BigQuery, Redshift, Snowflake for cloud scale).</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Analytical Query Visualiser <span>interactive</span></div>
+      <div style="margin-bottom:10px;font-size:.78rem;color:var(--muted)">
+        Query needs: <strong style="color:var(--accent)">sales</strong> and <strong style="color:var(--accent)">region</strong> columns only
+      </div>
+      <div id="storeGrid" class="store-grid"></div>
+      <div class="bytes-label" style="text-align:center">Bytes read</div>
+      <div class="bytes-counter" id="bytesCounter" style="color:var(--dim)">—</div>
+      <div class="btn-group" style="margin-top:14px;margin-bottom:0">
+        <button class="btn" id="btnRowStore" onclick="runStoreAnim('row')">▶ Row Store (PostgreSQL)</button>
+        <button class="btn accent" id="btnColStore" onclick="runStoreAnim('col')">▶ Column Store (DuckDB)</button>
+        <button class="btn" onclick="resetStoreAnim()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>OLTP vs OLAP Comparison</h4>
+    <div class="concept-item"><div class="concept-key">Storage layout</div><div class="concept-val">Row store: all columns of a row together. Column store: all values of a column together.</div></div>
+    <div class="concept-item"><div class="concept-key">Query type</div><div class="concept-val">OLTP: point lookups, updates by primary key. OLAP: aggregations across millions of rows.</div></div>
+    <div class="concept-item"><div class="concept-key">Concurrency</div><div class="concept-val">PostgreSQL: hundreds of concurrent writers. DuckDB: single writer, designed for single-process analytics.</div></div>
+    <div class="concept-item"><div class="concept-key">DuckDB deployment</div><div class="concept-val">Runs in-process like SQLite — no server, just a library. Reads Parquet, CSV, JSON natively.</div></div>
+    <div class="concept-item"><div class="concept-key">ACID transactions</div><div class="concept-val">PostgreSQL: full ACID with WAL. DuckDB: ACID within a single connection, not for concurrent multi-user writes.</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(0)">← Previous</button>
+    <button class="big-btn primary" onclick="goLesson(2)">Next: Redis →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 2: REDIS ==================== -->
+<section class="lesson-section" id="lesson-2">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 03</div>
+    <div class="lesson-title">Redis</div>
+    <div class="lesson-desc">Sub-millisecond in-memory key-value store with rich data structures — the go-to for caching, sessions, leaderboards, and rate limiting.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>In-Memory Speed</h3>
+      <p>Redis stores all data in RAM, delivering <strong>sub-millisecond latency</strong> — typical reads take 0.1–0.5ms vs 1–10ms for a PostgreSQL query. This makes it ideal as a <strong>cache layer</strong> in front of a slower database.</p>
+
+      <h3>Data Structures</h3>
+      <ul>
+        <li><strong>String</strong> — simplest: <code>SET key value</code> / <code>GET key</code>. Stores text, JSON, counters.</li>
+        <li><strong>List</strong> — ordered by insertion: <code>LPUSH list val</code> / <code>LRANGE list 0 -1</code>. Good for queues, timelines.</li>
+        <li><strong>Hash</strong> — map of field→value: <code>HSET user:1 name Alice age 30</code>. Like a row in a table.</li>
+        <li><strong>Sorted Set</strong> — members with float scores, auto-sorted: <code>ZADD lb 1500 "alice"</code>. Perfect for leaderboards.</li>
+      </ul>
+
+      <h3>TTL &amp; Use Cases</h3>
+      <p>Set a <strong>TTL</strong> (time-to-live) on any key: <code>EXPIRE session:abc 3600</code> auto-deletes after 1 hour. Use cases: session tokens, rate limiting counters, pub/sub message broker, distributed locks.</p>
+
+      <h3>When Not to Use Redis</h3>
+      <p>Redis is not for data larger than RAM (it's bounded by memory), doesn't support complex joins, and is not a primary database — treat it as a fast read cache or temporary store in front of PostgreSQL.</p>
+
+      <div class="callout"><p><strong>Cache invalidation pattern:</strong> Write to PostgreSQL first, then delete the Redis key (not update it) — the next read will miss and repopulate from the database, preventing stale data races.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Redis Data Structure Explorer <span>interactive</span></div>
+      <div class="redis-tabs" id="redisTabs">
+        <button class="redis-tab active" onclick="showRedisTab('string')">String</button>
+        <button class="redis-tab" onclick="showRedisTab('list')">List</button>
+        <button class="redis-tab" onclick="showRedisTab('hash')">Hash</button>
+        <button class="redis-tab" onclick="showRedisTab('zset')">Sorted Set</button>
+      </div>
+      <div id="redisContent"></div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Redis Commands Reference</h4>
+    <div class="concept-item"><div class="concept-key">SET / GET</div><div class="concept-val">Store and retrieve a string value; SETEX also sets a TTL in seconds</div></div>
+    <div class="concept-item"><div class="concept-key">LPUSH / LRANGE</div><div class="concept-val">Prepend to list / read a range (0 -1 = all). RPUSH appends.</div></div>
+    <div class="concept-item"><div class="concept-key">HSET / HGETALL</div><div class="concept-val">Set hash fields / get all field-value pairs. HGET for a single field.</div></div>
+    <div class="concept-item"><div class="concept-key">ZADD / ZRANGE</div><div class="concept-val">Add member with score / get members in score order. WITHSCORES includes scores in result.</div></div>
+    <div class="concept-item"><div class="concept-key">EXPIRE / TTL</div><div class="concept-val">Set expiry in seconds / query remaining TTL (-1 = no expiry, -2 = key gone)</div></div>
+    <div class="concept-item"><div class="concept-key">INCR / DECR</div><div class="concept-val">Atomic increment/decrement on integer strings — used for rate limiting counters</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(1)">← Previous</button>
+    <button class="big-btn primary" onclick="goLesson(3)">Next: Parquet &amp; Delta Lake →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 3: PARQUET & DELTA LAKE ==================== -->
+<section class="lesson-section" id="lesson-3">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 04</div>
+    <div class="lesson-title">Parquet &amp; Delta Lake</div>
+    <div class="lesson-desc">The columnar file format that powers modern data lakes, and the transaction log that turns them into reliable lakehouses.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>Apache Parquet</h3>
+      <p>Parquet is a <strong>columnar binary file format</strong> — data from each column is stored contiguously. This enables <strong>column pruning</strong>: a query selecting 2 of 8 columns reads only those 2 columns from disk, skipping the rest entirely.</p>
+      <ul>
+        <li><strong>Run-length encoding</strong> — repeated values (e.g. "US","US","US") stored as ("US" × 3000)</li>
+        <li><strong>Dictionary encoding</strong> — low-cardinality columns store an integer index into a small dictionary</li>
+        <li><strong>Predicate pushdown</strong> — min/max statistics per row group let the engine skip row groups without reading them</li>
+      </ul>
+
+      <h3>Delta Lake</h3>
+      <p>Delta Lake adds <strong>ACID transactions</strong> on top of Parquet files via a <code>_delta_log/</code> transaction log — a series of JSON commit files that record every add/remove/metadata change. Features:</p>
+      <ul>
+        <li><strong>Time travel</strong> — <code>SELECT * FROM events VERSION AS OF 5</code> reads any past version</li>
+        <li><strong>Schema enforcement</strong> — rejects writes that violate the declared schema</li>
+        <li><strong>OPTIMIZE</strong> — compacts many small files into fewer large ones (the "small files problem" fix)</li>
+        <li><strong>Z-ORDER</strong> — co-locates related data in the same files for multi-column clustering</li>
+      </ul>
+
+      <div class="callout"><p><strong>Common pattern:</strong> Raw data lands as JSON/CSV → converted to Parquet → managed by Delta Lake as a table → queried by Spark or DuckDB.</p></div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-title">Column Pruning Visualiser <span>interactive</span></div>
+      <div style="margin-bottom:10px;font-size:.78rem;color:var(--muted)">
+        8-column table — query selects only <strong style="color:var(--accent)">order_id</strong> and <strong style="color:var(--accent)">total</strong>
+      </div>
+      <div id="pruningGrid" class="col-pruning-grid"></div>
+      <div class="pruning-stats">
+        <div class="pruning-stat">
+          <div class="pruning-stat-label">Store</div>
+          <div class="pruning-stat-val" id="pruningStoreLabel" style="color:var(--dim)">—</div>
+        </div>
+        <div class="pruning-stat">
+          <div class="pruning-stat-label">Columns Read</div>
+          <div class="pruning-stat-val" id="pruningColsRead" style="color:var(--dim)">—</div>
+        </div>
+        <div class="pruning-stat">
+          <div class="pruning-stat-label">Data Read</div>
+          <div class="pruning-stat-val" id="pruningBytesRead" style="color:var(--dim)">—</div>
+        </div>
+        <div class="pruning-stat">
+          <div class="pruning-stat-label">Savings</div>
+          <div class="pruning-stat-val" id="pruningSavings" style="color:var(--dim)">—</div>
+        </div>
+      </div>
+      <div class="btn-group" style="margin-top:14px;margin-bottom:0">
+        <button class="btn" onclick="runPruningAnim('row')">▶ Row Store (480 KB)</button>
+        <button class="btn accent" onclick="runPruningAnim('col')">▶ Column Store (120 KB)</button>
+        <button class="btn" onclick="resetPruningAnim()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Parquet &amp; Delta Lake Concepts</h4>
+    <div class="concept-item"><div class="concept-key">Column pruning</div><div class="concept-val">Skip columns not referenced in SELECT — major I/O reduction for wide tables</div></div>
+    <div class="concept-item"><div class="concept-key">Row group</div><div class="concept-val">Parquet files are split into row groups (~128MB each); each stores column data + min/max statistics</div></div>
+    <div class="concept-item"><div class="concept-key">Predicate pushdown</div><div class="concept-val">WHERE date &gt; '2024-01-01' skips row groups whose max date is earlier — no read needed</div></div>
+    <div class="concept-item"><div class="concept-key">_delta_log/</div><div class="concept-val">Delta Lake transaction log: each commit is a JSON file listing which Parquet files were added/removed</div></div>
+    <div class="concept-item"><div class="concept-key">VERSION AS OF n</div><div class="concept-val">Time travel — replay the log up to version n to reconstruct the table at that point</div></div>
+    <div class="concept-item"><div class="concept-key">OPTIMIZE + Z-ORDER</div><div class="concept-val">Compact small files; Z-ORDER clusters data by multiple columns to speed up multi-predicate queries</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(2)">← Previous</button>
+    <button class="big-btn primary" onclick="goLesson(4)">Next: Schema Design →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 4: SCHEMA DESIGN ==================== -->
+<section class="lesson-section" id="lesson-4">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 05</div>
+    <div class="lesson-title">Schema Design</div>
+    <div class="lesson-desc">Normalisation, star schemas, foreign keys, and JSONB — structuring data for correctness and query performance.</div>
+  </div>
+
+  <div class="split">
+    <div class="prose">
+      <h3>Normalisation</h3>
+      <p>Normalisation eliminates redundancy by splitting data into related tables. The main forms:</p>
+      <ul>
+        <li><strong>1NF</strong> — atomic values in every cell, no repeating groups</li>
+        <li><strong>2NF</strong> — no partial key dependencies (all non-key columns depend on the full primary key)</li>
+        <li><strong>3NF</strong> — no transitive dependencies (non-key columns depend only on the key)</li>
+      </ul>
+      <p>Normalised schemas reduce anomalies: update a city name in one place, not 10,000 rows.</p>
+
+      <h3>Star Schema</h3>
+      <p>For analytics, normalised schemas require many joins. A <strong>star schema</strong> denormalises into a central <strong>fact table</strong> (quantitative events: sales, clicks) surrounded by <strong>dimension tables</strong> (descriptive context: customer, product, date). Fewer joins, faster analytics.</p>
+
+      <h3>Foreign Keys &amp; JSONB</h3>
+      <p><strong>Foreign keys</strong> enforce referential integrity — you can't insert an <code>order</code> with a <code>customer_id</code> that doesn't exist. PostgreSQL's <strong>JSONB</strong> column type stores semi-structured data as binary JSON, queryable with <code>data-&gt;&gt;'field'</code> syntax — good for flexible, schema-less attributes on otherwise structured rows.</p>
+
+      <div class="callout"><p><strong>Denormalisation trade-off:</strong> Star schemas trade storage space (duplicated dimension data) for query speed (fewer joins). In modern columnar stores, the storage cost is small and the join savings are significant.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Star Schema Diagram <span>click a table</span></div>
+        <div class="star-schema-container">
+          <svg id="starSvg" viewBox="0 0 500 340" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div class="dim-popup" id="dimPopup"></div>
+        </div>
+      </div>
+      <div class="schema-query" id="starQuery">
+        <span class="kw">-- click a dimension table above to see its JOIN query</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:28px">
+    <h4>Schema Design Concepts</h4>
+    <div class="concept-item"><div class="concept-key">Fact table</div><div class="concept-val">Stores quantitative events (sales, page views) with foreign keys to dimension tables; typically the largest table</div></div>
+    <div class="concept-item"><div class="concept-key">Dimension table</div><div class="concept-val">Descriptive context (customer, product, date) — typically small, denormalised for query convenience</div></div>
+    <div class="concept-item"><div class="concept-key">Surrogate key</div><div class="concept-val">Artificial integer PK (e.g. dim_customer_id) — stable even if natural keys change</div></div>
+    <div class="concept-item"><div class="concept-key">Slowly Changing Dim</div><div class="concept-val">Dimension data that changes over time (customer moves city) — handled with versioned rows or effective dates</div></div>
+    <div class="concept-item"><div class="concept-key">JSONB</div><div class="concept-val">PostgreSQL binary JSON column — indexed, filterable with @&gt;, -&gt;&gt; operators; good for flexible attributes</div></div>
+    <div class="concept-item"><div class="concept-key">Referential integrity</div><div class="concept-val">FOREIGN KEY constraint prevents orphan rows — the DB rejects inserts/deletes that would break the relationship</div></div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(3)">← Previous</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
+  </div>
+</section>
+
+<!-- ==================== QUIZ ==================== -->
+<section class="lesson-section" id="lesson-5">
+  <div class="lesson-header">
+    <div class="lesson-num">Phase 04 — Quiz</div>
+    <div class="lesson-title">Test Your Knowledge</div>
+    <div class="lesson-desc">4 questions covering SQL, PostgreSQL vs DuckDB, Redis, and Parquet.</div>
+  </div>
+
+  <div class="quiz-wrap">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizPBar" style="width:0%"></div></div>
+    <div id="quizContainer"></div>
+    <div class="quiz-score" id="quizScore">
+      <div class="score-num" id="scoreNum"></div>
+      <div class="score-msg" id="scoreMsg"></div>
+      <div>
+        <button class="big-btn primary" onclick="restartQuiz()">Try Again</button>
+        &nbsp;&nbsp;
+        <button class="big-btn ghost" onclick="goLesson(0)">Review Lessons</button>
+      </div>
+    </div>
+
+    <div id="phase4CompleteBox" style="margin-top:24px;padding:20px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.3);border-radius:12px;text-align:center;display:none">
+      <div style="font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:6px">Phase 4 Complete!</div>
+      <div style="font-size:.85rem;color:var(--muted);margin-bottom:14px">Databases mastered — SQL, OLAP engines, Redis, Parquet, and schema design.</div>
+      <a href="index.html" class="big-btn primary" style="text-decoration:none;display:inline-block">← Back to Roadmap</a>
+    </div>
+    <div style="margin-top:16px;text-align:center">
+      <button class="big-btn accent" id="markDoneBtn4" onclick="markPhase4Done()" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:var(--accent)">✓ Mark Phase Complete</button>
+    </div>
+  </div>
+
+  <div class="lesson-nav" style="margin-top:24px">
+    <button class="big-btn ghost" onclick="goLesson(4)">← Back</button>
+    <span></span>
+  </div>
+</section>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+let currentLesson = 0;
+
+function goLesson(n) {
+  localStorage.setItem('phase4lesson', n);
+  document.querySelectorAll('.lesson-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('lesson-' + n).classList.add('active');
+  document.querySelectorAll('.lesson-tab').forEach((t, i) => t.classList.toggle('active', i === n));
+  document.querySelectorAll('.pp-step').forEach((s, i) => {
+    s.classList.remove('active', 'done');
+    if (i < n) s.classList.add('done');
+    else if (i === n) s.classList.add('active');
+  });
+  currentLesson = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (n === 5) initQuiz();
+}
+
+/* ============================================================
+   THEME TOGGLE
+   ============================================================ */
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  if (isLight) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('theme', 'dark');
+    document.getElementById('themeToggle').textContent = '☀ Light';
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
+    document.getElementById('themeToggle').textContent = '🌙 Dark';
+  }
+}
+(function() {
+  const btn = document.getElementById('themeToggle');
+  if (!btn) return;
+  btn.textContent = document.documentElement.getAttribute('data-theme') === 'light' ? '🌙 Dark' : '☀ Light';
+})();
+
+/* ============================================================
+   LESSON 0 — SQL QUERY EXPLORER
+   ============================================================ */
+const sqlQueries = [
+  {
+    label: 'Simple SELECT',
+    sql: `<span class="kw">SELECT</span> c.name, c.city, c.tier
+<span class="kw">FROM</span> customers c
+<span class="kw">WHERE</span> c.tier = <span class="str">'gold'</span>
+<span class="kw">ORDER BY</span> c.name
+<span class="kw">LIMIT</span> <span class="num">10</span>;`,
+    headers: ['name', 'city', 'tier'],
+    rows: [
+      ['Alice Chen', 'San Francisco', 'gold'],
+      ['Bob Tanaka', 'New York', 'gold'],
+      ['Carol Mbeki', 'London', 'gold']
+    ]
+  },
+  {
+    label: 'LEFT JOIN',
+    sql: `<span class="kw">SELECT</span> c.name, o.order_id, o.total
+<span class="kw">FROM</span> customers c
+<span class="kw">LEFT JOIN</span> orders o
+  <span class="kw">ON</span> c.customer_id = o.customer_id
+<span class="kw">WHERE</span> c.city = <span class="str">'New York'</span>; <span class="cmt">-- includes customers with no orders</span>`,
+    headers: ['name', 'order_id', 'total'],
+    rows: [
+      ['Bob Tanaka', '1042', '$320.00'],
+      ['Diana Park', '1099', '$85.50'],
+      ['Eve Novak', 'NULL', 'NULL']
+    ]
+  },
+  {
+    label: 'GROUP BY',
+    sql: `<span class="kw">SELECT</span>
+  c.city,
+  <span class="fn">COUNT</span>(o.order_id) <span class="kw">AS</span> order_count,
+  <span class="fn">SUM</span>(o.total)    <span class="kw">AS</span> revenue
+<span class="kw">FROM</span> customers c
+<span class="kw">JOIN</span> orders o <span class="kw">ON</span> c.customer_id = o.customer_id
+<span class="kw">GROUP BY</span> c.city
+<span class="kw">HAVING</span> <span class="fn">SUM</span>(o.total) > <span class="num">10000</span>
+<span class="kw">ORDER BY</span> revenue <span class="kw">DESC</span>;`,
+    headers: ['city', 'order_count', 'revenue'],
+    rows: [
+      ['San Francisco', '412', '$94,200.00'],
+      ['New York', '388', '$81,500.00'],
+      ['London', '201', '$45,300.00']
+    ]
+  },
+  {
+    label: 'CTE',
+    sql: `<span class="kw">WITH</span> high_value_orders <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> customer_id, <span class="fn">SUM</span>(total) <span class="kw">AS</span> ltv
+  <span class="kw">FROM</span> orders
+  <span class="kw">GROUP BY</span> customer_id
+  <span class="kw">HAVING</span> <span class="fn">SUM</span>(total) > <span class="num">5000</span>
+)
+<span class="kw">SELECT</span> c.name, hv.ltv
+<span class="kw">FROM</span> customers c
+<span class="kw">JOIN</span> high_value_orders hv
+  <span class="kw">ON</span> c.customer_id = hv.customer_id;`,
+    headers: ['name', 'ltv'],
+    rows: [
+      ['Alice Chen', '$12,400.00'],
+      ['Bob Tanaka', '$8,750.00'],
+      ['Carol Mbeki', '$6,100.00']
+    ]
+  },
+  {
+    label: 'Window Function',
+    sql: `<span class="kw">SELECT</span>
+  customer_id,
+  order_date,
+  total,
+  <span class="fn">SUM</span>(total) <span class="kw">OVER</span> (
+    <span class="kw">PARTITION BY</span> customer_id
+    <span class="kw">ORDER BY</span> order_date
+  ) <span class="kw">AS</span> running_total,
+  <span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (
+    <span class="kw">PARTITION BY</span> customer_id
+    <span class="kw">ORDER BY</span> total <span class="kw">DESC</span>
+  ) <span class="kw">AS</span> rank_by_size
+<span class="kw">FROM</span> orders;`,
+    headers: ['customer_id', 'order_date', 'total', 'running_total', 'rank_by_size'],
+    rows: [
+      ['101', '2024-01-05', '$120.00', '$120.00', '2'],
+      ['101', '2024-02-12', '$340.00', '$460.00', '1'],
+      ['102', '2024-01-18', '$85.00', '$85.00', '1']
+    ]
+  }
+];
+
+let currentSqlQuery = 0;
+
+function showQuery(idx) {
+  currentSqlQuery = idx;
+  const btns = document.querySelectorAll('#sqlBtnGroup .btn');
+  btns.forEach((b, i) => b.classList.toggle('active', i === idx));
+  const q = sqlQueries[idx];
+  const headersHtml = q.headers.map(h => `<th>${h}</th>`).join('');
+  const rowsHtml = q.rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('');
+  document.getElementById('sqlQueryDisplay').innerHTML = `
+    <pre class="sql-pre">${q.sql}</pre>
+    <div class="result-label">Result (sample rows)</div>
+    <table class="mock-table">
+      <thead><tr>${headersHtml}</tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>`;
+}
+
+showQuery(0);
+
+/* ============================================================
+   LESSON 1 — STORE ANIMATION (Row vs Column)
+   ============================================================ */
+const storeColNames = ['id', 'customer', 'date', 'sales', 'region', 'product', 'qty', 'discount'];
+const NEEDED_COLS = [3, 4]; // sales and region (0-indexed)
+const STORE_ROWS = 5;
+let storeAnimRunning = false;
+
+function buildStoreGrid() {
+  const grid = document.getElementById('storeGrid');
+  grid.innerHTML = '';
+  // header row
+  storeColNames.forEach((name, ci) => {
+    const d = document.createElement('div');
+    d.className = 'store-cell col-header';
+    d.id = `shdr-${ci}`;
+    d.textContent = name;
+    grid.appendChild(d);
+  });
+  // data rows
+  for (let r = 0; r < STORE_ROWS; r++) {
+    storeColNames.forEach((_, ci) => {
+      const d = document.createElement('div');
+      d.className = 'store-cell';
+      d.id = `scell-${r}-${ci}`;
+      d.textContent = sampleVal(ci, r);
+      grid.appendChild(d);
+    });
+  }
+}
+
+function sampleVal(ci, ri) {
+  const vals = [
+    [1001,1002,1003,1004,1005],
+    ['Alice','Bob','Carol','Dave','Eve'],
+    ['Jan','Feb','Mar','Apr','May'],
+    [320,850,410,720,190],
+    ['US','EU','US','APAC','EU'],
+    ['Laptop','Phone','Desk','Monitor','Chair'],
+    [2,1,4,3,1],
+    ['5%','0%','10%','5%','0%']
+  ];
+  return vals[ci] ? vals[ci][ri] : '—';
+}
+
+function resetStoreAnim() {
+  storeAnimRunning = false;
+  document.querySelectorAll('.store-cell').forEach(c => {
+    c.classList.remove('lit-row', 'lit-col', 'dim');
+  });
+  document.getElementById('bytesCounter').textContent = '—';
+  document.getElementById('bytesCounter').style.color = 'var(--dim)';
+  document.getElementById('btnRowStore').classList.remove('active');
+  document.getElementById('btnColStore').classList.remove('active');
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function runStoreAnim(mode) {
+  if (storeAnimRunning) return;
+  resetStoreAnim();
+  storeAnimRunning = true;
+
+  if (mode === 'row') {
+    document.getElementById('btnRowStore').classList.add('active');
+    document.getElementById('bytesCounter').style.color = 'var(--warning)';
+    let bytesRead = 0;
+    for (let r = 0; r < STORE_ROWS; r++) {
+      for (let ci = 0; ci < storeColNames.length; ci++) {
+        const cell = document.getElementById(`scell-${r}-${ci}`);
+        cell.classList.add('lit-row');
+        bytesRead += 60;
+        document.getElementById('bytesCounter').textContent = bytesRead.toLocaleString() + ' B';
+        await delay(55);
+      }
+    }
+    document.getElementById('bytesCounter').textContent = '2,400 B (all 8 columns × 5 rows × 60B)';
+  } else {
+    document.getElementById('btnColStore').classList.add('active');
+    // dim non-needed columns first
+    for (let r = 0; r < STORE_ROWS; r++) {
+      storeColNames.forEach((_, ci) => {
+        if (!NEEDED_COLS.includes(ci)) {
+          document.getElementById(`scell-${r}-${ci}`).classList.add('dim');
+        }
+      });
+    }
+    document.getElementById('bytesCounter').style.color = 'var(--accent)';
+    let bytesRead = 0;
+    for (const ci of NEEDED_COLS) {
+      for (let r = 0; r < STORE_ROWS; r++) {
+        const cell = document.getElementById(`scell-${r}-${ci}`);
+        cell.classList.add('lit-col');
+        bytesRead += 60;
+        document.getElementById('bytesCounter').textContent = bytesRead.toLocaleString() + ' B';
+        await delay(90);
+      }
+    }
+    document.getElementById('bytesCounter').textContent = '600 B (2 columns × 5 rows × 60B) — 75% less I/O';
+  }
+  storeAnimRunning = false;
+}
+
+buildStoreGrid();
+
+/* ============================================================
+   LESSON 2 — REDIS DATA STRUCTURE EXPLORER
+   ============================================================ */
+const redisData = {
+  string: {
+    cli: [
+      { type: 'comment', text: '# Cache a user session' },
+      { type: 'cmd', text: 'SET session:abc "user_id=42&role=admin"' },
+      { type: 'resp', text: 'OK' },
+      { type: 'cmd', text: 'EXPIRE session:abc 3600' },
+      { type: 'resp', text: '(integer) 1' },
+      { type: 'cmd', text: 'GET session:abc' },
+      { type: 'resp', text: '"user_id=42&role=admin"' },
+      { type: 'cmd', text: 'TTL session:abc' },
+      { type: 'resp', text: '(integer) 3598' },
+    ],
+    vis: () => `
+      <div style="margin-bottom:10px;font-size:.78rem;color:var(--muted)">Key → Value mapping with optional TTL</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <span class="rv-key">session:abc</span>
+        <span class="rv-arrow">→</span>
+        <span class="rv-val">"user_id=42&role=admin"</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="rv-key">rate:user:42</span>
+        <span class="rv-arrow">→</span>
+        <span class="rv-val">"47"</span>
+        <span style="font-size:.72rem;color:var(--dim);margin-left:4px">TTL: 53s</span>
+      </div>`
+  },
+  list: {
+    cli: [
+      { type: 'comment', text: '# Recent activity timeline (newest first)' },
+      { type: 'cmd', text: 'LPUSH timeline:42 "viewed product:7"' },
+      { type: 'resp', text: '(integer) 1' },
+      { type: 'cmd', text: 'LPUSH timeline:42 "added to cart: product:12"' },
+      { type: 'resp', text: '(integer) 2' },
+      { type: 'cmd', text: 'LPUSH timeline:42 "checkout started"' },
+      { type: 'resp', text: '(integer) 3' },
+      { type: 'cmd', text: 'LRANGE timeline:42 0 -1' },
+      { type: 'resp', text: '1) "checkout started"\n2) "added to cart: product:12"\n3) "viewed product:7"' },
+    ],
+    vis: () => `
+      <div style="margin-bottom:10px;font-size:.78rem;color:var(--muted)">Ordered list — LPUSH prepends (index 0 = newest)</div>
+      <div class="rv-key" style="margin-bottom:8px">timeline:42</div>
+      <div class="rv-list">
+        ${[['[0]','checkout started'],['[1]','added to cart: product:12'],['[2]','viewed product:7']].map(([i,v]) =>
+          `<div class="rv-list-item"><span class="rv-idx">${i}</span><span class="rv-member">"${v}"</span></div>`).join('')}
+      </div>`
+  },
+  hash: {
+    cli: [
+      { type: 'comment', text: '# Store user profile as a hash' },
+      { type: 'cmd', text: 'HSET user:42 name "Alice" email "alice@co.io" plan "pro"' },
+      { type: 'resp', text: '(integer) 3' },
+      { type: 'cmd', text: 'HGET user:42 name' },
+      { type: 'resp', text: '"Alice"' },
+      { type: 'cmd', text: 'HGETALL user:42' },
+      { type: 'resp', text: '1) "name"\n2) "Alice"\n3) "email"\n4) "alice@co.io"\n5) "plan"\n6) "pro"' },
+    ],
+    vis: () => `
+      <div style="margin-bottom:10px;font-size:.78rem;color:var(--muted)">Hash map — like a row of fields, stored under one key</div>
+      <div class="rv-key" style="margin-bottom:8px">user:42</div>
+      ${[['name','Alice'],['email','alice@co.io'],['plan','pro'],['login_count','142']].map(([f,v]) =>
+        `<div class="rv-hash-row"><span class="rv-hash-field">${f}</span><span class="rv-hash-val">"${v}"</span></div>`).join('')}`
+  },
+  zset: {
+    cli: [
+      { type: 'comment', text: '# Game leaderboard — sorted set' },
+      { type: 'cmd', text: 'ZADD leaderboard 9800 "alice"' },
+      { type: 'resp', text: '(integer) 1' },
+      { type: 'cmd', text: 'ZADD leaderboard 1500 "bob"' },
+      { type: 'resp', text: '(integer) 1' },
+      { type: 'cmd', text: 'ZADD leaderboard 7200 "carol"' },
+      { type: 'resp', text: '(integer) 1' },
+      { type: 'cmd', text: 'ZRANGE leaderboard 0 -1 WITHSCORES REV' },
+      { type: 'resp', text: '1) "alice"\n2) "9800"\n3) "carol"\n4) "7200"\n5) "bob"\n6) "1500"' },
+    ],
+    vis: () => `
+      <div style="margin-bottom:10px;font-size:.78rem;color:var(--muted)">Sorted set — members ranked by score, O(log n) insert</div>
+      <div class="rv-key" style="margin-bottom:8px">leaderboard</div>
+      <div class="rv-list">
+        ${[['#1','9800','alice'],['#2','7200','carol'],['#3','1500','bob']].map(([rank,score,name]) =>
+          `<div class="rv-list-item">
+            <span class="rv-idx">${rank}</span>
+            <span class="rv-score">${score} pts</span>
+            <span class="rv-member">${name}</span>
+          </div>`).join('')}
+      </div>`
+  }
+};
+
+function showRedisTab(type) {
+  document.querySelectorAll('.redis-tab').forEach((t, i) => {
+    const types = ['string','list','hash','zset'];
+    t.classList.toggle('active', types[i] === type);
+  });
+  const d = redisData[type];
+  let cliHtml = d.cli.map(l => {
+    if (l.type === 'comment') return `<div class="comment-line">${l.text}</div>`;
+    if (l.type === 'cmd') return `<div class="cmd-line">127.0.0.1:6379&gt; ${l.text}</div>`;
+    return `<div class="resp-line">${l.text.replace(/\n/g,'<br>')}</div>`;
+  }).join('');
+  document.getElementById('redisContent').innerHTML = `
+    <div class="redis-cli">${cliHtml}</div>
+    <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:6px">State Visualisation</div>
+    <div class="redis-vis">${d.vis()}</div>`;
+}
+
+showRedisTab('string');
+
+/* ============================================================
+   LESSON 3 — COLUMN PRUNING VISUALISER
+   ============================================================ */
+const pruningCols = [
+  { name: 'cust_id', color: '#4f8ef7' },
+  { name: 'date', color: '#a78bfa' },
+  { name: 'order_id', color: '#34d399' },
+  { name: 'product', color: '#fb923c' },
+  { name: 'total', color: '#fbbf24' },
+  { name: 'region', color: '#f87171' },
+  { name: 'channel', color: '#38bdf8' },
+  { name: 'discount', color: '#c084fc' }
+];
+const PRUNING_NEEDED = [2, 4]; // order_id and total
+let pruningAnimRunning = false;
+
+function buildPruningGrid() {
+  const grid = document.getElementById('pruningGrid');
+  grid.innerHTML = '';
+  pruningCols.forEach((col, i) => {
+    const d = document.createElement('div');
+    d.className = 'col-block';
+    d.id = `pcol-${i}`;
+    d.style.color = col.color;
+    d.style.borderColor = col.color + '44';
+    d.style.background = col.color + '15';
+    d.innerHTML = col.name + '<br><span style="font-size:.55rem;opacity:.6">col ' + i + '</span>';
+    grid.appendChild(d);
+  });
+}
+
+function resetPruningAnim() {
+  pruningAnimRunning = false;
+  pruningCols.forEach((_, i) => {
+    const el = document.getElementById('pcol-' + i);
+    el.classList.remove('active', 'dim');
+    el.style.opacity = '';
+  });
+  ['pruningStoreLabel','pruningColsRead','pruningBytesRead','pruningSavings'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+    document.getElementById(id).style.color = 'var(--dim)';
+  });
+}
+
+async function runPruningAnim(mode) {
+  if (pruningAnimRunning) return;
+  resetPruningAnim();
+  pruningAnimRunning = true;
+
+  if (mode === 'row') {
+    document.getElementById('pruningStoreLabel').textContent = 'Row Store';
+    document.getElementById('pruningStoreLabel').style.color = 'var(--warning)';
+    for (let i = 0; i < pruningCols.length; i++) {
+      await delay(120);
+      document.getElementById('pcol-' + i).classList.add('active');
+    }
+    document.getElementById('pruningColsRead').textContent = '8 / 8';
+    document.getElementById('pruningColsRead').style.color = 'var(--warning)';
+    document.getElementById('pruningBytesRead').textContent = '480 KB';
+    document.getElementById('pruningBytesRead').style.color = 'var(--warning)';
+    document.getElementById('pruningSavings').textContent = '0%';
+    document.getElementById('pruningSavings').style.color = 'var(--dim)';
+  } else {
+    document.getElementById('pruningStoreLabel').textContent = 'Column Store';
+    document.getElementById('pruningStoreLabel').style.color = 'var(--accent)';
+    // dim unneeded
+    pruningCols.forEach((_, i) => {
+      if (!PRUNING_NEEDED.includes(i)) {
+        document.getElementById('pcol-' + i).classList.add('dim');
+      }
+    });
+    await delay(300);
+    for (const i of PRUNING_NEEDED) {
+      await delay(200);
+      document.getElementById('pcol-' + i).classList.add('active');
+    }
+    document.getElementById('pruningColsRead').textContent = '2 / 8';
+    document.getElementById('pruningColsRead').style.color = 'var(--accent)';
+    document.getElementById('pruningBytesRead').textContent = '120 KB';
+    document.getElementById('pruningBytesRead').style.color = 'var(--accent)';
+    document.getElementById('pruningSavings').textContent = '75%';
+    document.getElementById('pruningSavings').style.color = 'var(--accent)';
+  }
+  pruningAnimRunning = false;
+}
+
+buildPruningGrid();
+
+/* ============================================================
+   LESSON 4 — STAR SCHEMA SVG
+   ============================================================ */
+const dimTables = [
+  {
+    id: 'fact', label: 'fact_sales', cx: 250, cy: 170, r: 42,
+    color: '#fbbf24', isFact: true,
+    cols: ['sale_id (PK)', 'customer_key (FK)', 'product_key (FK)', 'date_key (FK)', 'store_key (FK)', 'amount', 'qty'],
+    query: null
+  },
+  {
+    id: 'dim_customer', label: 'dim_customer', cx: 90, cy: 60, r: 34,
+    color: '#4f8ef7', isFact: false,
+    cols: ['customer_key (PK)', 'customer_id', 'name', 'email', 'city', 'country', 'tier'],
+    query: `<span class="kw">SELECT</span> <span class="col2">c.name, c.city,</span> <span class="col2">SUM(f.amount)</span> <span class="kw">AS</span> revenue
+<span class="kw">FROM</span> <span class="tbl">fact_sales</span> f
+<span class="kw">JOIN</span> <span class="tbl">dim_customer</span> c <span class="kw">ON</span> f.customer_key = c.customer_key
+<span class="kw">GROUP BY</span> c.name, c.city;`
+  },
+  {
+    id: 'dim_product', label: 'dim_product', cx: 420, cy: 60, r: 34,
+    color: '#34d399', isFact: false,
+    cols: ['product_key (PK)', 'product_id', 'name', 'category', 'brand', 'price'],
+    query: `<span class="kw">SELECT</span> <span class="col2">p.category,</span> <span class="col2">SUM(f.qty)</span> <span class="kw">AS</span> units_sold
+<span class="kw">FROM</span> <span class="tbl">fact_sales</span> f
+<span class="kw">JOIN</span> <span class="tbl">dim_product</span> p <span class="kw">ON</span> f.product_key = p.product_key
+<span class="kw">GROUP BY</span> p.category;`
+  },
+  {
+    id: 'dim_date', label: 'dim_date', cx: 250, cy: 300, r: 34,
+    color: '#a78bfa', isFact: false,
+    cols: ['date_key (PK)', 'full_date', 'year', 'quarter', 'month', 'day_of_week', 'is_holiday'],
+    query: `<span class="kw">SELECT</span> <span class="col2">d.year, d.quarter,</span> <span class="col2">SUM(f.amount)</span>
+<span class="kw">FROM</span> <span class="tbl">fact_sales</span> f
+<span class="kw">JOIN</span> <span class="tbl">dim_date</span> d <span class="kw">ON</span> f.date_key = d.date_key
+<span class="kw">GROUP BY</span> d.year, d.quarter;`
+  },
+  {
+    id: 'dim_store', label: 'dim_store', cx: 90, cy: 290, r: 34,
+    color: '#fb923c', isFact: false,
+    cols: ['store_key (PK)', 'store_id', 'name', 'city', 'region', 'country'],
+    query: `<span class="kw">SELECT</span> <span class="col2">s.region,</span> <span class="col2">SUM(f.amount)</span> <span class="kw">AS</span> revenue
+<span class="kw">FROM</span> <span class="tbl">fact_sales</span> f
+<span class="kw">JOIN</span> <span class="tbl">dim_store</span> s <span class="kw">ON</span> f.store_key = s.store_key
+<span class="kw">GROUP BY</span> s.region;`
+  }
+];
+
+function buildStarSchema() {
+  const svg = document.getElementById('starSvg');
+  const ns = 'http://www.w3.org/2000/svg';
+  svg.innerHTML = '';
+
+  const fact = dimTables[0];
+
+  // Draw lines from fact to dims
+  dimTables.slice(1).forEach(dim => {
+    const line = document.createElementNS(ns, 'line');
+    line.setAttribute('x1', fact.cx);
+    line.setAttribute('y1', fact.cy);
+    line.setAttribute('x2', dim.cx);
+    line.setAttribute('y2', dim.cy);
+    line.setAttribute('stroke', dim.color + '55');
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('stroke-dasharray', '5,3');
+    svg.appendChild(line);
+  });
+
+  // Draw tables
+  dimTables.forEach(t => {
+    const g = document.createElementNS(ns, 'g');
+    g.style.cursor = t.isFact ? 'default' : 'pointer';
+    if (!t.isFact) {
+      g.addEventListener('click', () => showDimPopup(t));
+    }
+
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('cx', t.cx);
+    circle.setAttribute('cy', t.cy);
+    circle.setAttribute('r', t.r);
+    circle.setAttribute('fill', t.color + (t.isFact ? '22' : '18'));
+    circle.setAttribute('stroke', t.color);
+    circle.setAttribute('stroke-width', t.isFact ? '2.5' : '1.5');
+    g.appendChild(circle);
+
+    if (!t.isFact) {
+      const hoverCircle = document.createElementNS(ns, 'circle');
+      hoverCircle.setAttribute('cx', t.cx);
+      hoverCircle.setAttribute('cy', t.cy);
+      hoverCircle.setAttribute('r', t.r);
+      hoverCircle.setAttribute('fill', 'transparent');
+      hoverCircle.setAttribute('stroke', 'transparent');
+      hoverCircle.setAttribute('stroke-width', '4');
+      hoverCircle.addEventListener('mouseenter', () => { circle.setAttribute('stroke-width', '2.5'); circle.setAttribute('fill', t.color + '30'); });
+      hoverCircle.addEventListener('mouseleave', () => { circle.setAttribute('stroke-width', '1.5'); circle.setAttribute('fill', t.color + '18'); });
+      g.appendChild(hoverCircle);
+    }
+
+    const text1 = document.createElementNS(ns, 'text');
+    text1.setAttribute('x', t.cx);
+    text1.setAttribute('y', t.isFact ? t.cy - 6 : t.cy - 5);
+    text1.setAttribute('text-anchor', 'middle');
+    text1.setAttribute('font-family', 'JetBrains Mono,monospace');
+    text1.setAttribute('font-size', t.isFact ? '10' : '9');
+    text1.setAttribute('font-weight', '700');
+    text1.setAttribute('fill', t.color);
+    text1.textContent = t.isFact ? 'fact_sales' : t.label.replace('dim_', '');
+    g.appendChild(text1);
+
+    if (!t.isFact) {
+      const text2 = document.createElementNS(ns, 'text');
+      text2.setAttribute('x', t.cx);
+      text2.setAttribute('y', t.cy + 9);
+      text2.setAttribute('text-anchor', 'middle');
+      text2.setAttribute('font-family', 'Inter,sans-serif');
+      text2.setAttribute('font-size', '8');
+      text2.setAttribute('fill', t.color + 'aa');
+      text2.textContent = '(click)';
+      g.appendChild(text2);
+    } else {
+      const text2 = document.createElementNS(ns, 'text');
+      text2.setAttribute('x', t.cx);
+      text2.setAttribute('y', t.cy + 8);
+      text2.setAttribute('text-anchor', 'middle');
+      text2.setAttribute('font-family', 'Inter,sans-serif');
+      text2.setAttribute('font-size', '8');
+      text2.setAttribute('fill', t.color + '88');
+      text2.textContent = 'amount, qty';
+      g.appendChild(text2);
+    }
+
+    svg.appendChild(g);
+  });
+}
+
+function showDimPopup(t) {
+  const popup = document.getElementById('dimPopup');
+  popup.className = 'dim-popup visible';
+  popup.style.top = (t.cy + t.r + 8) + 'px';
+  let leftPos = (t.cx - 90);
+  if (leftPos < 0) leftPos = 0;
+  popup.style.left = leftPos + 'px';
+  popup.innerHTML = `
+    <div class="dim-popup-title" style="color:${t.color}">${t.label}</div>
+    ${t.cols.map(c => `<div class="dim-popup-col">${c}</div>`).join('')}`;
+  document.getElementById('starQuery').innerHTML = t.query;
+
+  // close on outside click
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      if (!popup.contains(e.target)) {
+        popup.classList.remove('visible');
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 10);
+}
+
+buildStarSchema();
+
+/* ============================================================
+   QUIZ ENGINE
+   ============================================================ */
+const questions = [
+  {
+    q: 'Which JOIN returns all rows from the left table even with no match on the right?',
+    options: ['INNER JOIN', 'LEFT JOIN', 'FULL JOIN', 'CROSS JOIN'],
+    correct: 1,
+    explanation: 'LEFT JOIN keeps all rows from the left table and fills NULL for any columns from the right table where no matching row exists. INNER JOIN would drop the unmatched rows entirely.'
+  },
+  {
+    q: 'DuckDB is better suited than PostgreSQL for:',
+    options: [
+      'Storing user sessions updated 1000 times per second',
+      'Aggregating 500 million rows in an analytics query',
+      'Managing cascading foreign key deletes',
+      'Handling concurrent write transactions from a web app'
+    ],
+    correct: 1,
+    explanation: 'DuckDB is a columnar OLAP engine optimised for analytical scans across millions of rows. PostgreSQL is the better choice for concurrent OLTP workloads like user sessions and transactional writes.'
+  },
+  {
+    q: 'What does `ZADD leaderboard 1500 "alice"` do in Redis?',
+    options: [
+      'Creates a list called leaderboard',
+      'Adds "alice" with score 1500 to a sorted set',
+      'Sets a key "alice" to value 1500',
+      'Appends 1500 to a hash field'
+    ],
+    correct: 1,
+    explanation: 'ZADD adds a member with a numeric score to a Sorted Set. Members are automatically ranked by score. ZRANGE leaderboard 0 -1 WITHSCORES REV would return alice at the top if 1500 is the highest score.'
+  },
+  {
+    q: "Parquet's main performance advantage for analytics is:",
+    options: [
+      'Encrypting data at rest',
+      'Sorting rows alphabetically',
+      'Only reading the specific columns a query needs',
+      'Storing each table in a separate file'
+    ],
+    correct: 2,
+    explanation: "Parquet's columnar layout allows column pruning — a query selecting 2 of 10 columns reads only 20% of the data. This dramatically reduces I/O, which is the main bottleneck in analytical workloads."
+  }
+];
+
+let quizAnswers = [];
+let quizCurrent = 0;
+
+function initQuiz() {
+  quizAnswers = [];
+  quizCurrent = 0;
+  document.getElementById('quizScore').classList.remove('visible');
+  document.getElementById('quizContainer').innerHTML = '';
+  document.getElementById('quizPBar').style.width = '0%';
+  renderQuestion(0);
+}
+
+function renderQuestion(idx) {
+  const q = questions[idx];
+  const container = document.getElementById('quizContainer');
+  container.innerHTML = `
+    <div class="question-card" id="qcard-${idx}">
+      <div class="q-num">Question ${idx + 1} of ${questions.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options" id="options-${idx}">
+        ${q.options.map((opt, oi) => `<div class="option" id="opt-${idx}-${oi}" onclick="answerQ(${idx},${oi})">${opt}</div>`).join('')}
+      </div>
+      <div class="explanation" id="expl-${idx}">${q.explanation}</div>
+    </div>
+    <div class="quiz-nav" id="qnav-${idx}" style="display:none">
+      ${idx < questions.length - 1
+        ? `<span></span><button class="big-btn primary" onclick="nextQuestion()">Next Question →</button>`
+        : `<span></span><button class="big-btn primary" onclick="showScore()">See Results →</button>`}
+    </div>`;
+}
+
+function answerQ(qIdx, optIdx) {
+  if (quizAnswers[qIdx] !== undefined) return;
+  const q = questions[qIdx];
+  quizAnswers[qIdx] = optIdx;
+
+  document.querySelectorAll('#options-' + qIdx + ' .option').forEach((o, i) => {
+    o.classList.add('locked');
+    if (i === q.correct) o.classList.add('correct');
+    else if (i === optIdx && optIdx !== q.correct) o.classList.add('wrong');
+  });
+
+  document.getElementById('expl-' + qIdx).classList.add('visible');
+  document.getElementById('qnav-' + qIdx).style.display = 'flex';
+  updateQuizProgress();
+}
+
+function nextQuestion() {
+  quizCurrent++;
+  renderQuestion(quizCurrent);
+  updateQuizProgress();
+}
+
+function showScore() {
+  const correct = questions.filter((q, i) => quizAnswers[i] === q.correct).length;
+  const total = questions.length;
+  document.getElementById('quizContainer').innerHTML = '';
+  const scoreEl = document.getElementById('quizScore');
+  document.getElementById('scoreNum').textContent = correct + '/' + total;
+  const msgs = [
+    'Keep reviewing the lessons — the concepts will click!',
+    'Good start! Re-read the sections you missed.',
+    'Nice work! Most concepts are solid.',
+    'Excellent! You have mastered Phase 04 — Databases.'
+  ];
+  document.getElementById('scoreMsg').textContent = msgs[correct] || msgs[msgs.length - 1];
+  localStorage.setItem('phase4done', '1');
+  scoreEl.classList.add('visible');
+  document.getElementById('quizPBar').style.width = '100%';
+  if (!document.getElementById('roadmapBtn4')) {
+    const btn = document.createElement('a');
+    btn.id = 'roadmapBtn4';
+    btn.href = 'index.html';
+    btn.className = 'big-btn primary';
+    btn.style.cssText = 'margin-top:20px;display:inline-block;text-decoration:none';
+    btn.textContent = '← Back to Roadmap';
+    scoreEl.appendChild(btn);
+  }
+}
+
+function restartQuiz() {
+  initQuiz();
+}
+
+function updateQuizProgress() {
+  const pct = (quizAnswers.length / questions.length) * 100;
+  document.getElementById('quizPBar').style.width = pct + '%';
+}
+
+function markPhase4Done() {
+  localStorage.setItem('phase4done', '1');
+  document.getElementById('phase4CompleteBox').style.display = 'block';
+  document.getElementById('markDoneBtn4').style.display = 'none';
+}
+
+/* ============================================================
+   BOTTOM INIT IIFE — restore saved lesson
+   ============================================================ */
+(function() {
+  const saved = parseInt(localStorage.getItem('phase4lesson') || '0', 10);
+  if (saved > 0 && saved <= 5) goLesson(saved);
+  if (localStorage.getItem('phase4done') === '1') {
+    const box = document.getElementById('phase4CompleteBox');
+    const btn = document.getElementById('markDoneBtn4');
+    if (box) box.style.display = 'block';
+    if (btn) btn.style.display = 'none';
+  }
+})();
+</script>
+</body>
+</html>

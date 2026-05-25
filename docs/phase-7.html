@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 07 — Cloud (AWS)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1f;--surface:#0e1628;--card:#121c30;--border:#1e2d47;--border-b:#2d4470;
+  --primary:#4f8ef7;--primary-dim:rgba(79,142,247,.12);--primary-glow:rgba(79,142,247,.3);
+  --secondary:#a78bfa;--accent:#34d399;--warning:#fbbf24;--danger:#f87171;--orange:#fb923c;
+  --text:#dde8f5;--muted:#7a8faa;--dim:#3d5070;
+  --font:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;--r:12px;--r-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh}
+
+nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:60px}
+.nav-left{display:flex;align-items:center;gap:12px}
+.nav-back{color:var(--muted);text-decoration:none;font-size:.85rem;transition:color .2s}
+.nav-back:hover{color:var(--primary)}
+.nav-sep{color:var(--dim)}
+.nav-title{font-weight:600;font-size:.9rem}
+.lesson-tabs{display:flex;gap:4px;overflow-x:auto;padding:8px 0}
+.lesson-tab{padding:6px 14px;border-radius:20px;font-size:.75rem;font-weight:600;border:none;cursor:pointer;transition:all .2s;white-space:nowrap;background:transparent;color:var(--muted)}
+.lesson-tab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.lesson-tab.active{background:var(--primary-dim);color:var(--primary);border:1px solid var(--primary-glow)}
+@media(max-width:640px){nav{flex-direction:column;height:auto;padding:10px 16px;gap:6px}.lesson-tabs{width:100%}}
+
+.phase-hero{padding:48px 32px 32px;max-width:1100px;margin:0 auto}
+.breadcrumb{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.phase-hero h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;letter-spacing:-.04em;margin-bottom:8px;background:linear-gradient(135deg,#fff 40%,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.phase-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+.phase-progress{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+.pp-step{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:.75rem;font-weight:600;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.pp-step.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.pp-step.done{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.pp-step:not(.active):not(.done){color:var(--dim)}
+.pp-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+.lesson-section{display:none;max-width:1100px;margin:0 auto;padding:32px 32px 80px}
+.lesson-section.active{display:block}
+.lesson-header{margin-bottom:32px}
+.lesson-num{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;font-family:var(--mono)}
+.lesson-title{font-size:1.6rem;font-weight:700;letter-spacing:-.03em;margin-bottom:8px}
+.lesson-desc{color:var(--muted);max-width:680px}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:800px){.split{grid-template-columns:1fr}}
+.split-wide{grid-template-columns:2fr 3fr}
+
+.prose h3{font-size:1rem;font-weight:600;margin:20px 0 8px;color:var(--text)}
+.prose h3:first-child{margin-top:0}
+.prose p{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+.prose ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.prose li{font-size:.9rem;color:var(--muted);padding-left:16px;position:relative}
+.prose li::before{content:'›';position:absolute;left:0;color:var(--primary)}
+.prose strong{color:var(--text);font-weight:600}
+.prose .callout{background:var(--primary-dim);border-left:3px solid var(--primary);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:12px 16px;margin:12px 0}
+.prose .callout p{color:var(--text);margin:0}
+.prose code{font-family:var(--mono);font-size:.82rem;background:rgba(79,142,247,.1);padding:2px 6px;border-radius:4px;color:var(--primary)}
+
+.concepts-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-top:20px}
+.concepts-box h4{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.concept-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.concept-item:last-child{border-bottom:none}
+.concept-key{font-family:var(--mono);font-size:.75rem;color:var(--primary);font-weight:500;white-space:nowrap;min-width:120px}
+.concept-val{font-size:.8rem;color:var(--muted)}
+
+.demo-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:relative}
+.demo-title{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.demo-title span{color:var(--accent);font-size:.7rem;font-weight:600}
+
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn{padding:8px 16px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.btn:hover{border-color:var(--border-b);color:var(--text)}
+.btn.active,.btn.primary{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.btn.accent{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.3);color:var(--accent)}
+.btn.secondary{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);color:var(--secondary)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+.lesson-nav{display:flex;justify-content:space-between;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)}
+.big-btn{padding:12px 24px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:var(--font)}
+.big-btn.primary{background:var(--primary);color:#fff}
+.big-btn.primary:hover{background:#6fa2ff;box-shadow:0 4px 20px rgba(79,142,247,.4)}
+.big-btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.big-btn.ghost:hover{color:var(--text);border-color:var(--border-b)}
+
+/* QUIZ */
+.quiz-wrap{max-width:720px;margin:0 auto}
+.quiz-progress-bar{height:4px;background:var(--border);border-radius:2px;margin-bottom:32px;overflow:hidden}
+.quiz-progress-fill{height:100%;background:linear-gradient(90deg,var(--secondary),var(--primary));border-radius:2px;transition:width .4s ease}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.q-text{font-size:1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+.options{display:flex;flex-direction:column;gap:10px}
+.option{padding:12px 16px;border-radius:var(--r-sm);border:1px solid var(--border);cursor:pointer;font-size:.88rem;transition:all .2s;background:var(--surface)}
+.option:hover:not(.locked){border-color:var(--border-b);background:rgba(255,255,255,.03)}
+.option.correct{border-color:var(--accent)!important;background:rgba(52,211,153,.1)!important;color:var(--accent)}
+.option.wrong{border-color:var(--danger)!important;background:rgba(248,113,113,.1)!important;color:var(--danger)}
+.option.locked{cursor:default}
+.explanation{margin-top:16px;padding:14px 16px;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.2);border-radius:var(--r-sm);font-size:.84rem;color:var(--text);line-height:1.6;display:none}
+.explanation.visible{display:block;animation:slideUp .3s ease}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px}
+.quiz-score{text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);display:none}
+.quiz-score.visible{display:block;animation:slideUp .4s ease}
+.score-num{font-size:4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.score-msg{font-size:1.1rem;color:var(--muted);margin-bottom:24px}
+
+/* Light mode */
+[data-theme="light"]{
+  --bg:#f4f6fc;--surface:#eaecf5;--card:#ffffff;--border:#cdd5e4;--border-b:#aab5cc;
+  --primary:#3a6fd8;--primary-dim:rgba(58,111,216,.1);--primary-glow:rgba(58,111,216,.25);
+  --secondary:#6d28d9;--accent:#059669;--warning:#d97706;--danger:#dc2626;--orange:#ea580c;
+  --text:#111827;--muted:#475569;--dim:#94a3b8;
+}
+[data-theme="light"] body{background:var(--bg)}
+[data-theme="light"] nav{background:rgba(244,246,252,.95)}
+[data-theme="light"] .phase-hero h1{background:linear-gradient(135deg,#111827 40%,#059669);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="light"] .callout{background:rgba(58,111,216,.07);border-color:rgba(58,111,216,.3)}
+[data-theme="light"] code{background:rgba(0,0,0,.07);color:#1e3a8a}
+.theme-toggle{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 13px;color:var(--muted);cursor:pointer;font-size:.8rem;font-family:var(--font);transition:all .2s;white-space:nowrap;flex-shrink:0}
+.theme-toggle:hover{color:var(--text);border-color:var(--primary)}
+@media(max-width:640px){.phase-hero,.lesson-section{padding-left:20px;padding-right:20px}}
+
+/* =============================================
+   PHASE-7 SPECIFIC STYLES
+   ============================================= */
+
+/* Hero gradient override for AWS orange */
+.phase-hero h1.aws-gradient{
+  background:linear-gradient(135deg,#fff 40%,#fb923c);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent
+}
+[data-theme="light"] .phase-hero h1.aws-gradient{
+  background:linear-gradient(135deg,#111827 40%,#ea580c);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent
+}
+
+/* EC2 Instance Picker Table */
+.instance-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.instance-table th{text-align:left;padding:8px 12px;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border)}
+.instance-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--muted);transition:background .15s}
+.instance-table tr:last-child td{border-bottom:none}
+.instance-table tbody tr{cursor:pointer}
+.instance-table tbody tr:hover td{background:rgba(79,142,247,.06)}
+.instance-table tbody tr.selected td{background:rgba(251,146,60,.1);color:var(--text)}
+.instance-table tbody tr.selected td:first-child{border-left:2px solid var(--orange)}
+.instance-type-tag{font-family:var(--mono);font-size:.78rem;color:var(--primary);font-weight:500}
+.sort-btn{background:none;border:none;color:var(--dim);cursor:pointer;font-size:.7rem;padding:0 4px;font-family:var(--font)}
+.sort-btn.active-sort{color:var(--primary)}
+.instance-desc-box{margin-top:16px;padding:12px 16px;background:rgba(251,146,60,.08);border:1px solid rgba(251,146,60,.2);border-radius:var(--r-sm);font-size:.84rem;color:var(--text);display:none;animation:slideUp .2s ease}
+.instance-desc-box.visible{display:block}
+.instance-desc-box .idb-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--orange);margin-bottom:4px}
+
+/* IAM Policy Builder */
+.policy-scenarios{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.scenario-btn{padding:10px 14px;border-radius:var(--r-sm);border:1px solid var(--border);background:rgba(255,255,255,.03);cursor:pointer;text-align:left;transition:all .2s;font-family:var(--font)}
+.scenario-btn:hover{border-color:var(--border-b)}
+.scenario-btn.active{border-color:var(--secondary);background:rgba(167,139,250,.08)}
+.scenario-btn .sb-title{font-size:.85rem;font-weight:600;color:var(--text)}
+.scenario-btn .sb-desc{font-size:.75rem;color:var(--muted);margin-top:2px}
+.policy-json{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;font-family:var(--mono);font-size:.78rem;line-height:1.7;overflow-x:auto;max-height:280px;overflow-y:auto}
+.pj-key{color:#a78bfa}
+.pj-str{color:#34d399}
+.pj-op{color:#fbbf24}
+.pj-bool{color:#fb923c}
+.pj-bracket{color:var(--muted)}
+.policy-summary{margin-top:12px;padding:12px 14px;background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:var(--r-sm);font-size:.83rem;color:var(--text)}
+.policy-summary .ps-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:4px}
+
+/* Lambda Flow Diagram */
+.lambda-flow{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:nowrap;padding:20px 0;overflow-x:auto}
+.lf-node{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
+.lf-box{width:90px;padding:10px 6px;border-radius:var(--r-sm);border:2px solid var(--border);text-align:center;font-size:.72rem;font-weight:600;color:var(--muted);transition:all .4s;background:var(--card)}
+.lf-box .lf-icon{font-size:1.4rem;margin-bottom:4px;display:block}
+.lf-box .lf-label{font-size:.7rem;font-weight:700;color:var(--text)}
+.lf-box .lf-sub{font-size:.65rem;color:var(--muted);margin-top:2px}
+.lf-box.active{border-color:var(--orange);background:rgba(251,146,60,.1);box-shadow:0 0 18px rgba(251,146,60,.25)}
+.lf-box.done{border-color:var(--accent);background:rgba(52,211,153,.08)}
+.lf-arrow{width:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative}
+.lf-arrow::before{content:'';display:block;height:2px;width:100%;background:var(--border);position:absolute}
+.lf-arrow::after{content:'▶';font-size:.7rem;color:var(--dim);position:relative;z-index:1}
+.lf-arrow.lit::before{background:var(--orange);animation:arrowPulse .6s ease forwards}
+.lf-arrow.lit::after{color:var(--orange)}
+@keyframes arrowPulse{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+.lf-code{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;font-family:var(--mono);font-size:.75rem;line-height:1.8;margin-top:16px;min-height:100px}
+.lf-code .lc-kw{color:#a78bfa}
+.lf-code .lc-fn{color:#4f8ef7}
+.lf-code .lc-str{color:#34d399}
+.lf-code .lc-cm{color:#3d5070}
+.lf-code .lc-num{color:#fbbf24}
+.lf-timing{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap}
+.lf-timing-card{flex:1;min-width:130px;padding:12px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--surface)}
+.lf-timing-card .ltc-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:4px}
+.lf-timing-card .ltc-val{font-size:1.3rem;font-weight:700;color:var(--warning)}
+.lf-timing-card.warm .ltc-val{color:var(--accent)}
+.lf-step-log{margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-family:var(--mono);font-size:.75rem;min-height:56px;color:var(--muted)}
+.lf-step-log .log-line{color:#4ade80;animation:slideUp .2s ease}
+
+/* Partition Pruning Calculator */
+.partition-bar-wrap{margin-top:12px}
+.partition-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.partition-row-label{font-size:.78rem;color:var(--muted);min-width:160px;flex-shrink:0}
+.partition-bar-outer{flex:1;height:28px;background:var(--surface);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.partition-bar-inner{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;padding-left:8px;font-size:.72rem;font-weight:700;color:#fff;white-space:nowrap}
+.partition-cost{font-size:.78rem;font-weight:600;min-width:54px;text-align:right;flex-shrink:0}
+.partition-active .partition-bar-inner{background:linear-gradient(90deg,var(--orange),#fb7c2a)}
+.partition-compare .partition-bar-inner{background:linear-gradient(90deg,var(--warning),#f59e0b)}
+.partition-best .partition-bar-inner{background:linear-gradient(90deg,var(--accent),#10b981)}
+.partition-savings-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:700;background:rgba(52,211,153,.12);color:var(--accent);border:1px solid rgba(52,211,153,.25);margin-left:8px}
+
+/* Architecture Diagram */
+.arch-diagram{position:relative;width:100%;min-height:340px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;overflow:hidden}
+.arch-label-top{text-align:center;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
+.arch-row{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:8px}
+.arch-node{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.arch-box{width:100px;padding:10px 8px;border-radius:var(--r-sm);border:1px solid var(--border);background:var(--card);text-align:center;transition:all .2s;font-size:.72rem}
+.arch-box:hover{border-color:var(--primary-glow);box-shadow:0 0 12px rgba(79,142,247,.2)}
+.arch-box .ab-icon{font-size:1.3rem;display:block;margin-bottom:4px}
+.arch-box .ab-name{font-size:.72rem;font-weight:600;color:var(--text)}
+.arch-box .ab-type{font-size:.62rem;color:var(--dim)}
+.arch-connector-v{width:2px;height:24px;background:var(--border);margin:0 auto}
+.arch-connector-h{height:2px;width:32px;background:var(--border);flex-shrink:0}
+.arch-az-group{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border:1px dashed var(--border);border-radius:var(--r);min-width:130px}
+.arch-az-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}
+.arch-az-wrap{display:flex;gap:16px;justify-content:center}
+.arch-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;width:200px;font-size:.75rem;color:var(--text);z-index:100;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none}
+.arch-tooltip.visible{display:block;animation:slideUp .15s ease}
+.arch-tooltip .at-name{font-weight:700;color:var(--primary);margin-bottom:4px}
+.arch-tooltip .at-cost{color:var(--warning);margin-top:4px;font-size:.72rem}
+
+/* Light-mode overrides for phase-7 specific */
+[data-theme="light"] .policy-json{background:#f8fafd;border-color:var(--border)}
+[data-theme="light"] .lf-code{background:#f8fafd;border-color:var(--border)}
+[data-theme="light"] .arch-tooltip{background:#fff}
+[data-theme="light"] .instance-table tbody tr.selected td{color:var(--text)}
+</style>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-back">← Roadmap</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Phase 07 — Cloud (AWS)</span>
+  </div>
+  <div class="lesson-tabs" id="lessonTabs">
+    <button class="lesson-tab" onclick="goLesson(0)">1. EC2 &amp; S3</button>
+    <button class="lesson-tab" onclick="goLesson(1)">2. IAM</button>
+    <button class="lesson-tab" onclick="goLesson(2)">3. Lambda</button>
+    <button class="lesson-tab" onclick="goLesson(3)">4. Data Lake</button>
+    <button class="lesson-tab" onclick="goLesson(4)">5. Architecture</button>
+    <button class="lesson-tab" onclick="goLesson(5)">&#10022; Quiz</button>
+  </div>
+  <button class="theme-toggle" id="themeToggle">☀ Light</button>
+</nav>
+
+<!-- HERO -->
+<div class="phase-hero">
+  <div class="breadcrumb"><a href="index.html">Roadmap</a> › Phase 07</div>
+  <h1 class="aws-gradient">Phase 07 — Cloud (AWS)</h1>
+  <p>EC2, S3, IAM, Lambda, serverless data lakes, and cloud architecture patterns on Amazon Web Services.</p>
+  <div class="phase-progress" id="phaseProgress">
+    <div class="pp-step" onclick="goLesson(0)"><div class="pp-dot"></div>EC2 &amp; S3</div>
+    <div class="pp-step" onclick="goLesson(1)"><div class="pp-dot"></div>IAM</div>
+    <div class="pp-step" onclick="goLesson(2)"><div class="pp-dot"></div>Lambda</div>
+    <div class="pp-step" onclick="goLesson(3)"><div class="pp-dot"></div>Data Lake</div>
+    <div class="pp-step" onclick="goLesson(4)"><div class="pp-dot"></div>Architecture</div>
+    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>Quiz</div>
+  </div>
+</div>
+
+<!-- ===========================
+     LESSON 0 — EC2 & S3
+     =========================== -->
+<section class="lesson-section" id="lesson-0">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 01 / 05</div>
+    <div class="lesson-title">Core Services: EC2 &amp; S3</div>
+    <div class="lesson-desc">Virtual machines in the cloud and durable object storage — the foundation of most AWS architectures.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>EC2 — Elastic Compute Cloud</h3>
+      <p>EC2 gives you virtual machines (<strong>instances</strong>) in the cloud. You choose the instance type based on your workload's CPU, RAM, and network needs.</p>
+      <ul>
+        <li><strong>t3 (burstable)</strong> — cheap, earns CPU credits at low use, ideal for dev/staging</li>
+        <li><strong>m6i (general purpose)</strong> — balanced CPU/RAM for most web workloads</li>
+        <li><strong>c6i (compute-optimised)</strong> — high CPU:RAM ratio, for batch/encoding</li>
+        <li><strong>r6i (memory-optimised)</strong> — high RAM, for in-memory databases</li>
+        <li><strong>p3 (GPU)</strong> — NVIDIA V100 GPUs for ML training</li>
+      </ul>
+      <h3>EC2 Pricing Models</h3>
+      <ul>
+        <li><strong>On-Demand</strong> — pay by the hour/second, no commitment, most expensive</li>
+        <li><strong>Reserved (1–3yr)</strong> — commit upfront, save 40–60%</li>
+        <li><strong>Spot</strong> — spare AWS capacity, up to 90% off, <em>can be interrupted</em></li>
+      </ul>
+      <h3>S3 — Simple Storage Service</h3>
+      <p>Object storage with <strong>11 nines</strong> (99.999999999%) durability. Objects are key-value pairs where the key is the full path.</p>
+      <ul>
+        <li><strong>Lifecycle policies</strong> — auto-archive to Glacier after N days</li>
+        <li><strong>Presigned URLs</strong> — time-limited access to private objects</li>
+        <li><strong>Storage classes</strong> — Standard, Intelligent-Tiering, Glacier, Glacier Deep Archive</li>
+      </ul>
+      <div class="callout"><p><strong>Tip:</strong> Never use S3 as a database — it has no transactions. Use it for blobs, logs, and data lake raw files.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">EC2 Instance Type Picker <span>Interactive</span></div>
+        <div class="btn-group">
+          <button class="btn" onclick="sortInstances('name')">Sort by Type</button>
+          <button class="btn" id="sortPriceBtn" onclick="sortInstances('price')">Sort by Price ↕</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="instance-table" id="instanceTable">
+            <thead>
+              <tr>
+                <th>Instance</th>
+                <th>vCPU</th>
+                <th>RAM</th>
+                <th>Use Case</th>
+                <th>$/hr</th>
+              </tr>
+            </thead>
+            <tbody id="instanceTbody"></tbody>
+          </table>
+        </div>
+        <div class="instance-desc-box" id="instanceDesc">
+          <div class="idb-label">Ideal For</div>
+          <div id="instanceDescText"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <div></div>
+    <button class="big-btn primary" onclick="goLesson(1)">Next: IAM &amp; Security →</button>
+  </div>
+</section>
+
+<!-- ===========================
+     LESSON 1 — IAM
+     =========================== -->
+<section class="lesson-section" id="lesson-1">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 02 / 05</div>
+    <div class="lesson-title">IAM &amp; Security</div>
+    <div class="lesson-desc">Identity and Access Management — controlling who can do what, the right way.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>IAM Fundamentals</h3>
+      <p>IAM controls authentication and authorisation for every AWS API call. Everything revolves around <strong>policies</strong> — JSON documents granting or denying actions.</p>
+      <ul>
+        <li><strong>Users</strong> — humans with long-lived credentials</li>
+        <li><strong>Groups</strong> — collections of users sharing policies</li>
+        <li><strong>Roles</strong> — assumed by services (EC2, Lambda) or federated users</li>
+        <li><strong>Policies</strong> — Effect + Action + Resource + optional Condition</li>
+      </ul>
+      <h3>Principle of Least Privilege</h3>
+      <p>Grant only the minimum permissions needed. Start with <code>Deny *</code> and allow explicitly rather than allowing <code>*</code> and hoping for the best.</p>
+      <h3>Roles vs Users</h3>
+      <ul>
+        <li><strong>IAM Role</strong> — no long-lived keys; EC2 → S3 access via instance profile</li>
+        <li><strong>IAM User</strong> — for humans; rotate access keys regularly</li>
+        <li><strong>STS</strong> — Security Token Service issues temporary credentials (15min–36hr)</li>
+      </ul>
+      <div class="callout"><p><strong>Never</strong> hardcode AWS credentials in source code. Use IAM roles for services and environment variables / secrets managers for local dev.</p></div>
+      <h3>Service Control Policies</h3>
+      <p>SCPs apply at the AWS Organisation level — they act as guardrails that can't be overridden even by account admins.</p>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">IAM Policy Builder <span>Interactive</span></div>
+        <div class="policy-scenarios" id="policyScenarios">
+          <button class="scenario-btn active" onclick="loadScenario(0,this)">
+            <div class="sb-title">Read-only S3</div>
+            <div class="sb-desc">A reporting service that only reads from a specific bucket</div>
+          </button>
+          <button class="scenario-btn" onclick="loadScenario(1,this)">
+            <div class="sb-title">Full EC2 in us-east-1 only</div>
+            <div class="sb-desc">Dev team can manage EC2 but only in one region</div>
+          </button>
+          <button class="scenario-btn" onclick="loadScenario(2,this)">
+            <div class="sb-title">Lambda writes to DynamoDB</div>
+            <div class="sb-desc">Lambda function can put/get items in a specific table</div>
+          </button>
+        </div>
+        <div class="policy-json" id="policyJson"></div>
+        <div class="policy-summary">
+          <div class="ps-label">Plain English</div>
+          <div id="policySummary"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(0)">← EC2 &amp; S3</button>
+    <button class="big-btn primary" onclick="goLesson(2)">Next: Lambda →</button>
+  </div>
+</section>
+
+<!-- ===========================
+     LESSON 2 — LAMBDA
+     =========================== -->
+<section class="lesson-section" id="lesson-2">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 03 / 05</div>
+    <div class="lesson-title">Lambda &amp; Serverless</div>
+    <div class="lesson-desc">Run code without managing servers. Pay only for execution time.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>What is Lambda?</h3>
+      <p>AWS Lambda executes your function code in response to events. AWS manages all the infrastructure — you only write the handler.</p>
+      <ul>
+        <li><strong>Event sources:</strong> API Gateway, S3 events, SQS, SNS, EventBridge cron</li>
+        <li><strong>Timeout:</strong> max <strong>15 minutes</strong> per invocation</li>
+        <li><strong>Memory:</strong> 128MB – 10GB (CPU scales proportionally)</li>
+        <li><strong>Pricing:</strong> $0.20 per 1M requests + $0.0000166667 per GB-second</li>
+      </ul>
+      <h3>Cold Start vs Warm Start</h3>
+      <p>A <strong>cold start</strong> occurs when Lambda must initialise a new execution environment (~100ms–1s). Subsequent invocations reuse the warm container (milliseconds).</p>
+      <ul>
+        <li>Keep init code outside the handler to minimise cold start work</li>
+        <li>Use Provisioned Concurrency for latency-critical APIs</li>
+      </ul>
+      <h3>ECS Fargate</h3>
+      <p>For containerised workloads that exceed Lambda's 15-minute timeout, use <strong>ECS Fargate</strong> — serverless containers, no EC2 to manage.</p>
+      <div class="callout"><p><strong>Common pattern:</strong> S3 file upload → Lambda triggered → transforms data → writes to DynamoDB or another S3 key. Extremely cost-effective for ETL.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Lambda Execution Flow <span>Interactive</span></div>
+        <div class="lambda-flow" id="lambdaFlow">
+          <div class="lf-node">
+            <div class="lf-box" id="lf0">
+              <span class="lf-icon">🪣</span>
+              <div class="lf-label">S3</div>
+              <div class="lf-sub">file upload</div>
+            </div>
+          </div>
+          <div class="lf-arrow" id="lfa0"></div>
+          <div class="lf-node">
+            <div class="lf-box" id="lf1">
+              <span class="lf-icon">⚡</span>
+              <div class="lf-label">Lambda</div>
+              <div class="lf-sub">trigger</div>
+            </div>
+          </div>
+          <div class="lf-arrow" id="lfa1"></div>
+          <div class="lf-node">
+            <div class="lf-box" id="lf2">
+              <span class="lf-icon">🐍</span>
+              <div class="lf-label">Handler</div>
+              <div class="lf-sub">runs code</div>
+            </div>
+          </div>
+          <div class="lf-arrow" id="lfa2"></div>
+          <div class="lf-node">
+            <div class="lf-box" id="lf3">
+              <span class="lf-icon">🗄</span>
+              <div class="lf-label">DynamoDB</div>
+              <div class="lf-sub">write result</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lf-code" id="lfCode">
+<span class="lc-cm"># handler.py — waiting for trigger...</span>
+        </div>
+
+        <div class="lf-step-log" id="lfLog">Press Play to start the flow.</div>
+
+        <div class="lf-timing">
+          <div class="lf-timing-card">
+            <div class="ltc-label">Cold Start</div>
+            <div class="ltc-val">~650 ms</div>
+          </div>
+          <div class="lf-timing-card warm">
+            <div class="ltc-label">Warm Start</div>
+            <div class="ltc-val">~12 ms</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px">
+          <button class="btn primary" id="lfPlayBtn" onclick="playLambdaFlow()">▶ Play</button>
+          <button class="btn" onclick="resetLambdaFlow()" style="margin-left:8px">↺ Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(1)">← IAM</button>
+    <button class="big-btn primary" onclick="goLesson(3)">Next: Data Lake →</button>
+  </div>
+</section>
+
+<!-- ===========================
+     LESSON 3 — DATA LAKE
+     =========================== -->
+<section class="lesson-section" id="lesson-3">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 04 / 05</div>
+    <div class="lesson-title">S3 + Athena Data Lake</div>
+    <div class="lesson-desc">Query petabytes of data on S3 with serverless SQL — and slash costs with smart partitioning.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>The Data Lake Pattern</h3>
+      <p>Raw data lands in S3. Athena queries it with SQL (powered by Presto under the hood) — no ETL pipeline required to start analysing.</p>
+      <ul>
+        <li><strong>Glue Data Catalog</strong> — stores table schemas (column names, types, partition keys)</li>
+        <li><strong>Glue ETL</strong> — Spark-based jobs for heavy transformations</li>
+        <li><strong>Athena pricing:</strong> $5 per TB scanned</li>
+      </ul>
+      <h3>Partitioning</h3>
+      <p>Store data in a hierarchical key structure:<br>
+      <code>s3://bucket/events/year=2024/month=01/day=15/</code></p>
+      <p>Athena reads only partitions that match the <code>WHERE</code> clause — dramatically cutting bytes scanned and cost.</p>
+      <h3>Columnar Formats</h3>
+      <ul>
+        <li><strong>Parquet / ORC</strong> — columnar, compressed; Athena only reads needed columns</li>
+        <li><strong>Combined effect:</strong> partitioning + Parquet can cut costs 100× vs raw JSON/CSV</li>
+      </ul>
+      <div class="callout"><p><strong>Rule of thumb:</strong> always partition by the most common filter key (usually date), and convert raw JSON to Parquet in your first ETL step.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">Partition Pruning Calculator <span>Interactive</span></div>
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:14px">Dataset: <strong style="color:var(--text)">10 TB</strong>, 365 days. Query: <code>WHERE date = '2024-01-15'</code></div>
+
+        <div class="partition-bar-wrap" id="partitionBars">
+          <div class="partition-row partition-active">
+            <div class="partition-row-label">No partitioning</div>
+            <div class="partition-bar-outer"><div class="partition-bar-inner" id="bar0" style="width:0%">10 TB</div></div>
+            <div class="partition-cost" id="cost0" style="color:var(--danger)">$50.00</div>
+          </div>
+          <div class="partition-row partition-compare">
+            <div class="partition-row-label">Daily partitions</div>
+            <div class="partition-bar-outer"><div class="partition-bar-inner" id="bar1" style="width:0%">~27 GB</div></div>
+            <div class="partition-cost" id="cost1" style="color:var(--warning)">$0.14</div>
+          </div>
+          <div class="partition-row partition-best">
+            <div class="partition-row-label">Parquet + partitions</div>
+            <div class="partition-bar-outer"><div class="partition-bar-inner" id="bar2" style="width:0%">~2 GB</div></div>
+            <div class="partition-cost" id="cost2" style="color:var(--accent)">$0.01</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;padding:12px 14px;background:var(--surface);border-radius:var(--r-sm);border:1px solid var(--border);font-size:.8rem;color:var(--muted)">
+          <span style="color:var(--accent);font-weight:700">Savings:</span>
+          No partitioning → Parquet+partitions =
+          <span style="color:var(--accent);font-weight:700">5000× cost reduction</span>
+          <span class="partition-savings-badge">$50 → $0.01</span>
+        </div>
+
+        <div class="btn-group" style="margin-top:16px;margin-bottom:0">
+          <button class="btn primary" onclick="animatePartitionBars()">▶ Animate</button>
+          <button class="btn" onclick="resetPartitionBars()">↺ Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(2)">← Lambda</button>
+    <button class="big-btn primary" onclick="goLesson(4)">Next: Architecture →</button>
+  </div>
+</section>
+
+<!-- ===========================
+     LESSON 4 — ARCHITECTURE
+     =========================== -->
+<section class="lesson-section" id="lesson-4">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 05 / 05</div>
+    <div class="lesson-title">Cost &amp; Architecture Patterns</div>
+    <div class="lesson-desc">Well-Architected Framework, VPCs, Auto Scaling, and the hidden cost killers.</div>
+  </div>
+
+  <div class="split split-wide">
+    <div class="prose">
+      <h3>Well-Architected Framework</h3>
+      <ul>
+        <li><strong>Reliability</strong> — Multi-AZ, Auto Scaling, health checks</li>
+        <li><strong>Security</strong> — least privilege, encryption at rest &amp; in transit</li>
+        <li><strong>Cost Optimisation</strong> — right-sizing, Spot, Reserved</li>
+        <li><strong>Performance</strong> — right instance type, caching layers</li>
+        <li><strong>Sustainability</strong> — use managed services, avoid waste</li>
+      </ul>
+      <h3>Cost Killers to Watch</h3>
+      <ul>
+        <li><strong>NAT Gateway</strong> — $45/mo + $0.045/GB data transfer</li>
+        <li><strong>Unattached EBS volumes</strong> — still billed after instance termination</li>
+        <li><strong>Over-provisioned RDS</strong> — use Aurora Serverless for variable workloads</li>
+        <li><strong>Data egress</strong> — outbound internet transfer is charged; keep services in same region/AZ</li>
+      </ul>
+      <h3>Networking Basics</h3>
+      <ul>
+        <li><strong>VPC</strong> — private virtual network; spans AZs</li>
+        <li><strong>Security Groups</strong> — stateful firewall at the instance level</li>
+        <li><strong>NACLs</strong> — stateless firewall at the subnet level</li>
+        <li><strong>ALB</strong> — Application Load Balancer; terminates TLS, routes by path/host</li>
+      </ul>
+      <div class="callout"><p><strong>Auto Scaling:</strong> scale-out on high CPU, scale-in on low — but set a cooldown period to avoid thrashing.</p></div>
+    </div>
+
+    <div>
+      <div class="demo-panel">
+        <div class="demo-title">3-Tier Architecture Diagram <span>Click components</span></div>
+        <div class="arch-diagram" id="archDiagram">
+          <div class="arch-label-top">AWS Region — us-east-1</div>
+
+          <!-- Internet / Users -->
+          <div class="arch-row">
+            <div class="arch-node" onclick="showArchTooltip('users',this)">
+              <div class="arch-box">
+                <span class="ab-icon">🌐</span>
+                <div class="ab-name">Internet</div>
+                <div class="ab-type">Users</div>
+              </div>
+            </div>
+          </div>
+          <div class="arch-connector-v" style="margin:0 auto"></div>
+
+          <!-- ALB -->
+          <div class="arch-row">
+            <div class="arch-node" onclick="showArchTooltip('alb',this)">
+              <div class="arch-box">
+                <span class="ab-icon">⚖️</span>
+                <div class="ab-name">ALB</div>
+                <div class="ab-type">Load Balancer</div>
+              </div>
+            </div>
+          </div>
+          <div class="arch-connector-v" style="margin:0 auto"></div>
+
+          <!-- Auto Scaling Group — two AZs -->
+          <div class="arch-row" style="gap:16px">
+            <div class="arch-az-group">
+              <div class="arch-az-label">AZ — us-east-1a</div>
+              <div class="arch-node" onclick="showArchTooltip('ec2',this)">
+                <div class="arch-box">
+                  <span class="ab-icon">🖥</span>
+                  <div class="ab-name">EC2</div>
+                  <div class="ab-type">App Server</div>
+                </div>
+              </div>
+              <div class="arch-connector-v"></div>
+              <div class="arch-node" onclick="showArchTooltip('rds-primary',this)">
+                <div class="arch-box">
+                  <span class="ab-icon">🗃</span>
+                  <div class="ab-name">RDS Primary</div>
+                  <div class="ab-type">PostgreSQL</div>
+                </div>
+              </div>
+            </div>
+            <div class="arch-az-group">
+              <div class="arch-az-label">AZ — us-east-1b</div>
+              <div class="arch-node" onclick="showArchTooltip('ec2',this)">
+                <div class="arch-box">
+                  <span class="ab-icon">🖥</span>
+                  <div class="ab-name">EC2</div>
+                  <div class="ab-type">App Server</div>
+                </div>
+              </div>
+              <div class="arch-connector-v"></div>
+              <div class="arch-node" onclick="showArchTooltip('rds-standby',this)">
+                <div class="arch-box">
+                  <span class="ab-icon">🗃</span>
+                  <div class="ab-name">RDS Standby</div>
+                  <div class="ab-type">Multi-AZ</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="archInfoBox" style="margin-top:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:.82rem;color:var(--muted);display:none;animation:slideUp .2s ease">
+          <div id="archInfoName" style="font-weight:700;color:var(--primary);margin-bottom:4px"></div>
+          <div id="archInfoDesc"></div>
+          <div id="archInfoCost" style="color:var(--warning);font-size:.75rem;margin-top:6px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(3)">← Data Lake</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
+  </div>
+</section>
+
+<!-- ===========================
+     QUIZ
+     =========================== -->
+<section class="lesson-section" id="lesson-5">
+  <div class="lesson-header">
+    <div class="lesson-num">Quiz</div>
+    <div class="lesson-title">Phase 07 — Knowledge Check</div>
+    <div class="lesson-desc">4 questions covering EC2, IAM, Athena, and Lambda.</div>
+  </div>
+
+  <div class="quiz-wrap">
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizProgressFill" style="width:0%"></div></div>
+    <div id="quizCards"></div>
+    <div class="quiz-score" id="quizScore">
+      <div class="score-num" id="scoreNum"></div>
+      <div class="score-msg" id="scoreMsg"></div>
+      <button class="big-btn primary" onclick="retakeQuiz()" style="margin-right:8px">Retake Quiz</button>
+      <button class="big-btn ghost" onclick="goLesson(0)">Back to Lessons</button>
+      <div id="quizDoneExtra" style="margin-top:24px"></div>
+    </div>
+  </div>
+
+  <div style="max-width:720px;margin:32px auto 0;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <button class="big-btn ghost" onclick="goLesson(4)">← Architecture</button>
+    <button class="big-btn accent" onclick="markPhase7Done()" style="background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:var(--accent);padding:12px 24px;border-radius:var(--r-sm);font-size:.9rem;font-weight:600;cursor:pointer;font-family:var(--font)">✓ Mark Phase Complete</button>
+  </div>
+</section>
+
+<!-- SCRIPTS -->
+<script>
+/* ===================== THEME ===================== */
+const themeBtn = document.getElementById('themeToggle');
+function applyTheme(t){
+  if(t==='light'){document.documentElement.setAttribute('data-theme','light');themeBtn.textContent='🌙 Dark';}
+  else{document.documentElement.removeAttribute('data-theme');themeBtn.textContent='☀ Light';}
+  localStorage.setItem('theme',t);
+}
+themeBtn.addEventListener('click',()=>{
+  applyTheme(document.documentElement.getAttribute('data-theme')==='light'?'dark':'light');
+});
+(function(){const t=localStorage.getItem('theme');if(t)applyTheme(t);else applyTheme('dark');})();
+
+/* ===================== NAV ===================== */
+function goLesson(n){
+  localStorage.setItem('phase7lesson', n);
+  document.querySelectorAll('.lesson-section').forEach((s,i)=>{s.classList.toggle('active',i===n)});
+  document.querySelectorAll('.lesson-tab').forEach((t,i)=>{t.classList.toggle('active',i===n)});
+  document.querySelectorAll('.pp-step').forEach((s,i)=>{s.classList.toggle('active',i===n)});
+  if(n===3)setTimeout(animatePartitionBars,400);
+}
+
+/* ===================== INSTANCE PICKER ===================== */
+const instances=[
+  {name:'t3.small',   vcpu:2,  ram:'2 GB',  use:'Dev / low-traffic web', price:.023},
+  {name:'t3.large',   vcpu:2,  ram:'8 GB',  use:'Staging / small API',   price:.083},
+  {name:'m6i.xlarge', vcpu:4,  ram:'16 GB', use:'General web server',    price:.192},
+  {name:'c6i.2xlarge',vcpu:8,  ram:'16 GB', use:'Batch / video encoding',price:.340},
+  {name:'r6i.4xlarge',vcpu:16, ram:'128 GB',use:'In-memory DB / cache',  price:.100},
+  {name:'p3.2xlarge', vcpu:8,  ram:'61 GB', use:'ML training (GPU)',      price:3.06},
+];
+const idealFor={
+  't3.small':   'Web servers, CI runners, dev notebooks — great burstable option for low-cost experiments.',
+  't3.large':   'Small APIs, staging environments, data science notebooks with moderate memory needs.',
+  'm6i.xlarge': 'General-purpose web applications, microservices, small databases.',
+  'c6i.2xlarge':'CPU-bound batch jobs, video transcoding, scientific simulations.',
+  'r6i.4xlarge':'Redis/Memcached, in-memory analytics, large JVM heaps.',
+  'p3.2xlarge': 'Deep learning training with NVIDIA V100 GPU, computer vision workloads.',
+};
+let sortKey='name',sortAsc=true,selectedInstance=null;
+function renderInstances(){
+  const sorted=[...instances].sort((a,b)=>{
+    if(sortKey==='price')return sortAsc?a.price-b.price:b.price-a.price;
+    return sortAsc?a.name.localeCompare(b.name):b.name.localeCompare(a.name);
+  });
+  const tb=document.getElementById('instanceTbody');
+  tb.innerHTML='';
+  sorted.forEach(inst=>{
+    const tr=document.createElement('tr');
+    if(selectedInstance===inst.name)tr.classList.add('selected');
+    tr.innerHTML=`<td><span class="instance-type-tag">${inst.name}</span></td><td>${inst.vcpu}</td><td>${inst.ram}</td><td style="color:var(--muted)">${inst.use}</td><td>$${inst.price.toFixed(3)}</td>`;
+    tr.addEventListener('click',()=>selectInstance(inst.name));
+    tb.appendChild(tr);
+  });
+}
+function selectInstance(name){
+  selectedInstance=name;
+  renderInstances();
+  const box=document.getElementById('instanceDesc');
+  document.getElementById('instanceDescText').textContent=idealFor[name];
+  box.classList.add('visible');
+}
+function sortInstances(key){
+  if(sortKey===key)sortAsc=!sortAsc;
+  else{sortKey=key;sortAsc=true;}
+  document.getElementById('sortPriceBtn').textContent=key==='price'?(sortAsc?'Sort by Price ↑':'Sort by Price ↓'):'Sort by Price ↕';
+  renderInstances();
+}
+renderInstances();
+
+/* ===================== IAM POLICIES ===================== */
+const scenarios=[
+  {
+    title:'Read-only S3',
+    json:`{
+  <span class="pj-key">"Version"</span>: <span class="pj-str">"2012-10-17"</span>,
+  <span class="pj-key">"Statement"</span>: <span class="pj-bracket">[</span>
+    <span class="pj-bracket">{</span>
+      <span class="pj-key">"Effect"</span>: <span class="pj-str">"Allow"</span>,
+      <span class="pj-key">"Action"</span>: <span class="pj-bracket">[</span>
+        <span class="pj-str">"s3:GetObject"</span>,
+        <span class="pj-str">"s3:ListBucket"</span>
+      <span class="pj-bracket">]</span>,
+      <span class="pj-key">"Resource"</span>: <span class="pj-bracket">[</span>
+        <span class="pj-str">"arn:aws:s3:::my-reports-bucket"</span>,
+        <span class="pj-str">"arn:aws:s3:::my-reports-bucket/*"</span>
+      <span class="pj-bracket">]</span>
+    <span class="pj-bracket">}</span>
+  <span class="pj-bracket">]</span>
+}`,
+    summary:'Allows <strong>reading objects and listing</strong> the bucket "my-reports-bucket" only. Cannot write, delete, or access any other bucket.'
+  },
+  {
+    title:'Full EC2 in us-east-1 only',
+    json:`{
+  <span class="pj-key">"Version"</span>: <span class="pj-str">"2012-10-17"</span>,
+  <span class="pj-key">"Statement"</span>: <span class="pj-bracket">[</span>
+    <span class="pj-bracket">{</span>
+      <span class="pj-key">"Effect"</span>: <span class="pj-str">"Allow"</span>,
+      <span class="pj-key">"Action"</span>: <span class="pj-str">"ec2:*"</span>,
+      <span class="pj-key">"Resource"</span>: <span class="pj-str">"*"</span>,
+      <span class="pj-key">"Condition"</span>: <span class="pj-bracket">{</span>
+        <span class="pj-key">"StringEquals"</span>: <span class="pj-bracket">{</span>
+          <span class="pj-key">"aws:RequestedRegion"</span>: <span class="pj-str">"us-east-1"</span>
+        <span class="pj-bracket">}</span>
+      <span class="pj-bracket">}</span>
+    <span class="pj-bracket">}</span>
+  <span class="pj-bracket">]</span>
+}`,
+    summary:'Grants <strong>all EC2 actions</strong> but only when the API call targets <strong>us-east-1</strong>. Any request to another region is denied, acting as a regional guardrail.'
+  },
+  {
+    title:'Lambda writes to DynamoDB',
+    json:`{
+  <span class="pj-key">"Version"</span>: <span class="pj-str">"2012-10-17"</span>,
+  <span class="pj-key">"Statement"</span>: <span class="pj-bracket">[</span>
+    <span class="pj-bracket">{</span>
+      <span class="pj-key">"Effect"</span>: <span class="pj-str">"Allow"</span>,
+      <span class="pj-key">"Action"</span>: <span class="pj-bracket">[</span>
+        <span class="pj-str">"dynamodb:PutItem"</span>,
+        <span class="pj-str">"dynamodb:GetItem"</span>,
+        <span class="pj-str">"dynamodb:UpdateItem"</span>
+      <span class="pj-bracket">]</span>,
+      <span class="pj-key">"Resource"</span>: <span class="pj-str">"arn:aws:dynamodb:us-east-1:123456789012:table/events"</span>
+    <span class="pj-bracket">}</span>
+  <span class="pj-bracket">]</span>
+}`,
+    summary:'Allows the Lambda function (via its execution role) to <strong>put, get, and update items</strong> in the "events" DynamoDB table only. No delete, no scan, no other tables.'
+  }
+];
+function loadScenario(idx, btn){
+  document.querySelectorAll('.scenario-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('policyJson').innerHTML=scenarios[idx].json;
+  document.getElementById('policySummary').innerHTML=scenarios[idx].summary;
+}
+loadScenario(0,document.querySelector('.scenario-btn'));
+
+/* ===================== LAMBDA FLOW ===================== */
+const lfSteps=[
+  {
+    node:0, arrow:-1,
+    code:`<span class="lc-cm"># S3 PUT event detected</span>\n<span class="lc-cm"># bucket: raw-data, key: uploads/file.csv</span>`,
+    log:'[S3] PutObject event fired for uploads/file.csv'
+  },
+  {
+    node:1, arrow:0,
+    code:`<span class="lc-cm"># Lambda runtime initialising...</span>\n<span class="lc-cm"># Cold start: loading boto3, imports</span>`,
+    log:'[Lambda] Container initialising (cold start ~650ms)'
+  },
+  {
+    node:2, arrow:1,
+    code:`<span class="lc-kw">import</span> boto3, json\n\n<span class="lc-kw">def</span> <span class="lc-fn">handler</span>(event, context):\n  key = event[<span class="lc-str">'Records'</span>][<span class="lc-num">0</span>][<span class="lc-str">'s3'</span>][<span class="lc-str">'object'</span>][<span class="lc-str">'key'</span>]\n  <span class="lc-cm"># download, transform, validate...</span>\n  result = transform(key)\n  <span class="lc-kw">return</span> result`,
+    log:'[Handler] Processing file: uploads/file.csv...'
+  },
+  {
+    node:3, arrow:2,
+    code:`  <span class="lc-cm"># Write result to DynamoDB</span>\n  ddb = boto3.resource(<span class="lc-str">'dynamodb'</span>)\n  table = ddb.Table(<span class="lc-str">'events'</span>)\n  table.put_item(Item={\n    <span class="lc-str">'id'</span>: result[<span class="lc-str">'id'</span>],\n    <span class="lc-str">'status'</span>: <span class="lc-str">'processed'</span>\n  })\n  <span class="lc-cm"># Done! Billed for ~220ms execution.</span>`,
+    log:'[DynamoDB] Item written — id=abc123, status=processed ✓'
+  }
+];
+let lfStep=0, lfTimer=null, lfRunning=false;
+function playLambdaFlow(){
+  if(lfRunning)return;
+  lfRunning=true;
+  document.getElementById('lfPlayBtn').disabled=true;
+  stepLambda();
+}
+function stepLambda(){
+  if(lfStep>=lfSteps.length){
+    lfRunning=false;
+    document.getElementById('lfPlayBtn').disabled=false;
+    document.getElementById('lfLog').innerHTML='<span class="log-line">✓ Flow complete — function billed for ~220ms execution.</span>';
+    return;
+  }
+  const s=lfSteps[lfStep];
+  // update nodes
+  for(let i=0;i<4;i++){
+    const box=document.getElementById('lf'+i);
+    box.classList.remove('active','done');
+    if(i<s.node)box.classList.add('done');
+    else if(i===s.node)box.classList.add('active');
+  }
+  // arrows
+  for(let i=0;i<3;i++){
+    const arr=document.getElementById('lfa'+i);
+    arr.classList.remove('lit');
+    if(i<s.node)arr.classList.add('lit');
+  }
+  if(s.arrow>=0)document.getElementById('lfa'+s.arrow).classList.add('lit');
+  document.getElementById('lfCode').innerHTML=s.code;
+  document.getElementById('lfLog').innerHTML='<span class="log-line">'+s.log+'</span>';
+  lfStep++;
+  lfTimer=setTimeout(stepLambda,1400);
+}
+function resetLambdaFlow(){
+  clearTimeout(lfTimer);
+  lfStep=0;lfRunning=false;
+  document.getElementById('lfPlayBtn').disabled=false;
+  for(let i=0;i<4;i++)document.getElementById('lf'+i).classList.remove('active','done');
+  for(let i=0;i<3;i++)document.getElementById('lfa'+i).classList.remove('lit');
+  document.getElementById('lfCode').innerHTML='<span class="lc-cm"># handler.py — waiting for trigger...</span>';
+  document.getElementById('lfLog').textContent='Press Play to start the flow.';
+}
+
+/* ===================== PARTITION BARS ===================== */
+const barData=[
+  {id:'bar0',width:100, label:'10 TB'},
+  {id:'bar1',width:0.27,label:'~27 GB'},
+  {id:'bar2',width:0.02,label:'~2 GB'},
+];
+function animatePartitionBars(){
+  barData.forEach((b,i)=>{
+    setTimeout(()=>{
+      const el=document.getElementById(b.id);
+      el.style.width=Math.max(b.width,2)+'%';
+      el.textContent=b.label;
+    },i*350);
+  });
+}
+function resetPartitionBars(){
+  barData.forEach(b=>{
+    const el=document.getElementById(b.id);
+    el.style.width='0%';
+    el.textContent='';
+  });
+}
+
+/* ===================== ARCH DIAGRAM ===================== */
+const archInfo={
+  'users':  {name:'Internet / Users',    desc:'End-user browsers and mobile apps. Traffic enters via the public internet to Route 53 (DNS), then to the ALB.',           cost:'No AWS cost for ingress.'},
+  'alb':    {name:'Application Load Balancer', desc:'Terminates TLS, routes requests by path/hostname to the Auto Scaling Group. Health-checks EC2 instances and removes unhealthy ones.', cost:'~$22/mo base + $0.008/LCU-hour'},
+  'ec2':    {name:'EC2 — App Server',    desc:'Auto Scaling Group spans both AZs. Minimum 2 instances for HA. Scales out on CPU > 70%, scales in on CPU < 30%.', cost:'e.g. 2× m6i.large = ~$138/mo on-demand'},
+  'rds-primary':{name:'RDS Primary (PostgreSQL)', desc:'Handles all write traffic. Synchronously replicates to the standby in AZ-1b. Automated backups to S3.', cost:'db.m6g.large Multi-AZ ~$190/mo'},
+  'rds-standby':{name:'RDS Standby (Multi-AZ)',  desc:'Passive standby — not readable, not writable. Promoted to primary automatically within ~60s if the primary fails.',cost:'Included in Multi-AZ pricing above'},
+};
+let activeArchNode=null;
+function showArchTooltip(key, nodeEl){
+  const info=archInfo[key];
+  if(!info)return;
+  const box=document.getElementById('archInfoBox');
+  document.getElementById('archInfoName').textContent=info.name;
+  document.getElementById('archInfoDesc').textContent=info.desc;
+  document.getElementById('archInfoCost').textContent='Est. cost: '+info.cost;
+  box.style.display='block';
+}
+
+/* ===================== QUIZ ===================== */
+const questions=[
+  {
+    q:'Which EC2 pricing model offers the biggest discount but can be interrupted?',
+    opts:['On-Demand','Reserved Instances','Spot Instances','Savings Plans'],
+    correct:2,
+    explain:'Spot Instances use spare AWS capacity and cost up to 90% less than On-Demand, but AWS can reclaim them with 2 minutes notice when the capacity is needed elsewhere.'
+  },
+  {
+    q:'The correct way to give an EC2 instance permission to read from S3 is:',
+    opts:[
+      'Store AWS credentials in a .env file on the instance',
+      'Attach an IAM Role with S3 read permissions to the EC2 instance',
+      'Create an IAM User and SSH the credentials in',
+      'Enable public access on the S3 bucket'
+    ],
+    correct:1,
+    explain:'IAM Roles assigned as instance profiles are the AWS-recommended approach. The EC2 instance automatically receives rotated temporary credentials via the instance metadata service — no hardcoded keys needed.'
+  },
+  {
+    q:'Why does partitioning an S3 data lake reduce Athena query costs?',
+    opts:[
+      'It compresses the files automatically',
+      'Athena skips scanning partitions that don\'t match the query filter',
+      'Partitioned data is stored in columnar format',
+      'Fewer files means fewer API calls'
+    ],
+    correct:1,
+    explain:'Athena uses partition metadata from the Glue Data Catalog to skip entire S3 prefixes that cannot match the WHERE clause. This directly reduces bytes scanned, which is what Athena bills on ($5/TB).'
+  },
+  {
+    q:"A Lambda function's maximum execution timeout is:",
+    opts:['30 seconds','5 minutes','15 minutes','1 hour'],
+    correct:2,
+    explain:'Lambda functions can run for a maximum of 15 minutes (900 seconds) per invocation. For longer workloads, use ECS Fargate, AWS Batch, or Step Functions with activity workers.'
+  }
+];
+let answers=new Array(questions.length).fill(null);
+function buildQuiz(){
+  const container=document.getElementById('quizCards');
+  container.innerHTML='';
+  questions.forEach((q,qi)=>{
+    const card=document.createElement('div');
+    card.className='question-card';
+    card.id='qcard'+qi;
+    let optsHtml=q.opts.map((o,oi)=>`<div class="option" id="opt${qi}_${oi}" onclick="pickAnswer(${qi},${oi})">${o}</div>`).join('');
+    card.innerHTML=`<div class="q-num">Question ${qi+1} of ${questions.length}</div>
+<div class="q-text">${q.q}</div>
+<div class="options">${optsHtml}</div>
+<div class="explanation" id="exp${qi}">${q.explain}</div>`;
+    container.appendChild(card);
+  });
+  updateProgress();
+}
+function pickAnswer(qi,oi){
+  if(answers[qi]!==null)return;
+  answers[qi]=oi;
+  const q=questions[qi];
+  for(let i=0;i<q.opts.length;i++){
+    const el=document.getElementById('opt'+qi+'_'+i);
+    el.classList.add('locked');
+    if(i===q.correct)el.classList.add('correct');
+    else if(i===oi)el.classList.add('wrong');
+  }
+  document.getElementById('exp'+qi).classList.add('visible');
+  updateProgress();
+  if(answers.every(a=>a!==null))setTimeout(showScore,600);
+}
+function updateProgress(){
+  const answered=answers.filter(a=>a!==null).length;
+  document.getElementById('quizProgressFill').style.width=(answered/questions.length*100)+'%';
+}
+function showScore(){
+  const score=answers.reduce((acc,a,i)=>acc+(a===questions[i].correct?1:0),0);
+  const total=questions.length;
+  const pct=Math.round(score/total*100);
+  document.getElementById('scoreNum').textContent=score+'/'+total;
+  const msgs=['Keep studying — re-read the lessons above!','Good effort — review the tricky ones.','Great work! Solid AWS foundations.','Perfect score! AWS certified material 🎉'];
+  document.getElementById('scoreMsg').textContent=msgs[score];
+  document.getElementById('quizScore').classList.add('visible');
+
+  localStorage.setItem('phase7done','true');
+  const extra=document.getElementById('quizDoneExtra');
+  extra.innerHTML='<a href="index.html" style="color:var(--primary);text-decoration:none;font-size:.9rem">← Back to Roadmap</a>';
+}
+function retakeQuiz(){
+  answers=new Array(questions.length).fill(null);
+  document.getElementById('quizScore').classList.remove('visible');
+  document.getElementById('quizDoneExtra').innerHTML='';
+  buildQuiz();
+}
+
+/* ===================== MARK PHASE DONE ===================== */
+function markPhase7Done(){
+  localStorage.setItem('phase7done','true');
+  const btn=event.currentTarget;
+  btn.textContent='✓ Phase Complete!';
+  btn.style.background='rgba(52,211,153,.2)';
+  btn.style.borderColor='rgba(52,211,153,.5)';
+}
+
+/* ===================== INIT ===================== */
+buildQuiz();
+(function(){
+  const saved=localStorage.getItem('phase7lesson');
+  goLesson(saved!==null?parseInt(saved):0);
+})();
+</script>
+</body>
+</html>
