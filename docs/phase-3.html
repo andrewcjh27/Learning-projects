@@ -216,13 +216,13 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 /* Good/Bad Design Cards */
 .design-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 @media(max-width:700px){.design-grid{grid-template-columns:1fr}}
-.design-card{border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;cursor:pointer;transition:all .2s;background:var(--surface);position:relative}
+.design-card{border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;cursor:pointer;transition:all .2s;background:var(--surface);position:relative;min-width:0;overflow:hidden}
 .design-card:hover:not(.revealed){border-color:var(--border-b);background:rgba(255,255,255,.03)}
 .design-card.good-pick{border-color:rgba(52,211,153,.5)!important;background:rgba(52,211,153,.07)!important}
 .design-card.bad-pick{border-color:rgba(248,113,113,.5)!important;background:rgba(248,113,113,.07)!important}
 .design-card.correct-answer{border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.05)}
 .design-card.wrong-answer{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.05)}
-.design-card-code{font-family:var(--mono);font-size:.78rem;padding:8px 10px;background:#0a0f1a;border-radius:4px;margin-bottom:8px;color:#a8c0d8;white-space:pre}
+.design-card-code{font-family:var(--mono);font-size:.78rem;padding:8px 10px;background:#0a0f1a;border-radius:4px;margin-bottom:8px;color:#a8c0d8;white-space:pre-wrap;word-break:break-all;overflow-wrap:break-word}
 .design-card-label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
 .design-card-label.good{color:#34d399}
 .design-card-label.bad{color:#f87171}
