@@ -230,6 +230,70 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .design-card-explain.visible{display:block}
 .design-score{font-size:.85rem;color:var(--muted);padding:10px 14px;background:var(--card);border-radius:var(--r-sm);border:1px solid var(--border);margin-top:10px}
 .design-score strong{color:var(--accent)}
+
+/* ---- Projects tab ---- */
+.project-cards{display:flex;flex-direction:column;gap:16px}
+.project-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .2s}
+.project-card:hover{border-color:var(--border-b)}
+.project-card-header{padding:20px 24px;cursor:pointer;display:flex;align-items:flex-start;gap:16px}
+.project-card-header:hover .project-title{color:var(--primary)}
+.difficulty-badge{padding:3px 10px;border-radius:10px;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.diff-beginner{background:rgba(52,211,153,.12);color:var(--accent);border:1px solid rgba(52,211,153,.25)}
+.diff-intermediate{background:rgba(251,191,36,.12);color:var(--warning);border:1px solid rgba(251,191,36,.25)}
+.diff-advanced{background:rgba(248,113,113,.12);color:var(--danger);border:1px solid rgba(248,113,113,.25)}
+.project-title{font-size:1rem;font-weight:700;margin-bottom:4px;transition:color .2s}
+.project-subtitle{font-size:.82rem;color:var(--muted)}
+.project-toggle-icon{margin-left:auto;color:var(--dim);font-size:.9rem;flex-shrink:0;transition:transform .2s;margin-top:2px}
+.project-body{display:none;padding:0 24px 24px;border-top:1px solid var(--border)}
+.project-body.open{display:block}
+.step-list{display:flex;flex-direction:column;gap:14px;margin:16px 0}
+.step{display:flex;gap:14px;align-items:flex-start}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--primary-dim);border:1px solid var(--primary-glow);color:var(--primary);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-content{flex:1}
+.step-title{font-size:.88rem;font-weight:600;margin-bottom:4px}
+.step-desc{font-size:.8rem;color:var(--muted);line-height:1.6}
+.proj-code{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px;font-family:var(--mono);font-size:.75rem;color:#a8c0d8;line-height:1.75;white-space:pre;overflow-x:auto;margin:8px 0}
+
+/* Task Manager Sim */
+.task-sim{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);margin-top:16px}
+.task-sim-toolbar{padding:10px 14px;display:flex;gap:8px;border-bottom:1px solid var(--border);align-items:center}
+.task-sim-input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--mono);font-size:.8rem;color:#cde;outline:none}
+.task-sim-input:focus{border-color:var(--primary-glow)}
+.task-sim-body{display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:700px){.task-sim-body{grid-template-columns:1fr}}
+.task-list-pane{padding:12px 14px;border-right:1px solid var(--border);min-height:200px}
+.task-pane-title{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:10px}
+.task-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.78rem;color:#a8c0d8}
+.task-row:last-child{border-bottom:none}
+.task-row.done-task .task-row-title{text-decoration:line-through;opacity:.45}
+.task-row-id{color:var(--dim);font-size:.65rem;min-width:22px}
+.task-row-title{flex:1;font-family:var(--mono)}
+.task-done-btn{padding:2px 7px;border-radius:4px;border:1px solid rgba(52,211,153,.3);background:rgba(52,211,153,.08);color:#34d399;font-size:.65rem;cursor:pointer;transition:all .15s;font-family:var(--font)}
+.task-done-btn:hover{background:rgba(52,211,153,.2)}
+.task-del-btn{padding:2px 7px;border-radius:4px;border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.08);color:#f87171;font-size:.65rem;cursor:pointer;transition:all .15s;font-family:var(--font)}
+.task-del-btn:hover{background:rgba(248,113,113,.2)}
+.task-empty{font-size:.75rem;color:var(--dim);padding:16px 0;text-align:center}
+.task-log-pane{padding:12px 14px;max-height:240px;overflow-y:auto}
+.log-entry{font-family:var(--mono);font-size:.7rem;line-height:1.6;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.04)}
+.log-entry:last-child{border-bottom:none;margin-bottom:0}
+.log-method{font-weight:700;margin-right:5px}
+.log-method.POST{color:#fbbf24}.log-method.GET{color:#34d399}.log-method.PATCH{color:#a78bfa}.log-method.DELETE{color:#f87171}
+.log-status{padding:1px 5px;border-radius:3px;font-size:.65rem;margin-right:5px}
+.log-2xx{background:rgba(52,211,153,.15);color:#34d399}
+.log-body{color:#4a6a8a;margin-top:3px;white-space:pre-wrap;word-break:break-all;font-size:.68rem}
+
+/* Auth sim */
+.auth-sim{margin-top:16px}
+.auth-sim-tabs{display:flex;gap:4px;margin-bottom:12px}
+.auth-sim-tab{padding:5px 12px;border-radius:20px;font-size:.73rem;font-weight:600;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font);transition:all .15s}
+.auth-sim-tab.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.auth-panel{display:none}.auth-panel.active{display:block}
+.auth-field-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.auth-field-label{font-size:.75rem;color:var(--muted);width:80px;flex-shrink:0}
+.auth-field-input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--mono);font-size:.78rem;color:#cde;outline:none}
+.auth-field-input:focus{border-color:var(--primary-glow)}
+.auth-response{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-family:var(--mono);font-size:.72rem;color:#a8c0d8;line-height:1.7;margin-top:10px;min-height:60px;white-space:pre-wrap;word-break:break-all}
+.auth-token-display{margin-top:8px;padding:8px 10px;background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.2);border-radius:var(--r-sm);font-family:var(--mono);font-size:.7rem;word-break:break-all;line-height:1.6}
 </style>
 <script>(function(){const t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
 </head>
@@ -248,7 +312,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <button class="lesson-tab" onclick="goLesson(2)">3. Auth &amp; JWT</button>
       <button class="lesson-tab" onclick="goLesson(3)">4. Pagination</button>
       <button class="lesson-tab" onclick="goLesson(4)">5. Design</button>
-      <button class="lesson-tab" onclick="goLesson(5)">✦ Quiz</button>
+      <button class="lesson-tab" onclick="goLesson(5)">6. Projects</button>
+      <button class="lesson-tab" onclick="goLesson(6)">✦ Quiz</button>
     </div>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
   </div>
@@ -264,7 +329,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
     <div class="pp-step" onclick="goLesson(2)"><div class="pp-dot"></div>Auth &amp; JWT</div>
     <div class="pp-step" onclick="goLesson(3)"><div class="pp-dot"></div>Rate Limiting &amp; Pagination</div>
     <div class="pp-step" onclick="goLesson(4)"><div class="pp-dot"></div>API Design</div>
-    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>Quiz</div>
+    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>Projects</div>
+    <div class="pp-step" onclick="goLesson(6)"><div class="pp-dot"></div>Quiz</div>
   </div>
 </div>
 
@@ -558,12 +624,337 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 
   <div class="lesson-nav">
     <button class="big-btn ghost" onclick="goLesson(3)">← Previous</button>
-    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Next: Projects →</button>
   </div>
 </section>
 
-<!-- ==================== LESSON 5: QUIZ ==================== -->
+<!-- ==================== LESSON 5: PROJECTS ==================== -->
 <section class="lesson-section" id="lesson-5">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 06</div>
+    <div class="lesson-title">Projects</div>
+    <div class="lesson-desc">Three guided projects — from a two-route URL shortener to a JWT-protected Notes API. Each has a live in-browser simulator so you can see every request and response.</div>
+  </div>
+
+  <div class="project-cards">
+
+    <!-- ===== PROJECT 1: URL SHORTENER ===== -->
+    <div class="project-card" id="proj-0">
+      <div class="project-card-header" onclick="toggleProject(0)">
+        <span class="difficulty-badge diff-beginner">Beginner</span>
+        <div style="flex:1">
+          <div class="project-title">URL Shortener API</div>
+          <div class="project-subtitle">2 routes · Pydantic models · path parameters · 301 redirect</div>
+        </div>
+        <span class="project-toggle-icon" id="proj-icon-0">▸</span>
+      </div>
+      <div class="project-body" id="proj-body-0">
+        <p style="font-size:.85rem;color:var(--muted);margin:16px 0 8px">Build a minimal URL shortener. A client POSTs a long URL and gets back a short code. A GET request with that code returns a 301 redirect to the original URL.</p>
+
+        <div class="step-list">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">Define your Pydantic models</div>
+              <div class="step-desc">The request body needs a <code>url</code> field. The response returns the short code and the full short URL.</div>
+              <div class="proj-code"><span class="py-keyword">from</span> pydantic <span class="py-keyword">import</span> <span class="py-type">BaseModel, HttpUrl</span>
+
+<span class="py-keyword">class</span> <span class="py-type">ShortenRequest</span>(<span class="py-type">BaseModel</span>):
+    url: <span class="py-type">HttpUrl</span>          <span class="py-comment"># validates it's a real URL</span>
+
+<span class="py-keyword">class</span> <span class="py-type">ShortenResponse</span>(<span class="py-type">BaseModel</span>):
+    code: <span class="py-type">str</span>             <span class="py-comment"># e.g. "aB3xZ9"</span>
+    short_url: <span class="py-type">str</span>        <span class="py-comment"># e.g. "https://sho.rt/aB3xZ9"</span>
+    original_url: <span class="py-type">str</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">POST /shorten — create a short link</div>
+              <div class="step-desc">Generate a random 6-character code, store it in a dict (or DB), return the response model.</div>
+              <div class="proj-code"><span class="py-keyword">import</span> secrets
+<span class="py-keyword">from</span> fastapi <span class="py-keyword">import</span> FastAPI
+<span class="py-keyword">from</span> fastapi.responses <span class="py-keyword">import</span> <span class="py-type">RedirectResponse</span>
+
+app = FastAPI()
+db: <span class="py-type">dict</span>[<span class="py-type">str</span>, <span class="py-type">str</span>] = {}   <span class="py-comment"># code → original_url</span>
+
+<span class="py-decorator">@app.post</span>(<span class="py-string">"/shorten"</span>, response_model=<span class="py-type">ShortenResponse</span>, status_code=<span class="py-param">201</span>)
+<span class="py-keyword">async def</span> <span class="py-func">shorten</span>(body: <span class="py-type">ShortenRequest</span>):
+    code = secrets.token_urlsafe(<span class="py-param">6</span>)[:6]
+    db[code] = <span class="py-type">str</span>(body.url)
+    <span class="py-keyword">return</span> <span class="py-type">ShortenResponse</span>(
+        code=code,
+        short_url=<span class="py-string">f"https://sho.rt/{code}"</span>,
+        original_url=<span class="py-type">str</span>(body.url)
+    )</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">GET /{code} — redirect to original URL</div>
+              <div class="step-desc">Look up the code. Return 301 Moved Permanently so browsers follow it automatically.</div>
+              <div class="proj-code"><span class="py-decorator">@app.get</span>(<span class="py-string">"/{code}"</span>)
+<span class="py-keyword">async def</span> <span class="py-func">redirect</span>(code: <span class="py-type">str</span>):
+    url = db.get(code)
+    <span class="py-keyword">if not</span> url:
+        <span class="py-keyword">raise</span> <span class="py-type">HTTPException</span>(status_code=<span class="py-param">404</span>, detail=<span class="py-string">"Code not found"</span>)
+    <span class="py-keyword">return</span> <span class="py-type">RedirectResponse</span>(url=url, status_code=<span class="py-param">301</span>)</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">Try it — open the HTTP builder on Lesson 1</div>
+              <div class="step-desc">Switch to a POST request, set the body to <code>{"url": "https://example.com/very/long/path"}</code>, and expect a 201 response with the short code. Then do a GET with the code and expect a 301.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:var(--r-sm);padding:12px 16px;font-size:.82rem;color:var(--muted)">
+          <strong style="color:var(--accent)">What you practised:</strong> Pydantic's <code>HttpUrl</code> validator, <code>status_code=201</code> on POST, <code>RedirectResponse</code>, and path parameters for lookup.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROJECT 2: TASK MANAGER (live sim) ===== -->
+    <div class="project-card" id="proj-1">
+      <div class="project-card-header" onclick="toggleProject(1)">
+        <span class="difficulty-badge diff-intermediate">Intermediate</span>
+        <div style="flex:1">
+          <div class="project-title">Task Manager API <span style="font-size:.75rem;color:var(--accent);font-weight:600;margin-left:8px">⚡ Live Simulator</span></div>
+          <div class="project-subtitle">Full CRUD · 5 routes · request/response log · runs in your browser</div>
+        </div>
+        <span class="project-toggle-icon" id="proj-icon-1">▸</span>
+      </div>
+      <div class="project-body" id="proj-body-1">
+        <p style="font-size:.85rem;color:var(--muted);margin:16px 0 4px">This simulator <em>is</em> the running API. Every button fires a real request against an in-memory task store and shows you the exact JSON request and response your FastAPI server would produce.</p>
+
+        <div class="task-sim" id="taskSim">
+          <div class="task-sim-toolbar">
+            <input class="task-sim-input" id="taskInput" placeholder='Task title — e.g. "Write unit tests"' onkeydown="if(event.key==='Enter')simPostTask()">
+            <button class="send-btn" onclick="simPostTask()">POST /tasks</button>
+            <button class="btn" style="margin:0" onclick="simGetTasks()">GET /tasks</button>
+          </div>
+          <div class="task-sim-body">
+            <div class="task-list-pane">
+              <div class="task-pane-title">GET /tasks response → data[]</div>
+              <div id="taskListPane"><div class="task-empty">No tasks yet — add one above</div></div>
+            </div>
+            <div class="task-log-pane" id="taskLogPane">
+              <div class="task-pane-title">Request / Response log</div>
+              <div id="taskLog"><div style="font-size:.72rem;color:var(--dim)">Requests will appear here…</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-list" style="margin-top:20px">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">Data model and in-memory store</div>
+              <div class="proj-code"><span class="py-keyword">from</span> datetime <span class="py-keyword">import</span> datetime
+<span class="py-keyword">from</span> typing <span class="py-keyword">import</span> <span class="py-type">Optional</span>
+
+<span class="py-keyword">class</span> <span class="py-type">TaskIn</span>(<span class="py-type">BaseModel</span>):
+    title: <span class="py-type">str</span>
+    description: <span class="py-type">Optional</span>[<span class="py-type">str</span>] = <span class="py-param">None</span>
+
+<span class="py-keyword">class</span> <span class="py-type">TaskOut</span>(<span class="py-type">BaseModel</span>):
+    id: <span class="py-type">int</span>
+    title: <span class="py-type">str</span>
+    description: <span class="py-type">Optional</span>[<span class="py-type">str</span>]
+    done: <span class="py-type">bool</span> = <span class="py-param">False</span>
+    created_at: <span class="py-type">datetime</span>
+
+tasks: <span class="py-type">dict</span>[<span class="py-type">int</span>, <span class="py-type">TaskOut</span>] = {}
+_next_id = <span class="py-param">1</span></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">POST /tasks and GET /tasks</div>
+              <div class="proj-code"><span class="py-decorator">@app.post</span>(<span class="py-string">"/tasks"</span>, response_model=<span class="py-type">TaskOut</span>, status_code=<span class="py-param">201</span>)
+<span class="py-keyword">async def</span> <span class="py-func">create_task</span>(body: <span class="py-type">TaskIn</span>):
+    <span class="py-keyword">global</span> _next_id
+    task = <span class="py-type">TaskOut</span>(id=_next_id, **body.dict(), created_at=datetime.utcnow())
+    tasks[_next_id] = task
+    _next_id += <span class="py-param">1</span>
+    <span class="py-keyword">return</span> task
+
+<span class="py-decorator">@app.get</span>(<span class="py-string">"/tasks"</span>, response_model=<span class="py-type">list</span>[<span class="py-type">TaskOut</span>])
+<span class="py-keyword">async def</span> <span class="py-func">list_tasks</span>():
+    <span class="py-keyword">return</span> list(tasks.values())</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">PATCH /tasks/{id} and DELETE /tasks/{id}</div>
+              <div class="proj-code"><span class="py-keyword">class</span> <span class="py-type">TaskPatch</span>(<span class="py-type">BaseModel</span>):
+    done: <span class="py-type">bool</span>
+
+<span class="py-decorator">@app.patch</span>(<span class="py-string">"/tasks/{task_id}"</span>, response_model=<span class="py-type">TaskOut</span>)
+<span class="py-keyword">async def</span> <span class="py-func">update_task</span>(task_id: <span class="py-type">int</span>, body: <span class="py-type">TaskPatch</span>):
+    <span class="py-keyword">if</span> task_id <span class="py-keyword">not in</span> tasks:
+        <span class="py-keyword">raise</span> <span class="py-type">HTTPException</span>(<span class="py-param">404</span>)
+    tasks[task_id].done = body.done
+    <span class="py-keyword">return</span> tasks[task_id]
+
+<span class="py-decorator">@app.delete</span>(<span class="py-string">"/tasks/{task_id}"</span>, status_code=<span class="py-param">204</span>)
+<span class="py-keyword">async def</span> <span class="py-func">delete_task</span>(task_id: <span class="py-type">int</span>):
+    <span class="py-keyword">if</span> task_id <span class="py-keyword">not in</span> tasks:
+        <span class="py-keyword">raise</span> <span class="py-type">HTTPException</span>(<span class="py-param">404</span>)
+    <span class="py-keyword">del</span> tasks[task_id]</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:var(--r-sm);padding:12px 16px;font-size:.82rem;color:var(--muted)">
+          <strong style="color:var(--warning)">What you practised:</strong> Full CRUD with 5 routes, <code>PATCH</code> for partial updates, <code>204 No Content</code> for DELETE, and using a dict as an in-memory database.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROJECT 3: AUTH NOTES API ===== -->
+    <div class="project-card" id="proj-2">
+      <div class="project-card-header" onclick="toggleProject(2)">
+        <span class="difficulty-badge diff-advanced">Advanced</span>
+        <div style="flex:1">
+          <div class="project-title">Authenticated Notes API <span style="font-size:.75rem;color:var(--accent);font-weight:600;margin-left:8px">⚡ Live Simulator</span></div>
+          <div class="project-subtitle">JWT auth · register/login flow · protected routes · 401 handling</div>
+        </div>
+        <span class="project-toggle-icon" id="proj-icon-2">▸</span>
+      </div>
+      <div class="project-body" id="proj-body-2">
+        <p style="font-size:.85rem;color:var(--muted);margin:16px 0 4px">Simulate a full auth flow: register a user, log in to get a JWT, then use the token to create and list protected notes. Try making requests without a token to see the 401 response.</p>
+
+        <div class="auth-sim">
+          <div class="auth-sim-tabs">
+            <button class="auth-sim-tab active" onclick="authTab('register')">1. Register</button>
+            <button class="auth-sim-tab" onclick="authTab('login')" id="authLoginTab">2. Login</button>
+            <button class="auth-sim-tab" onclick="authTab('notes')" id="authNotesTab">3. Use Notes API</button>
+          </div>
+
+          <!-- Register panel -->
+          <div class="auth-panel active" id="auth-panel-register">
+            <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px">POST /auth/register</div>
+            <div class="auth-field-row">
+              <span class="auth-field-label">Username</span>
+              <input class="auth-field-input" id="regUsername" placeholder="e.g. alice" value="alice">
+            </div>
+            <div class="auth-field-row">
+              <span class="auth-field-label">Password</span>
+              <input class="auth-field-input" id="regPassword" type="password" placeholder="••••••••" value="secret123">
+            </div>
+            <button class="send-btn" style="margin-top:4px" onclick="simRegister()">Register →</button>
+            <div class="auth-response" id="authRegResponse">Response will appear here…</div>
+          </div>
+
+          <!-- Login panel -->
+          <div class="auth-panel" id="auth-panel-login">
+            <div style="font-size:.78rem;color:var(--muted);margin-bottom:10px">POST /auth/login</div>
+            <div class="auth-field-row">
+              <span class="auth-field-label">Username</span>
+              <input class="auth-field-input" id="loginUsername" placeholder="alice">
+            </div>
+            <div class="auth-field-row">
+              <span class="auth-field-label">Password</span>
+              <input class="auth-field-input" id="loginPassword" type="password" placeholder="••••••••">
+            </div>
+            <button class="send-btn" style="margin-top:4px" onclick="simLogin()">Login →</button>
+            <div class="auth-response" id="authLoginResponse">Response will appear here…</div>
+            <div id="authTokenDisplay" style="display:none">
+              <div style="font-size:.72rem;color:var(--muted);margin:8px 0 4px">Your JWT (click Decode in Lesson 3 to inspect it):</div>
+              <div class="auth-token-display" id="authTokenVal"></div>
+            </div>
+          </div>
+
+          <!-- Notes panel -->
+          <div class="auth-panel" id="auth-panel-notes">
+            <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap">
+              <input class="auth-field-input" id="noteInput" placeholder='Note content — e.g. "Study JWT claims"' style="flex:1">
+              <button class="send-btn" onclick="simPostNote()">POST /notes</button>
+              <button class="btn" style="margin:0" onclick="simGetNotes()">GET /notes</button>
+              <button class="btn" style="margin:0;border-color:rgba(248,113,113,.3);color:var(--danger)" onclick="simGetNotesNoAuth()">GET /notes (no token)</button>
+            </div>
+            <div class="auth-response" id="notesResponse" style="min-height:120px">Log in first to get a token, then use the buttons above.</div>
+          </div>
+        </div>
+
+        <div class="step-list" style="margin-top:20px">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">Password hashing on register</div>
+              <div class="step-desc">Never store plain passwords. Hash with bcrypt via <code>passlib</code>.</div>
+              <div class="proj-code"><span class="py-keyword">from</span> passlib.context <span class="py-keyword">import</span> <span class="py-type">CryptContext</span>
+pwd_ctx = <span class="py-type">CryptContext</span>(schemes=[<span class="py-string">"bcrypt"</span>], deprecated=<span class="py-string">"auto"</span>)
+
+<span class="py-decorator">@app.post</span>(<span class="py-string">"/auth/register"</span>, status_code=<span class="py-param">201</span>)
+<span class="py-keyword">async def</span> <span class="py-func">register</span>(body: <span class="py-type">UserIn</span>):
+    users_db[body.username] = pwd_ctx.hash(body.password)
+    <span class="py-keyword">return</span> {<span class="py-string">"message"</span>: <span class="py-string">"registered"</span>}</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">Login — verify password, return JWT</div>
+              <div class="proj-code"><span class="py-keyword">import</span> jwt, datetime
+
+<span class="py-decorator">@app.post</span>(<span class="py-string">"/auth/login"</span>)
+<span class="py-keyword">async def</span> <span class="py-func">login</span>(body: <span class="py-type">UserIn</span>):
+    hashed = users_db.get(body.username)
+    <span class="py-keyword">if not</span> hashed <span class="py-keyword">or not</span> pwd_ctx.verify(body.password, hashed):
+        <span class="py-keyword">raise</span> <span class="py-type">HTTPException</span>(<span class="py-param">401</span>, <span class="py-string">"Bad credentials"</span>)
+    payload = {
+        <span class="py-string">"sub"</span>: body.username,
+        <span class="py-string">"exp"</span>: datetime.utcnow() + timedelta(hours=<span class="py-param">1</span>)
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=<span class="py-string">"HS256"</span>)
+    <span class="py-keyword">return</span> {<span class="py-string">"access_token"</span>: token, <span class="py-string">"token_type"</span>: <span class="py-string">"bearer"</span>}</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">Protected route using Depends()</div>
+              <div class="proj-code"><span class="py-keyword">def</span> <span class="py-func">get_current_user</span>(token: <span class="py-type">str</span> = <span class="py-type">Depends</span>(oauth2_scheme)):
+    <span class="py-keyword">try</span>:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[<span class="py-string">"HS256"</span>])
+        <span class="py-keyword">return</span> payload[<span class="py-string">"sub"</span>]
+    <span class="py-keyword">except</span> jwt.<span class="py-type">ExpiredSignatureError</span>:
+        <span class="py-keyword">raise</span> <span class="py-type">HTTPException</span>(<span class="py-param">401</span>, <span class="py-string">"Token expired"</span>)
+    <span class="py-keyword">except</span> jwt.<span class="py-type">InvalidTokenError</span>:
+        <span class="py-keyword">raise</span> <span class="py-type">HTTPException</span>(<span class="py-param">401</span>, <span class="py-string">"Invalid token"</span>)
+
+<span class="py-decorator">@app.get</span>(<span class="py-string">"/notes"</span>)
+<span class="py-keyword">async def</span> <span class="py-func">get_notes</span>(user: <span class="py-type">str</span> = <span class="py-type">Depends</span>(get_current_user)):
+    <span class="py-keyword">return</span> notes_db.get(user, [])</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);border-radius:var(--r-sm);padding:12px 16px;font-size:.82rem;color:var(--muted)">
+          <strong style="color:var(--danger)">What you practised:</strong> Register/login flow, <code>passlib</code> bcrypt hashing, JWT creation and verification, <code>Depends()</code> for dependency-injected auth, and 401 errors on unauthenticated access.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /project-cards -->
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(4)">← API Design</button>
+    <button class="big-btn primary" onclick="goLesson(6)">Take the Quiz →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 6: QUIZ ==================== -->
+<section class="lesson-section" id="lesson-6">
   <div class="lesson-header">
     <div class="lesson-num">Final Quiz</div>
     <div class="lesson-title">APIs Knowledge Check</div>
@@ -583,7 +974,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
   </div>
 
   <div class="lesson-nav">
-    <button class="big-btn ghost" onclick="goLesson(4)">← Previous</button>
+    <button class="big-btn ghost" onclick="goLesson(5)">← Projects</button>
     <span></span>
   </div>
 </section>
@@ -608,7 +999,7 @@ function goLesson(n) {
   });
   localStorage.setItem('phase3lesson', n);
   window.scrollTo({top:0,behavior:'smooth'});
-  if(n===5 && !quizInit) initQuiz();
+  if(n===6 && !quizInit) initQuiz();
   if(n===4) initDesignQuiz();
   if(n===3) renderPaginationPage();
 }
@@ -1097,6 +1488,158 @@ function answerDesign(idx, pick, clickedCard) {
     goodCard.classList.add('correct-answer');
     document.getElementById('designScoreDisplay').textContent = `${designScore} / ${designAnswered.filter(Boolean).length}`;
   }
+}
+
+/* ============================================================
+   LESSON 5: PROJECTS
+   ============================================================ */
+
+// --- Project card toggle ---
+function toggleProject(n) {
+  const body = document.getElementById('proj-body-' + n);
+  const icon = document.getElementById('proj-icon-' + n);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  icon.textContent = isOpen ? '▸' : '▾';
+}
+
+// --- Project 2: Task Manager Sim ---
+let tasks = [];
+let nextTaskId = 1;
+
+function addLogEntry(method, path, status, reqBody, resBody) {
+  const log = document.getElementById('taskLog');
+  if (log.querySelector('div[style]')) log.innerHTML = '';
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  const statusCls = status < 300 ? 'log-2xx' : 'log-4xx';
+  const reqStr = reqBody ? '\nReq: ' + JSON.stringify(reqBody) : '';
+  const resStr = resBody != null ? '\nRes: ' + JSON.stringify(resBody, null, 1) : '\nRes: (no body)';
+  entry.innerHTML = `<span class="log-method ${method}">${method}</span><span class="log-2xx log-status">${status}</span>${path}<div class="log-body">${(reqStr + resStr).replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`;
+  log.insertBefore(entry, log.firstChild);
+}
+
+function renderTaskList() {
+  const pane = document.getElementById('taskListPane');
+  if (tasks.length === 0) {
+    pane.innerHTML = '<div class="task-empty">No tasks yet — add one above</div>';
+    return;
+  }
+  pane.innerHTML = tasks.map(t => `
+    <div class="task-row ${t.done ? 'done-task' : ''}">
+      <span class="task-row-id">#${t.id}</span>
+      <span class="task-row-title">${t.title.replace(/</g,'&lt;')}</span>
+      ${!t.done ? `<button class="task-done-btn" onclick="simPatchTask(${t.id})">✓ done</button>` : '<span style="font-size:.65rem;color:#34d399;opacity:.5">done</span>'}
+      <button class="task-del-btn" onclick="simDeleteTask(${t.id})">✕</button>
+    </div>`).join('');
+}
+
+function simPostTask() {
+  const input = document.getElementById('taskInput');
+  const title = input.value.trim();
+  if (!title) return;
+  const task = { id: nextTaskId++, title, done: false, created_at: new Date().toISOString() };
+  tasks.push(task);
+  addLogEntry('POST', '/tasks', 201, { title }, task);
+  renderTaskList();
+  input.value = '';
+}
+
+function simGetTasks() {
+  addLogEntry('GET', '/tasks', 200, null, tasks);
+  renderTaskList();
+}
+
+function simPatchTask(id) {
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+  task.done = true;
+  addLogEntry('PATCH', `/tasks/${id}`, 200, { done: true }, task);
+  renderTaskList();
+}
+
+function simDeleteTask(id) {
+  const idx = tasks.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  tasks.splice(idx, 1);
+  addLogEntry('DELETE', `/tasks/${id}`, 204, null, null);
+  renderTaskList();
+}
+
+// --- Project 3: Auth Sim ---
+let authUsers = {};   // username → hashed (simulated)
+let authToken = null; // currently issued token
+let authNotes = {};   // username → notes[]
+let authNoteId = 1;
+
+function authTab(name) {
+  document.querySelectorAll('.auth-sim-tab').forEach((t,i) => {
+    t.classList.toggle('active', ['register','login','notes'][i] === name);
+  });
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('auth-panel-' + name).classList.add('active');
+}
+
+function simRegister() {
+  const u = document.getElementById('regUsername').value.trim();
+  const p = document.getElementById('regPassword').value.trim();
+  const res = document.getElementById('authRegResponse');
+  if (!u || !p) { res.textContent = '422 — username and password required'; return; }
+  if (authUsers[u]) { res.textContent = '409 Conflict\n{"error":"Username already taken"}'; return; }
+  authUsers[u] = btoa(p);  // simulate hashing
+  res.textContent = '201 Created\n' + JSON.stringify({ message: 'Registered successfully. Proceed to Login.' }, null, 2);
+  // pre-fill login
+  document.getElementById('loginUsername').value = u;
+  document.getElementById('loginPassword').value = p;
+  setTimeout(() => authTab('login'), 800);
+}
+
+function makeFakeJWT(username) {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).replace(/=/g,'');
+  const exp = Math.floor(Date.now()/1000) + 3600;
+  const payload = btoa(JSON.stringify({ sub: username, iat: Math.floor(Date.now()/1000), exp, roles: ['user'] })).replace(/=/g,'');
+  const sig = btoa(username + ':sig:' + exp).replace(/=/g,'').slice(0, 43);
+  return `${header}.${payload}.${sig}`;
+}
+
+function simLogin() {
+  const u = document.getElementById('loginUsername').value.trim();
+  const p = document.getElementById('loginPassword').value.trim();
+  const res = document.getElementById('authLoginResponse');
+  if (!authUsers[u]) { res.textContent = '401 Unauthorized\n{"error":"User not found — register first"}'; return; }
+  if (authUsers[u] !== btoa(p)) { res.textContent = '401 Unauthorized\n{"error":"Incorrect password"}'; return; }
+  authToken = { token: makeFakeJWT(u), user: u };
+  if (!authNotes[u]) authNotes[u] = [];
+  const responseObj = { access_token: authToken.token, token_type: 'bearer' };
+  res.textContent = '200 OK\n' + JSON.stringify(responseObj, null, 2);
+  document.getElementById('authTokenDisplay').style.display = 'block';
+  document.getElementById('authTokenVal').textContent = authToken.token;
+  setTimeout(() => authTab('notes'), 800);
+}
+
+function notesLog(status, method, path, body) {
+  const el = document.getElementById('notesResponse');
+  const prefix = `${status} — ${method} ${path}\n`;
+  el.textContent = prefix + JSON.stringify(body, null, 2);
+}
+
+function simPostNote() {
+  const content = document.getElementById('noteInput').value.trim();
+  if (!authToken) { notesLog('401 Unauthorized', 'POST', '/notes', { error: 'No Authorization header. Log in first.' }); return; }
+  if (!content) return;
+  const note = { id: authNoteId++, content, created_at: new Date().toISOString() };
+  authNotes[authToken.user].push(note);
+  notesLog('201 Created', 'POST', '/notes', note);
+  document.getElementById('noteInput').value = '';
+}
+
+function simGetNotes() {
+  if (!authToken) { notesLog('401 Unauthorized', 'GET', '/notes', { error: 'Missing or invalid token' }); return; }
+  notesLog('200 OK', 'GET', '/notes', authNotes[authToken.user] || []);
+}
+
+function simGetNotesNoAuth() {
+  notesLog('401 Unauthorized', 'GET', '/notes', { error: { code: 'UNAUTHORIZED', message: 'Not authenticated', detail: 'Authorization header missing' } });
 }
 
 /* ============================================================
