@@ -294,6 +294,38 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .auth-field-input:focus{border-color:var(--primary-glow)}
 .auth-response{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;font-family:var(--mono);font-size:.72rem;color:#a8c0d8;line-height:1.7;margin-top:10px;min-height:60px;white-space:pre-wrap;word-break:break-all}
 .auth-token-display{margin-top:8px;padding:8px 10px;background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.2);border-radius:var(--r-sm);font-family:var(--mono);font-size:.7rem;word-break:break-all;line-height:1.6}
+
+/* ---- Project redesign: brief / challenge / local setup ---- */
+.proj-section-label{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:20px 0 10px;display:flex;align-items:center;gap:10px}
+.proj-section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.proj-brief{background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.15);border-radius:var(--r-sm);padding:14px 16px}
+.proj-brief-title{font-size:.92rem;font-weight:700;margin-bottom:6px}
+.proj-brief-desc{font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:10px}
+.proj-learn-list{display:flex;flex-direction:column;gap:5px}
+.proj-learn-item{font-size:.78rem;color:var(--muted);padding-left:16px;position:relative;line-height:1.5}
+.proj-learn-item::before{content:'→';position:absolute;left:0;color:var(--primary)}
+.challenge-step{border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:10px;background:var(--surface)}
+.challenge-step-title{font-size:.88rem;font-weight:600;margin-bottom:4px}
+.challenge-step-desc{font-size:.8rem;color:var(--muted);margin-bottom:10px;line-height:1.6}
+.challenge-btns{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.hint-btn{padding:4px 11px;border-radius:var(--r-sm);border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.06);color:var(--warning);font-size:.72rem;cursor:pointer;font-family:var(--font);font-weight:600;transition:all .15s}
+.hint-btn:hover{background:rgba(251,191,36,.12)}
+.reveal-btn{padding:4px 11px;border-radius:var(--r-sm);border:1px solid rgba(167,139,250,.3);background:rgba(167,139,250,.08);color:var(--secondary);font-size:.72rem;cursor:pointer;font-family:var(--font);font-weight:600;transition:all .15s}
+.reveal-btn:hover{background:rgba(167,139,250,.15)}
+.hint-box{display:none;margin-top:8px;padding:8px 12px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:var(--r-sm);font-size:.78rem;color:var(--warning);line-height:1.6}
+.hint-box.visible{display:block}
+.solution-wrap{display:none;margin-top:8px}
+.solution-wrap.visible{display:block}
+.setup-cmd{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;font-family:var(--mono);font-size:.78rem;color:#a8c0d8;line-height:1.75;white-space:pre;overflow-x:auto;margin-bottom:8px}
+/* URL Shortener sim */
+.shorten-sim{background:#0a0f1a;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden}
+.shorten-sim-bar{padding:10px 14px;display:flex;gap:8px;border-bottom:1px solid var(--border)}
+.shorten-sim-input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--mono);font-size:.78rem;color:#cde;outline:none}
+.shorten-sim-input:focus{border-color:var(--primary-glow)}
+.shorten-sim-body{display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:700px){.shorten-sim-body{grid-template-columns:1fr}}
+.shorten-links-pane{padding:12px 14px;border-right:1px solid var(--border);min-height:120px}
+.shorten-response-pane{padding:12px 14px}
 </style>
 <script>(function(){const t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
 </head>
@@ -644,78 +676,168 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
         <span class="difficulty-badge diff-beginner">Beginner</span>
         <div style="flex:1">
           <div class="project-title">URL Shortener API</div>
-          <div class="project-subtitle">2 routes · Pydantic models · path parameters · 301 redirect</div>
+          <div class="project-subtitle">2 routes · Pydantic validation · 301 redirect · path params</div>
         </div>
         <span class="project-toggle-icon" id="proj-icon-0">▸</span>
       </div>
       <div class="project-body" id="proj-body-0">
-        <p style="font-size:.85rem;color:var(--muted);margin:16px 0 8px">Build a minimal URL shortener. A client POSTs a long URL and gets back a short code. A GET request with that code returns a 301 redirect to the original URL.</p>
 
-        <div class="step-list">
-          <div class="step">
-            <div class="step-num">1</div>
-            <div class="step-content">
-              <div class="step-title">Define your Pydantic models</div>
-              <div class="step-desc">The request body needs a <code>url</code> field. The response returns the short code and the full short URL.</div>
-              <div class="proj-code"><span class="py-keyword">from</span> pydantic <span class="py-keyword">import</span> <span class="py-type">BaseModel, HttpUrl</span>
+        <div class="proj-section-label">What are you building?</div>
+        <div class="proj-brief">
+          <div class="proj-brief-title">A mini bit.ly</div>
+          <div class="proj-brief-desc">Users POST a long URL and receive a random 6-character code. Anyone who GETs <code>/{code}</code> gets a 301 redirect straight to the original URL — no page load, just a header. Real-world use: marketing links, QR codes, analytics tracking. Every shortener (bit.ly, tinyurl, t.co) works exactly this way.</div>
+          <div class="proj-learn-list">
+            <div class="proj-learn-item">Pydantic <code>HttpUrl</code> — auto-validates that the incoming string is a real URL before your code sees it</div>
+            <div class="proj-learn-item"><code>status_code=201 Created</code> — the correct status when a new resource is created by a POST</div>
+            <div class="proj-learn-item"><code>RedirectResponse(url=..., status_code=301)</code> — tells the browser to follow the redirect automatically</div>
+            <div class="proj-learn-item">Path parameters — <code>/{code}</code> in the route captures the short code from the URL</div>
+          </div>
+        </div>
 
-<span class="py-keyword">class</span> <span class="py-type">ShortenRequest</span>(<span class="py-type">BaseModel</span>):
-    url: <span class="py-type">HttpUrl</span>          <span class="py-comment"># validates it's a real URL</span>
-
-<span class="py-keyword">class</span> <span class="py-type">ShortenResponse</span>(<span class="py-type">BaseModel</span>):
-    code: <span class="py-type">str</span>             <span class="py-comment"># e.g. "aB3xZ9"</span>
-    short_url: <span class="py-type">str</span>        <span class="py-comment"># e.g. "https://sho.rt/aB3xZ9"</span>
-    original_url: <span class="py-type">str</span></div>
+        <div class="proj-section-label">See it working</div>
+        <div class="shorten-sim">
+          <div class="shorten-sim-bar">
+            <input class="shorten-sim-input" id="shortenInput" placeholder="Paste any URL — e.g. https://example.com/very/long/path" onkeydown="if(event.key==='Enter')simShorten()">
+            <button class="send-btn" onclick="simShorten()">POST /shorten</button>
+          </div>
+          <div class="shorten-sim-body">
+            <div class="shorten-links-pane">
+              <div class="task-pane-title">Your short links — click GET to test redirect</div>
+              <div id="shortLinkList"><div style="font-size:.72rem;color:var(--dim)">No links yet — shorten one above</div></div>
+            </div>
+            <div class="shorten-response-pane">
+              <div class="task-pane-title">Response</div>
+              <div style="font-family:var(--mono);font-size:.72rem;color:#a8c0d8;line-height:1.7;white-space:pre-wrap;word-break:break-all" id="shortenResponse">Response will appear here…</div>
             </div>
           </div>
-          <div class="step">
-            <div class="step-num">2</div>
-            <div class="step-content">
-              <div class="step-title">POST /shorten — create a short link</div>
-              <div class="step-desc">Generate a random 6-character code, store it in a dict (or DB), return the response model.</div>
-              <div class="proj-code"><span class="py-keyword">import</span> secrets
-<span class="py-keyword">from</span> fastapi <span class="py-keyword">import</span> FastAPI
-<span class="py-keyword">from</span> fastapi.responses <span class="py-keyword">import</span> <span class="py-type">RedirectResponse</span>
+        </div>
 
+        <div class="proj-section-label">Build it yourself</div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px">Each step shows the skeleton. Think through what goes in each <span style="font-family:var(--mono);background:rgba(248,113,113,.1);color:var(--danger);padding:1px 5px;border-radius:3px">???</span> before using a hint or revealing the answer.</p>
+
+        <div class="challenge-step">
+          <div class="challenge-step-title">Step 1 — Pydantic models</div>
+          <div class="challenge-step-desc">You need a request model (just the URL) and a response model (code + short URL + original URL). What type should <code>url</code> be to auto-validate it's a real URL?</div>
+          <div class="proj-code"><span class="py-keyword">from</span> pydantic <span class="py-keyword">import</span> BaseModel, <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>  <span class="py-comment"># TODO: import the URL validator type</span>
+
+<span class="py-keyword">class</span> <span class="py-type">ShortenRequest</span>(BaseModel):
+    url: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>          <span class="py-comment"># TODO: what type validates a real URL?</span>
+
+<span class="py-keyword">class</span> <span class="py-type">ShortenResponse</span>(BaseModel):
+    code: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>
+    short_url: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>
+    original_url: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span></div>
+          <div class="challenge-btns">
+            <button class="hint-btn" onclick="showHint('h1-0')">💡 Hint</button>
+            <button class="reveal-btn" onclick="showSolution('s1-0')">Show solution</button>
+          </div>
+          <div class="hint-box" id="h1-0">Pydantic ships a built-in <code>HttpUrl</code> type — import it from <code>pydantic</code>. It validates the string is a proper URL and raises a 422 automatically if it's not. The three response fields are all plain <code>str</code>.</div>
+          <div class="solution-wrap" id="s1-0"><div class="proj-code"><span class="py-keyword">from</span> pydantic <span class="py-keyword">import</span> <span class="py-type">BaseModel, HttpUrl</span>
+
+<span class="py-keyword">class</span> <span class="py-type">ShortenRequest</span>(BaseModel):
+    url: <span class="py-type">HttpUrl</span>          <span class="py-comment"># validates it's a real URL automatically</span>
+
+<span class="py-keyword">class</span> <span class="py-type">ShortenResponse</span>(BaseModel):
+    code: <span class="py-type">str</span>
+    short_url: <span class="py-type">str</span>
+    original_url: <span class="py-type">str</span></div></div>
+        </div>
+
+        <div class="challenge-step">
+          <div class="challenge-step-title">Step 2 — POST /shorten</div>
+          <div class="challenge-step-desc">Generate a random 6-character code, store it in the dict, return the response. What does <code>db[code] = ???</code> store? What does the return look like?</div>
+          <div class="proj-code"><span class="py-keyword">import</span> secrets
 app = FastAPI()
-db: <span class="py-type">dict</span>[<span class="py-type">str</span>, <span class="py-type">str</span>] = {}   <span class="py-comment"># code → original_url</span>
+db: <span class="py-type">dict</span>[<span class="py-type">str</span>, <span class="py-type">str</span>] = {}  <span class="py-comment"># code → original_url</span>
 
-<span class="py-decorator">@app.post</span>(<span class="py-string">"/shorten"</span>, response_model=<span class="py-type">ShortenResponse</span>, status_code=<span class="py-param">201</span>)
+<span class="py-decorator">@app.post</span>(<span class="py-string">"/shorten"</span>, response_model=<span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>, status_code=<span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>)
 <span class="py-keyword">async def</span> <span class="py-func">shorten</span>(body: <span class="py-type">ShortenRequest</span>):
-    code = secrets.token_urlsafe(<span class="py-param">6</span>)[:6]
+    <span class="py-comment"># TODO: generate a 6-char random code</span>
+    code = <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>
+    <span class="py-comment"># TODO: store the mapping code → original url</span>
+    db[<span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>] = <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>
+    <span class="py-comment"># TODO: return the response model</span>
+    <span class="py-keyword">return</span> <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span></div>
+          <div class="challenge-btns">
+            <button class="hint-btn" onclick="showHint('h2-0')">💡 Hint</button>
+            <button class="reveal-btn" onclick="showSolution('s2-0')">Show solution</button>
+          </div>
+          <div class="hint-box" id="h2-0"><code>secrets.token_urlsafe(6)[:6]</code> gives a random URL-safe 6-char string. Store <code>str(body.url)</code> (convert HttpUrl to string first). Return <code>ShortenResponse(code=code, short_url=f"https://sho.rt/{code}", original_url=str(body.url))</code>.</div>
+          <div class="solution-wrap" id="s2-0"><div class="proj-code"><span class="py-decorator">@app.post</span>(<span class="py-string">"/shorten"</span>, response_model=<span class="py-type">ShortenResponse</span>, status_code=<span class="py-param">201</span>)
+<span class="py-keyword">async def</span> <span class="py-func">shorten</span>(body: <span class="py-type">ShortenRequest</span>):
+    code = secrets.token_urlsafe(<span class="py-param">6</span>)[:<span class="py-param">6</span>]
     db[code] = <span class="py-type">str</span>(body.url)
     <span class="py-keyword">return</span> <span class="py-type">ShortenResponse</span>(
         code=code,
         short_url=<span class="py-string">f"https://sho.rt/{code}"</span>,
         original_url=<span class="py-type">str</span>(body.url)
-    )</div>
-            </div>
+    )</div></div>
+        </div>
+
+        <div class="challenge-step">
+          <div class="challenge-step-title">Step 3 — GET /{code} redirect</div>
+          <div class="challenge-step-desc">Look up the code. Raise 404 if it doesn't exist. Return a redirect. What HTTP status tells the browser "this URL has moved permanently, follow it and cache it"?</div>
+          <div class="proj-code"><span class="py-keyword">from</span> fastapi.responses <span class="py-keyword">import</span> <span class="py-type">RedirectResponse</span>
+
+<span class="py-decorator">@app.get</span>(<span class="py-string">"/{code}"</span>)
+<span class="py-keyword">async def</span> <span class="py-func">redirect</span>(code: <span class="py-type">str</span>):
+    url = <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>  <span class="py-comment"># TODO: look up code in db</span>
+    <span class="py-keyword">if not</span> url:
+        <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>  <span class="py-comment"># TODO: raise 404</span>
+    <span class="py-keyword">return</span> <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:1px 3px;border-radius:3px">???</span>  <span class="py-comment"># TODO: return permanent redirect</span></div>
+          <div class="challenge-btns">
+            <button class="hint-btn" onclick="showHint('h3-0')">💡 Hint</button>
+            <button class="reveal-btn" onclick="showSolution('s3-0')">Show solution</button>
           </div>
-          <div class="step">
-            <div class="step-num">3</div>
-            <div class="step-content">
-              <div class="step-title">GET /{code} — redirect to original URL</div>
-              <div class="step-desc">Look up the code. Return 301 Moved Permanently so browsers follow it automatically.</div>
-              <div class="proj-code"><span class="py-decorator">@app.get</span>(<span class="py-string">"/{code}"</span>)
+          <div class="hint-box" id="h3-0"><code>db.get(code)</code> returns <code>None</code> if missing. Raise <code>HTTPException(status_code=404, detail="Code not found")</code>. Return <code>RedirectResponse(url=url, status_code=301)</code> — 301 is "Moved Permanently", browsers follow it automatically and cache the destination.</div>
+          <div class="solution-wrap" id="s3-0"><div class="proj-code"><span class="py-decorator">@app.get</span>(<span class="py-string">"/{code}"</span>)
 <span class="py-keyword">async def</span> <span class="py-func">redirect</span>(code: <span class="py-type">str</span>):
     url = db.get(code)
     <span class="py-keyword">if not</span> url:
         <span class="py-keyword">raise</span> <span class="py-type">HTTPException</span>(status_code=<span class="py-param">404</span>, detail=<span class="py-string">"Code not found"</span>)
-    <span class="py-keyword">return</span> <span class="py-type">RedirectResponse</span>(url=url, status_code=<span class="py-param">301</span>)</div>
-            </div>
-          </div>
-          <div class="step">
-            <div class="step-num">4</div>
-            <div class="step-content">
-              <div class="step-title">Try it — open the HTTP builder on Lesson 1</div>
-              <div class="step-desc">Switch to a POST request, set the body to <code>{"url": "https://example.com/very/long/path"}</code>, and expect a 201 response with the short code. Then do a GET with the code and expect a 301.</div>
-            </div>
-          </div>
+    <span class="py-keyword">return</span> <span class="py-type">RedirectResponse</span>(url=url, status_code=<span class="py-param">301</span>)</div></div>
         </div>
 
-        <div style="background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);border-radius:var(--r-sm);padding:12px 16px;font-size:.82rem;color:var(--muted)">
-          <strong style="color:var(--accent)">What you practised:</strong> Pydantic's <code>HttpUrl</code> validator, <code>status_code=201</code> on POST, <code>RedirectResponse</code>, and path parameters for lookup.
-        </div>
+        <div class="proj-section-label">Run it locally</div>
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:6px">1. Install</div>
+        <div class="setup-cmd">pip install fastapi uvicorn pydantic</div>
+        <div style="font-size:.8rem;color:var(--muted);margin:8px 0 6px">2. Create <code>main.py</code> — fill in every <span style="font-family:var(--mono);color:var(--danger)">???</span>, then run it</div>
+        <div class="proj-code"><span class="py-keyword">from</span> fastapi <span class="py-keyword">import</span> FastAPI, HTTPException
+<span class="py-keyword">from</span> fastapi.responses <span class="py-keyword">import</span> RedirectResponse
+<span class="py-keyword">from</span> pydantic <span class="py-keyword">import</span> BaseModel, HttpUrl
+<span class="py-keyword">import</span> secrets
+
+app = FastAPI()
+db: dict[str, str] = {}
+
+<span class="py-keyword">class</span> ShortenRequest(BaseModel):
+    url: <span style="color:var(--danger)">???</span>
+
+<span class="py-keyword">class</span> ShortenResponse(BaseModel):
+    code: <span style="color:var(--danger)">???</span>
+    short_url: <span style="color:var(--danger)">???</span>
+    original_url: <span style="color:var(--danger)">???</span>
+
+<span class="py-decorator">@app.post</span>(<span class="py-string">"/shorten"</span>, response_model=<span style="color:var(--danger)">???</span>, status_code=<span style="color:var(--danger)">???</span>)
+<span class="py-keyword">async def</span> shorten(body: ShortenRequest):
+    <span class="py-comment"># TODO: generate code, store, return ShortenResponse</span>
+    pass
+
+<span class="py-decorator">@app.get</span>(<span class="py-string">"/{code}"</span>)
+<span class="py-keyword">async def</span> redirect(code: str):
+    <span class="py-comment"># TODO: look up, 404 if missing, return 301 redirect</span>
+    pass</div>
+        <div style="font-size:.8rem;color:var(--muted);margin:8px 0 6px">3. Start &amp; test</div>
+        <div class="setup-cmd">uvicorn main:app --reload
+
+<span class="py-comment"># Shorten a URL</span>
+curl -X POST http://localhost:8000/shorten \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://example.com/very/long/path"}'
+
+<span class="py-comment"># Use the code from the response above</span>
+curl -v http://localhost:8000/&lt;YOUR_CODE&gt;</div>
+
       </div>
     </div>
 
@@ -730,8 +852,22 @@ db: <span class="py-type">dict</span>[<span class="py-type">str</span>, <span cl
         <span class="project-toggle-icon" id="proj-icon-1">▸</span>
       </div>
       <div class="project-body" id="proj-body-1">
-        <p style="font-size:.85rem;color:var(--muted);margin:16px 0 4px">This simulator <em>is</em> the running API. Every button fires a real request against an in-memory task store and shows you the exact JSON request and response your FastAPI server would produce.</p>
 
+        <!-- BRIEF -->
+        <div class="proj-section-label">What you're building</div>
+        <div class="proj-brief">
+          <div class="proj-brief-title">Task Manager API — the backend of a to-do app</div>
+          <div class="proj-brief-desc">A mobile app or frontend calls your API to create tasks, list them, mark them done, and delete them. Real use: any task or issue tracker like Jira, Linear, or Notion. Your server holds the list in memory — 5 routes, zero database setup.</div>
+          <div class="proj-learn-list">
+            <div class="proj-learn-item">Full CRUD: POST, GET, PATCH, DELETE in one API</div>
+            <div class="proj-learn-item"><code>Optional</code> fields — some fields are user-supplied, others are server-generated</div>
+            <div class="proj-learn-item"><code>204 No Content</code> — the correct status code when you delete something</div>
+            <div class="proj-learn-item">In-memory <code>dict</code> as a stand-in database keyed by integer ID</div>
+          </div>
+        </div>
+
+        <!-- LIVE DEMO -->
+        <div class="proj-section-label">See it live — interact with the running API</div>
         <div class="task-sim" id="taskSim">
           <div class="task-sim-toolbar">
             <input class="task-sim-input" id="taskInput" placeholder='Task title — e.g. "Write unit tests"' onkeydown="if(event.key==='Enter')simPostTask()">
@@ -750,12 +886,37 @@ db: <span class="py-type">dict</span>[<span class="py-type">str</span>, <span cl
           </div>
         </div>
 
-        <div class="step-list" style="margin-top:20px">
-          <div class="step">
-            <div class="step-num">1</div>
-            <div class="step-content">
-              <div class="step-title">Data model and in-memory store</div>
-              <div class="proj-code"><span class="py-keyword">from</span> datetime <span class="py-keyword">import</span> datetime
+        <!-- CHALLENGE -->
+        <div class="proj-section-label">Build it — fill in the blanks</div>
+
+        <div class="challenge-step">
+          <div class="challenge-step-title">Step 1 — Pydantic models + in-memory store</div>
+          <div class="challenge-step-desc"><code>TaskIn</code> holds what the user sends. <code>TaskOut</code> adds the fields the server generates (id, done, created_at). The store is just a plain dict.</div>
+          <div class="todo-code">
+            <div class="proj-code"><span class="py-keyword">from</span> datetime <span class="py-keyword">import</span> datetime
+<span class="py-keyword">from</span> typing <span class="py-keyword">import</span> <span class="py-type">Optional</span>
+
+<span class="py-keyword">class</span> <span class="py-type">TaskIn</span>(<span class="py-type">BaseModel</span>):
+    title: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>
+    description: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span> = <span class="py-param">None</span>
+
+<span class="py-keyword">class</span> <span class="py-type">TaskOut</span>(<span class="py-type">BaseModel</span>):
+    id: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>
+    title: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>
+    description: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>
+    done: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span> = <span class="py-param">False</span>
+    created_at: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>
+
+tasks: <span class="py-type">dict</span>[<span class="py-type">int</span>, <span class="py-type">TaskOut</span>] = {}
+_next_id = <span class="py-param">1</span></div>
+          </div>
+          <div class="challenge-btns">
+            <button class="hint-btn" onclick="showHint('h1-1')">💡 Hint</button>
+            <button class="reveal-btn" onclick="showSolution('s1-1')">Show solution</button>
+          </div>
+          <div class="hint-box" id="h1-1">TaskIn only has user-provided fields — use <code>str</code> and <code>Optional[str]</code>. TaskOut adds server-generated fields: <code>id: int</code>, <code>done: bool</code>, <code>created_at: datetime</code>.</div>
+          <div class="solution-wrap" id="s1-1">
+            <div class="proj-code"><span class="py-keyword">from</span> datetime <span class="py-keyword">import</span> datetime
 <span class="py-keyword">from</span> typing <span class="py-keyword">import</span> <span class="py-type">Optional</span>
 
 <span class="py-keyword">class</span> <span class="py-type">TaskIn</span>(<span class="py-type">BaseModel</span>):
@@ -771,13 +932,32 @@ db: <span class="py-type">dict</span>[<span class="py-type">str</span>, <span cl
 
 tasks: <span class="py-type">dict</span>[<span class="py-type">int</span>, <span class="py-type">TaskOut</span>] = {}
 _next_id = <span class="py-param">1</span></div>
-            </div>
           </div>
-          <div class="step">
-            <div class="step-num">2</div>
-            <div class="step-content">
-              <div class="step-title">POST /tasks and GET /tasks</div>
-              <div class="proj-code"><span class="py-decorator">@app.post</span>(<span class="py-string">"/tasks"</span>, response_model=<span class="py-type">TaskOut</span>, status_code=<span class="py-param">201</span>)
+        </div>
+
+        <div class="challenge-step">
+          <div class="challenge-step-title">Step 2 — POST /tasks and GET /tasks</div>
+          <div class="challenge-step-desc">POST creates a task and stores it. GET returns everything in the store.</div>
+          <div class="todo-code">
+            <div class="proj-code"><span class="py-decorator">@app.post</span>(<span class="py-string">"/tasks"</span>, response_model=<span class="py-type">TaskOut</span>, status_code=<span class="py-param">201</span>)
+<span class="py-keyword">async def</span> <span class="py-func">create_task</span>(body: <span class="py-type">TaskIn</span>):
+    <span class="py-keyword">global</span> _next_id
+    task = <span class="py-type">TaskOut</span>(id=_next_id, **body.dict(), created_at=<span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>)
+    tasks[<span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>] = task
+    _next_id += <span class="py-param">1</span>
+    <span class="py-keyword">return</span> <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>
+
+<span class="py-decorator">@app.get</span>(<span class="py-string">"/tasks"</span>, response_model=<span class="py-type">list</span>[<span class="py-type">TaskOut</span>])
+<span class="py-keyword">async def</span> <span class="py-func">list_tasks</span>():
+    <span class="py-keyword">return</span> <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span></div>
+          </div>
+          <div class="challenge-btns">
+            <button class="hint-btn" onclick="showHint('h2-1')">💡 Hint</button>
+            <button class="reveal-btn" onclick="showSolution('s2-1')">Show solution</button>
+          </div>
+          <div class="hint-box" id="h2-1">Use <code>datetime.utcnow()</code> for the timestamp. Store in a dict keyed by id: <code>tasks[_next_id] = task</code>. Return <code>list(tasks.values())</code> for GET.</div>
+          <div class="solution-wrap" id="s2-1">
+            <div class="proj-code"><span class="py-decorator">@app.post</span>(<span class="py-string">"/tasks"</span>, response_model=<span class="py-type">TaskOut</span>, status_code=<span class="py-param">201</span>)
 <span class="py-keyword">async def</span> <span class="py-func">create_task</span>(body: <span class="py-type">TaskIn</span>):
     <span class="py-keyword">global</span> _next_id
     task = <span class="py-type">TaskOut</span>(id=_next_id, **body.dict(), created_at=datetime.utcnow())
@@ -788,13 +968,36 @@ _next_id = <span class="py-param">1</span></div>
 <span class="py-decorator">@app.get</span>(<span class="py-string">"/tasks"</span>, response_model=<span class="py-type">list</span>[<span class="py-type">TaskOut</span>])
 <span class="py-keyword">async def</span> <span class="py-func">list_tasks</span>():
     <span class="py-keyword">return</span> list(tasks.values())</div>
-            </div>
           </div>
-          <div class="step">
-            <div class="step-num">3</div>
-            <div class="step-content">
-              <div class="step-title">PATCH /tasks/{id} and DELETE /tasks/{id}</div>
-              <div class="proj-code"><span class="py-keyword">class</span> <span class="py-type">TaskPatch</span>(<span class="py-type">BaseModel</span>):
+        </div>
+
+        <div class="challenge-step">
+          <div class="challenge-step-title">Step 3 — PATCH /tasks/{id} and DELETE /tasks/{id}</div>
+          <div class="challenge-step-desc">PATCH marks a task done. DELETE removes it and returns nothing (204 means no response body).</div>
+          <div class="todo-code">
+            <div class="proj-code"><span class="py-keyword">class</span> <span class="py-type">TaskPatch</span>(<span class="py-type">BaseModel</span>):
+    done: <span class="py-type">bool</span>
+
+<span class="py-decorator">@app.patch</span>(<span class="py-string">"/tasks/{task_id}"</span>, response_model=<span class="py-type">TaskOut</span>)
+<span class="py-keyword">async def</span> <span class="py-func">update_task</span>(task_id: <span class="py-type">int</span>, body: <span class="py-type">TaskPatch</span>):
+    <span class="py-keyword">if</span> task_id <span class="py-keyword">not in</span> tasks:
+        <span class="py-keyword">raise</span> <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>
+    tasks[task_id].done = <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>
+    <span class="py-keyword">return</span> tasks[task_id]
+
+<span class="py-decorator">@app.delete</span>(<span class="py-string">"/tasks/{task_id}"</span>, status_code=<span class="py-param">204</span>)
+<span class="py-keyword">async def</span> <span class="py-func">delete_task</span>(task_id: <span class="py-type">int</span>):
+    <span class="py-keyword">if</span> task_id <span class="py-keyword">not in</span> tasks:
+        <span class="py-keyword">raise</span> <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>
+    <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span></div>
+          </div>
+          <div class="challenge-btns">
+            <button class="hint-btn" onclick="showHint('h3-1')">💡 Hint</button>
+            <button class="reveal-btn" onclick="showSolution('s3-1')">Show solution</button>
+          </div>
+          <div class="hint-box" id="h3-1">Raise <code>HTTPException(404)</code> if the id is missing. PATCH sets <code>tasks[task_id].done = body.done</code>. DELETE uses <code>del tasks[task_id]</code> — no return needed since status 204 sends no body.</div>
+          <div class="solution-wrap" id="s3-1">
+            <div class="proj-code"><span class="py-keyword">class</span> <span class="py-type">TaskPatch</span>(<span class="py-type">BaseModel</span>):
     done: <span class="py-type">bool</span>
 
 <span class="py-decorator">@app.patch</span>(<span class="py-string">"/tasks/{task_id}"</span>, response_model=<span class="py-type">TaskOut</span>)
@@ -809,13 +1012,68 @@ _next_id = <span class="py-param">1</span></div>
     <span class="py-keyword">if</span> task_id <span class="py-keyword">not in</span> tasks:
         <span class="py-keyword">raise</span> <span class="py-type">HTTPException</span>(<span class="py-param">404</span>)
     <span class="py-keyword">del</span> tasks[task_id]</div>
-            </div>
           </div>
         </div>
 
-        <div style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:var(--r-sm);padding:12px 16px;font-size:.82rem;color:var(--muted)">
-          <strong style="color:var(--warning)">What you practised:</strong> Full CRUD with 5 routes, <code>PATCH</code> for partial updates, <code>204 No Content</code> for DELETE, and using a dict as an in-memory database.
+        <!-- RUN LOCALLY -->
+        <div class="proj-section-label">Run it locally</div>
+        <div class="local-setup">
+          <div class="setup-cmd">pip install fastapi uvicorn pydantic
+uvicorn main:app --reload</div>
+          <div class="proj-code" style="margin-bottom:8px"><span class="py-comment"># main.py — starter (fill in the TODOs)</span>
+<span class="py-keyword">from</span> fastapi <span class="py-keyword">import</span> FastAPI, HTTPException
+<span class="py-keyword">from</span> pydantic <span class="py-keyword">import</span> <span class="py-type">BaseModel</span>
+<span class="py-keyword">from</span> datetime <span class="py-keyword">import</span> datetime
+<span class="py-keyword">from</span> typing <span class="py-keyword">import</span> <span class="py-type">Optional</span>
+
+app = FastAPI()
+
+<span class="py-keyword">class</span> <span class="py-type">TaskIn</span>(<span class="py-type">BaseModel</span>):
+    title: <span class="py-comment"># TODO: str</span>
+    description: <span class="py-comment"># TODO: Optional[str] = None</span>
+
+<span class="py-keyword">class</span> <span class="py-type">TaskOut</span>(<span class="py-type">BaseModel</span>):
+    <span class="py-comment"># TODO: id, title, description, done, created_at</span>
+
+tasks: <span class="py-type">dict</span>[<span class="py-type">int</span>, <span class="py-type">TaskOut</span>] = {}
+_next_id = <span class="py-param">1</span>
+
+<span class="py-decorator">@app.post</span>(<span class="py-string">"/tasks"</span>, response_model=<span class="py-type">TaskOut</span>, status_code=<span class="py-param">201</span>)
+<span class="py-keyword">async def</span> <span class="py-func">create_task</span>(body: <span class="py-type">TaskIn</span>):
+    <span class="py-comment"># TODO: build TaskOut, store in tasks dict, return it</span>
+    ...
+
+<span class="py-decorator">@app.get</span>(<span class="py-string">"/tasks"</span>, response_model=<span class="py-type">list</span>[<span class="py-type">TaskOut</span>])
+<span class="py-keyword">async def</span> <span class="py-func">list_tasks</span>():
+    <span class="py-comment"># TODO: return list(tasks.values())</span>
+    ...
+
+<span class="py-decorator">@app.patch</span>(<span class="py-string">"/tasks/{task_id}"</span>, response_model=<span class="py-type">TaskOut</span>)
+<span class="py-keyword">async def</span> <span class="py-func">update_task</span>(task_id: <span class="py-type">int</span>, body):
+    <span class="py-comment"># TODO: 404 if missing, set done, return updated task</span>
+    ...
+
+<span class="py-decorator">@app.delete</span>(<span class="py-string">"/tasks/{task_id}"</span>, status_code=<span class="py-param">204</span>)
+<span class="py-keyword">async def</span> <span class="py-func">delete_task</span>(task_id: <span class="py-type">int</span>):
+    <span class="py-comment"># TODO: 404 if missing, del tasks[task_id]</span>
+    ...</div>
+          <div class="setup-cmd"># Create a task
+curl -X POST http://localhost:8000/tasks \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Buy milk"}'
+
+# List all tasks
+curl http://localhost:8000/tasks
+
+# Mark done (replace 1 with actual id)
+curl -X PATCH http://localhost:8000/tasks/1 \
+  -H "Content-Type: application/json" \
+  -d '{"done":true}'
+
+# Delete
+curl -X DELETE http://localhost:8000/tasks/1</div>
         </div>
+
       </div>
     </div>
 
@@ -830,8 +1088,22 @@ _next_id = <span class="py-param">1</span></div>
         <span class="project-toggle-icon" id="proj-icon-2">▸</span>
       </div>
       <div class="project-body" id="proj-body-2">
-        <p style="font-size:.85rem;color:var(--muted);margin:16px 0 4px">Simulate a full auth flow: register a user, log in to get a JWT, then use the token to create and list protected notes. Try making requests without a token to see the 401 response.</p>
 
+        <!-- BRIEF -->
+        <div class="proj-section-label">What you're building</div>
+        <div class="proj-brief">
+          <div class="proj-brief-title">Authenticated Notes API — add security to a real backend</div>
+          <div class="proj-brief-desc">Without auth, anyone can read anyone's notes. You'll build register/login endpoints that issue JWTs, then protect the notes routes so only token holders can access their own data. This is the pattern used by every modern web API.</div>
+          <div class="proj-learn-list">
+            <div class="proj-learn-item">Password hashing with <code>passlib</code> — never store plaintext passwords</div>
+            <div class="proj-learn-item">JWT creation with <code>sub</code> (subject) and <code>exp</code> (expiry) claims</div>
+            <div class="proj-learn-item"><code>Depends()</code> as auth middleware — FastAPI injects it automatically</div>
+            <div class="proj-learn-item">401 Unauthorized vs 403 Forbidden — when to use each</div>
+          </div>
+        </div>
+
+        <!-- LIVE DEMO -->
+        <div class="proj-section-label">See it live — register → login → use protected routes</div>
         <div class="auth-sim">
           <div class="auth-sim-tabs">
             <button class="auth-sim-tab active" onclick="authTab('register')">1. Register</button>
@@ -885,26 +1157,64 @@ _next_id = <span class="py-param">1</span></div>
           </div>
         </div>
 
-        <div class="step-list" style="margin-top:20px">
-          <div class="step">
-            <div class="step-num">1</div>
-            <div class="step-content">
-              <div class="step-title">Password hashing on register</div>
-              <div class="step-desc">Never store plain passwords. Hash with bcrypt via <code>passlib</code>.</div>
-              <div class="proj-code"><span class="py-keyword">from</span> passlib.context <span class="py-keyword">import</span> <span class="py-type">CryptContext</span>
+        <!-- CHALLENGE -->
+        <div class="proj-section-label">Build it — fill in the blanks</div>
+
+        <div class="challenge-step">
+          <div class="challenge-step-title">Step 1 — Register: hash the password</div>
+          <div class="challenge-step-desc">Never store raw passwords. Use passlib's CryptContext to hash on register and verify on login.</div>
+          <div class="todo-code">
+            <div class="proj-code"><span class="py-keyword">from</span> passlib.context <span class="py-keyword">import</span> <span class="py-type">CryptContext</span>
+pwd_ctx = <span class="py-type">CryptContext</span>(schemes=[<span class="py-string">"bcrypt"</span>], deprecated=<span class="py-string">"auto"</span>)
+
+<span class="py-decorator">@app.post</span>(<span class="py-string">"/auth/register"</span>, status_code=<span class="py-param">201</span>)
+<span class="py-keyword">async def</span> <span class="py-func">register</span>(body: <span class="py-type">UserIn</span>):
+    users_db[body.username] = <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>
+    <span class="py-keyword">return</span> {<span class="py-string">"message"</span>: <span class="py-string">"registered"</span>}</div>
+          </div>
+          <div class="challenge-btns">
+            <button class="hint-btn" onclick="showHint('h1-2')">💡 Hint</button>
+            <button class="reveal-btn" onclick="showSolution('s1-2')">Show solution</button>
+          </div>
+          <div class="hint-box" id="h1-2">Use <code>pwd_ctx.hash(password)</code> to store the hash. Later, use <code>pwd_ctx.verify(plain, hashed)</code> to check a login attempt.</div>
+          <div class="solution-wrap" id="s1-2">
+            <div class="proj-code"><span class="py-keyword">from</span> passlib.context <span class="py-keyword">import</span> <span class="py-type">CryptContext</span>
 pwd_ctx = <span class="py-type">CryptContext</span>(schemes=[<span class="py-string">"bcrypt"</span>], deprecated=<span class="py-string">"auto"</span>)
 
 <span class="py-decorator">@app.post</span>(<span class="py-string">"/auth/register"</span>, status_code=<span class="py-param">201</span>)
 <span class="py-keyword">async def</span> <span class="py-func">register</span>(body: <span class="py-type">UserIn</span>):
     users_db[body.username] = pwd_ctx.hash(body.password)
     <span class="py-keyword">return</span> {<span class="py-string">"message"</span>: <span class="py-string">"registered"</span>}</div>
-            </div>
           </div>
-          <div class="step">
-            <div class="step-num">2</div>
-            <div class="step-content">
-              <div class="step-title">Login — verify password, return JWT</div>
-              <div class="proj-code"><span class="py-keyword">import</span> jwt, datetime
+        </div>
+
+        <div class="challenge-step">
+          <div class="challenge-step-title">Step 2 — Login: verify password, issue JWT</div>
+          <div class="challenge-step-desc">Check the stored hash, then sign a JWT with the username as <code>sub</code> and an expiry as <code>exp</code>.</div>
+          <div class="todo-code">
+            <div class="proj-code"><span class="py-keyword">import</span> jwt
+<span class="py-keyword">from</span> datetime <span class="py-keyword">import</span> datetime, timedelta
+
+<span class="py-decorator">@app.post</span>(<span class="py-string">"/auth/login"</span>)
+<span class="py-keyword">async def</span> <span class="py-func">login</span>(body: <span class="py-type">UserIn</span>):
+    hashed = users_db.get(body.username)
+    <span class="py-keyword">if not</span> hashed <span class="py-keyword">or not</span> <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>:
+        <span class="py-keyword">raise</span> <span class="py-type">HTTPException</span>(<span class="py-param">401</span>, <span class="py-string">"Bad credentials"</span>)
+    payload = {
+        <span class="py-string">"sub"</span>: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>,
+        <span class="py-string">"exp"</span>: <span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=<span class="py-string">"HS256"</span>)
+    <span class="py-keyword">return</span> {<span class="py-string">"access_token"</span>: token, <span class="py-string">"token_type"</span>: <span class="py-string">"bearer"</span>}</div>
+          </div>
+          <div class="challenge-btns">
+            <button class="hint-btn" onclick="showHint('h2-2')">💡 Hint</button>
+            <button class="reveal-btn" onclick="showSolution('s2-2')">Show solution</button>
+          </div>
+          <div class="hint-box" id="h2-2"><code>pwd_ctx.verify(body.password, hashed)</code> checks the password. The payload needs <code>"sub": body.username</code> and <code>"exp": datetime.utcnow() + timedelta(hours=1)</code>.</div>
+          <div class="solution-wrap" id="s2-2">
+            <div class="proj-code"><span class="py-keyword">import</span> jwt
+<span class="py-keyword">from</span> datetime <span class="py-keyword">import</span> datetime, timedelta
 
 <span class="py-decorator">@app.post</span>(<span class="py-string">"/auth/login"</span>)
 <span class="py-keyword">async def</span> <span class="py-func">login</span>(body: <span class="py-type">UserIn</span>):
@@ -917,13 +1227,33 @@ pwd_ctx = <span class="py-type">CryptContext</span>(schemes=[<span class="py-str
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=<span class="py-string">"HS256"</span>)
     <span class="py-keyword">return</span> {<span class="py-string">"access_token"</span>: token, <span class="py-string">"token_type"</span>: <span class="py-string">"bearer"</span>}</div>
-            </div>
           </div>
-          <div class="step">
-            <div class="step-num">3</div>
-            <div class="step-content">
-              <div class="step-title">Protected route using Depends()</div>
-              <div class="proj-code"><span class="py-keyword">def</span> <span class="py-func">get_current_user</span>(token: <span class="py-type">str</span> = <span class="py-type">Depends</span>(oauth2_scheme)):
+        </div>
+
+        <div class="challenge-step">
+          <div class="challenge-step-title">Step 3 — Protected route with Depends()</div>
+          <div class="challenge-step-desc">FastAPI calls <code>get_current_user</code> before your route runs. It decodes the token and returns the username — or raises 401 if the token is bad or expired.</div>
+          <div class="todo-code">
+            <div class="proj-code"><span class="py-keyword">def</span> <span class="py-func">get_current_user</span>(token: <span class="py-type">str</span> = <span class="py-type">Depends</span>(<span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>)):
+    <span class="py-keyword">try</span>:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[<span class="py-string">"HS256"</span>])
+        <span class="py-keyword">return</span> payload[<span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>]
+    <span class="py-keyword">except</span> jwt.<span class="py-type">ExpiredSignatureError</span>:
+        <span class="py-keyword">raise</span> <span class="py-type">HTTPException</span>(<span class="py-param">401</span>, <span class="py-string">"Token expired"</span>)
+    <span class="py-keyword">except</span> jwt.<span class="py-type">InvalidTokenError</span>:
+        <span class="py-keyword">raise</span> <span class="py-type">HTTPException</span>(<span class="py-param">401</span>, <span class="py-string">"Invalid token"</span>)
+
+<span class="py-decorator">@app.get</span>(<span class="py-string">"/notes"</span>)
+<span class="py-keyword">async def</span> <span class="py-func">get_notes</span>(user: <span class="py-type">str</span> = <span class="py-type">Depends</span>(<span style="background:rgba(248,113,113,.12);color:var(--danger);padding:0 3px;border-radius:3px">???</span>)):
+    <span class="py-keyword">return</span> notes_db.get(user, [])</div>
+          </div>
+          <div class="challenge-btns">
+            <button class="hint-btn" onclick="showHint('h3-2')">💡 Hint</button>
+            <button class="reveal-btn" onclick="showSolution('s3-2')">Show solution</button>
+          </div>
+          <div class="hint-box" id="h3-2"><code>Depends(oauth2_scheme)</code> extracts the Bearer token from the Authorization header. The payload key for the username is <code>"sub"</code>. Wrap <code>jwt.decode</code> in try/except to catch bad tokens.</div>
+          <div class="solution-wrap" id="s3-2">
+            <div class="proj-code"><span class="py-keyword">def</span> <span class="py-func">get_current_user</span>(token: <span class="py-type">str</span> = <span class="py-type">Depends</span>(oauth2_scheme)):
     <span class="py-keyword">try</span>:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[<span class="py-string">"HS256"</span>])
         <span class="py-keyword">return</span> payload[<span class="py-string">"sub"</span>]
@@ -935,13 +1265,68 @@ pwd_ctx = <span class="py-type">CryptContext</span>(schemes=[<span class="py-str
 <span class="py-decorator">@app.get</span>(<span class="py-string">"/notes"</span>)
 <span class="py-keyword">async def</span> <span class="py-func">get_notes</span>(user: <span class="py-type">str</span> = <span class="py-type">Depends</span>(get_current_user)):
     <span class="py-keyword">return</span> notes_db.get(user, [])</div>
-            </div>
           </div>
         </div>
 
-        <div style="background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);border-radius:var(--r-sm);padding:12px 16px;font-size:.82rem;color:var(--muted)">
-          <strong style="color:var(--danger)">What you practised:</strong> Register/login flow, <code>passlib</code> bcrypt hashing, JWT creation and verification, <code>Depends()</code> for dependency-injected auth, and 401 errors on unauthenticated access.
+        <!-- RUN LOCALLY -->
+        <div class="proj-section-label">Run it locally</div>
+        <div class="local-setup">
+          <div class="setup-cmd">pip install fastapi uvicorn pydantic python-jose[cryptography] passlib[bcrypt]
+uvicorn main:app --reload</div>
+          <div class="proj-code" style="margin-bottom:8px"><span class="py-comment"># main.py — starter (fill in the TODOs)</span>
+<span class="py-keyword">from</span> fastapi <span class="py-keyword">import</span> FastAPI, HTTPException, Depends
+<span class="py-keyword">from</span> fastapi.security <span class="py-keyword">import</span> <span class="py-type">OAuth2PasswordBearer</span>
+<span class="py-keyword">from</span> pydantic <span class="py-keyword">import</span> <span class="py-type">BaseModel</span>
+<span class="py-keyword">from</span> passlib.context <span class="py-keyword">import</span> <span class="py-type">CryptContext</span>
+<span class="py-keyword">from</span> datetime <span class="py-keyword">import</span> datetime, timedelta
+<span class="py-keyword">import</span> jwt
+
+app = FastAPI()
+SECRET_KEY = <span class="py-string">"change-me-in-production"</span>
+oauth2_scheme = <span class="py-type">OAuth2PasswordBearer</span>(tokenUrl=<span class="py-string">"auth/login"</span>)
+pwd_ctx = <span class="py-type">CryptContext</span>(schemes=[<span class="py-string">"bcrypt"</span>], deprecated=<span class="py-string">"auto"</span>)
+users_db = {}
+notes_db = {}
+
+<span class="py-keyword">class</span> <span class="py-type">UserIn</span>(<span class="py-type">BaseModel</span>):
+    username: <span class="py-type">str</span>
+    password: <span class="py-type">str</span>
+
+<span class="py-decorator">@app.post</span>(<span class="py-string">"/auth/register"</span>, status_code=<span class="py-param">201</span>)
+<span class="py-keyword">async def</span> <span class="py-func">register</span>(body: <span class="py-type">UserIn</span>):
+    <span class="py-comment"># TODO: hash body.password and store in users_db</span>
+    ...
+
+<span class="py-decorator">@app.post</span>(<span class="py-string">"/auth/login"</span>)
+<span class="py-keyword">async def</span> <span class="py-func">login</span>(body: <span class="py-type">UserIn</span>):
+    <span class="py-comment"># TODO: verify password, build payload with sub+exp, return JWT</span>
+    ...
+
+<span class="py-keyword">def</span> <span class="py-func">get_current_user</span>(token: <span class="py-type">str</span> = <span class="py-type">Depends</span>(oauth2_scheme)):
+    <span class="py-comment"># TODO: jwt.decode, return payload["sub"], handle exceptions</span>
+    ...
+
+<span class="py-decorator">@app.get</span>(<span class="py-string">"/notes"</span>)
+<span class="py-keyword">async def</span> <span class="py-func">get_notes</span>(user: <span class="py-type">str</span> = <span class="py-type">Depends</span>(get_current_user)):
+    <span class="py-keyword">return</span> notes_db.get(user, [])</div>
+          <div class="setup-cmd"># Register a user
+curl -X POST http://localhost:8000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"alice","password":"secret123"}'
+
+# Login and capture token
+TOKEN=$(curl -s -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"alice","password":"secret123"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+
+# Use protected route
+curl http://localhost:8000/notes \
+  -H "Authorization: Bearer $TOKEN"
+
+# Try without token (should get 401)
+curl http://localhost:8000/notes</div>
         </div>
+
       </div>
     </div>
 
@@ -1495,6 +1880,52 @@ function answerDesign(idx, pick, clickedCard) {
    ============================================================ */
 
 // --- Project card toggle ---
+// --- P1: URL Shortener sim ---
+let shortLinks = {};
+
+function simShorten() {
+  const val = document.getElementById('shortenInput').value.trim();
+  const res = document.getElementById('shortenResponse');
+  if (!val) return;
+  try { new URL(val); } catch {
+    res.textContent = '422 Unprocessable Entity\n' + JSON.stringify({error:{field:'url',issue:'Not a valid URL'}},null,2);
+    return;
+  }
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  const code = Array.from({length:6}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+  shortLinks[code] = val;
+  res.textContent = '201 Created\n' + JSON.stringify({code, short_url:`https://sho.rt/${code}`, original_url:val}, null, 2);
+  renderShortLinks();
+}
+
+function renderShortLinks() {
+  const el = document.getElementById('shortLinkList');
+  const entries = Object.entries(shortLinks);
+  if (!entries.length) { el.innerHTML = '<div style="font-size:.72rem;color:var(--dim)">No links yet</div>'; return; }
+  el.innerHTML = entries.map(([code, url]) => `
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;font-size:.72rem;min-width:0">
+      <span style="color:#a78bfa;font-family:var(--mono);flex-shrink:0">/${code}</span>
+      <span style="color:var(--dim)">→</span>
+      <span style="color:#4a6a8a;font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1" title="${url.replace(/"/g,'&quot;')}">${url.replace(/</g,'&lt;')}</span>
+      <button onclick="simRedirect('${code}')" style="padding:2px 7px;border-radius:4px;border:1px solid rgba(79,142,247,.3);background:rgba(79,142,247,.08);color:#4f8ef7;font-size:.65rem;cursor:pointer;flex-shrink:0">GET →</button>
+    </div>`).join('');
+}
+
+function simRedirect(code) {
+  const url = shortLinks[code];
+  document.getElementById('shortenResponse').textContent = url
+    ? `301 Moved Permanently\nLocation: ${url}\n\n(Browser follows this redirect automatically)`
+    : `404 Not Found\n{"error": "Code not found"}`;
+}
+
+// Challenge hint / reveal helpers
+function showHint(id) {
+  document.getElementById(id).classList.add('visible');
+}
+function showSolution(id) {
+  document.getElementById(id).classList.add('visible');
+}
+
 function toggleProject(n) {
   const body = document.getElementById('proj-body-' + n);
   const icon = document.getElementById('proj-icon-' + n);
