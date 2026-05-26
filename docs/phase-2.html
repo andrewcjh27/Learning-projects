@@ -203,6 +203,27 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .fib-slider-row label{font-size:.82rem;color:var(--muted);white-space:nowrap}
 .fib-slider-row input[type=range]{flex:1;accent-color:var(--primary)}
 .fib-n-display{font-family:var(--mono);font-size:.9rem;font-weight:600;color:var(--primary);min-width:32px;text-align:center}
+
+/* Async Gantt Timeline */
+.gantt-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.gantt-section-title{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.gantt-total-badge{font-family:var(--mono);font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:10px;opacity:0;transition:opacity .4s}
+.gantt-total-badge.sync-b{background:rgba(248,113,113,.15);color:var(--danger)}
+.gantt-total-badge.async-b{background:rgba(52,211,153,.15);color:var(--accent)}
+.gantt-total-badge.show{opacity:1}
+.gantt-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.gantt-row-label{font-family:var(--mono);font-size:.7rem;color:var(--muted);width:104px;flex-shrink:0;text-align:right}
+.gantt-track{flex:1;height:18px;background:var(--surface);border-radius:4px;position:relative;overflow:hidden}
+.gantt-bar{position:absolute;top:0;height:100%;border-radius:4px;width:0}
+.gantt-bar.t1c{background:linear-gradient(90deg,#3b7dd8,#4f8ef7)}
+.gantt-bar.t2c{background:linear-gradient(90deg,#7c3aed,#a78bfa)}
+.gantt-bar.t3c{background:linear-gradient(90deg,#059669,#34d399)}
+.gantt-divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.gantt-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px}
+.gantt-legend-item{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted)}
+.gantt-legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.gantt-time-axis{display:flex;justify-content:space-between;padding-left:114px;margin-bottom:3px}
+.gantt-time-tick{font-family:var(--mono);font-size:.6rem;color:var(--dim)}
 </style>
 <script>(function(){const t=localStorage.getItem('theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();</script>
 </head>
@@ -500,6 +521,10 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 
   <div class="split split-wide">
     <div class="prose">
+      <h3>What is asyncio?</h3>
+      <p><strong>asyncio</strong> is Python's built-in module for running many tasks on <strong>one thread</strong> without blocking. Whenever a task hits an <code>await</code> — waiting for a network response, a database query, a file read — the thread immediately switches to another task instead of sitting idle. When the I/O finishes, the original task resumes.</p>
+      <p>Think of a restaurant waiter: one person takes table 1's order, walks to the kitchen window, and instead of standing there watching the grill — goes to take table 2's order. When table 1's food is ready, they come back. One thread. Three tables served in roughly the time it takes to cook the slowest dish.</p>
+      <p><strong>vs hyper-threading:</strong> hyper-threading has two <em>hardware</em> threads sharing one core — the CPU switches between them automatically at the hardware level. asyncio has <em>one</em> software thread; your code decides when to switch via <code>await</code>.</p>
       <h3>The GIL recap</h3>
       <p>The <strong>Global Interpreter Lock</strong> means only one Python thread runs bytecode at a time. Threads help with I/O-bound work (the GIL is released during I/O) but not CPU-bound work.</p>
       <h3>asyncio event loop</h3>
@@ -526,6 +551,80 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <div style="font-size:.76rem;color:var(--muted);margin-top:10px;line-height:1.6">
         Sync: each request waits for the previous to finish. Async: all requests in-flight simultaneously — total time ≈ slowest request.
       </div>
+    </div>
+  </div>
+
+  <!-- Gantt timeline diagram -->
+  <div class="gantt-wrap" style="margin-top:28px">
+    <div class="demo-title">Task Lifetime Timeline <span>play to compare</span></div>
+
+    <div>
+      <div class="gantt-section-title">
+        SYNC — tasks run one after another
+        <span class="gantt-total-badge sync-b" id="syncBadge">2500 ms total</span>
+      </div>
+      <div class="gantt-time-axis">
+        <span class="gantt-time-tick">0</span>
+        <span class="gantt-time-tick">625ms</span>
+        <span class="gantt-time-tick">1250ms</span>
+        <span class="gantt-time-tick">1875ms</span>
+        <span class="gantt-time-tick">2500ms</span>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-row-label">fetch_users</div>
+        <div class="gantt-track"><div class="gantt-bar t1c" id="sg0"></div></div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-row-label">fetch_products</div>
+        <div class="gantt-track"><div class="gantt-bar t2c" id="sg1"></div></div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-row-label">fetch_orders</div>
+        <div class="gantt-track"><div class="gantt-bar t3c" id="sg2"></div></div>
+      </div>
+    </div>
+
+    <hr class="gantt-divider">
+
+    <div>
+      <div class="gantt-section-title">
+        ASYNC — all tasks in-flight simultaneously
+        <span class="gantt-total-badge async-b" id="asyncBadge">1200 ms total</span>
+      </div>
+      <div class="gantt-time-axis">
+        <span class="gantt-time-tick">0</span>
+        <span class="gantt-time-tick">625ms</span>
+        <span class="gantt-time-tick">1250ms</span>
+        <span class="gantt-time-tick">1875ms</span>
+        <span class="gantt-time-tick">2500ms</span>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-row-label">fetch_users</div>
+        <div class="gantt-track"><div class="gantt-bar t1c" id="ag0"></div></div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-row-label">fetch_products</div>
+        <div class="gantt-track"><div class="gantt-bar t2c" id="ag1"></div></div>
+      </div>
+      <div class="gantt-row">
+        <div class="gantt-row-label">fetch_orders</div>
+        <div class="gantt-track"><div class="gantt-bar t3c" id="ag2"></div></div>
+      </div>
+    </div>
+
+    <div class="gantt-legend">
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#4f8ef7"></div>fetch_users (800ms I/O)</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#a78bfa"></div>fetch_products (500ms I/O)</div>
+      <div class="gantt-legend-item"><div class="gantt-legend-dot" style="background:#34d399"></div>fetch_orders (1200ms I/O)</div>
+    </div>
+
+    <div class="btn-group" style="margin-top:14px">
+      <button class="btn primary" id="ganttPlayBtn" onclick="ganttPlay()">▶ Play</button>
+      <button class="btn" onclick="ganttReset()">↺ Reset</button>
+    </div>
+    <div style="font-size:.75rem;color:var(--muted);margin-top:10px;line-height:1.6">
+      Sync: each task waits for the previous to finish — one thread, blocked the whole time.<br>
+      Async: all three start at once. The thread yields at each <code>await</code> and comes back when I/O finishes. Total time ≈ slowest request.
     </div>
   </div>
 
@@ -1044,6 +1143,78 @@ async function runFibWithCache(){
   fibAnimating=false;
   document.getElementById('fibNoCacheBtn').disabled=false;
   document.getElementById('fibCacheBtn').disabled=false;
+}
+
+// =============================================
+// LESSON 3 — GANTT TIMELINE
+// =============================================
+const GANTT_TOTAL = 2500; // ms — full track width represents 2500ms
+const GANTT_SPEED = 0.45; // animation speed relative to real time
+
+const syncBarsData = [
+  {id:'sg0', w:800,  left:0,    delay:0   },
+  {id:'sg1', w:500,  left:800,  delay:800 },
+  {id:'sg2', w:1200, left:1300, delay:1300},
+];
+const asyncBarsData = [
+  {id:'ag0', w:800,  left:0, delay:0},
+  {id:'ag1', w:500,  left:0, delay:0},
+  {id:'ag2', w:1200, left:0, delay:0},
+];
+
+let ganttRunning = false;
+
+function ganttPlay() {
+  if (ganttRunning) return;
+  ganttRunning = true;
+  document.getElementById('ganttPlayBtn').disabled = true;
+
+  // reset bars silently
+  [...syncBarsData, ...asyncBarsData].forEach(b => {
+    const el = document.getElementById(b.id);
+    el.style.transition = 'none';
+    el.style.width = '0%';
+    el.style.left = (b.left / GANTT_TOTAL * 100).toFixed(2) + '%';
+  });
+  document.getElementById('syncBadge').classList.remove('show');
+  document.getElementById('asyncBadge').classList.remove('show');
+
+  // force reflow before animating
+  document.getElementById('sg0').offsetWidth;
+
+  [...syncBarsData, ...asyncBarsData].forEach(b => {
+    const el = document.getElementById(b.id);
+    const widthPct = (b.w / GANTT_TOTAL * 100).toFixed(2) + '%';
+    const dur = (b.w * GANTT_SPEED / 1000).toFixed(3) + 's';
+    const del = (b.delay * GANTT_SPEED / 1000).toFixed(3) + 's';
+    el.style.transition = `width ${dur} ${del} linear`;
+    requestAnimationFrame(() => { el.style.width = widthPct; });
+  });
+
+  // async badge appears when async finishes (1200ms * speed)
+  setTimeout(() => {
+    document.getElementById('asyncBadge').classList.add('show');
+  }, Math.round(1200 * GANTT_SPEED));
+
+  // sync badge appears when sync finishes (2500ms * speed)
+  setTimeout(() => {
+    document.getElementById('syncBadge').classList.add('show');
+    ganttRunning = false;
+    document.getElementById('ganttPlayBtn').disabled = false;
+  }, Math.round(2500 * GANTT_SPEED) + 100);
+}
+
+function ganttReset() {
+  ganttRunning = false;
+  document.getElementById('ganttPlayBtn').disabled = false;
+  [...syncBarsData, ...asyncBarsData].forEach(b => {
+    const el = document.getElementById(b.id);
+    el.style.transition = 'none';
+    el.style.width = '0%';
+    el.style.left = (b.left / GANTT_TOTAL * 100).toFixed(2) + '%';
+  });
+  document.getElementById('syncBadge').classList.remove('show');
+  document.getElementById('asyncBadge').classList.remove('show');
 }
 
 // =============================================
