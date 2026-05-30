@@ -7,11 +7,39 @@ Materials for the **Neurocle Researcher** interview seminar on
 
 | File | Use |
 |------|-----|
-| `../vanillanet.html` | **Interactive 15-slide deck.** Open in a browser, present live or screen-record. Arrow keys / Space to navigate, `F` for fullscreen. Two live demos: the deep-training λ collapse and the series-activation curve. |
+| `../vanillanet.html` | **Interactive 15-slide deck.** Open in a browser, present live or screen-record. Two live demos: the deep-training λ collapse and the series-activation curve. |
+| `vanillanet-seminar.pdf` | **Browser-free backup** — all 15 slides, one per page (export from the deck via the steps below). |
 | `architecture.svg` | VanillaNet-6 block diagram (stem → 4 stages → head). |
 | `deep-training.svg` | The 3-step collapse: two convs + activation → one conv. |
 | `series-activation.svg` | Serial vs. parallel activation stacking. |
 | `depth-vs-latency.svg` | Bar chart — depth, not FLOPs, sets GPU latency. |
+
+## Keyboard controls (live deck)
+
+| Key | Action |
+|-----|--------|
+| `→` / `Space` / `←` | Next / previous slide |
+| `Home` / `End` | Jump to first / last slide |
+| `S` | Toggle **speaker notes** (talking points + per-slide timing for the 30-min talk) |
+| `F` | Fullscreen |
+
+Speaker notes are presenter-only — they never appear in the PDF export, so you
+can keep them open on your laptop while the deck shows on the projector.
+
+## Re-exporting the PDF (or a PNG set)
+
+The committed `vanillanet-seminar.pdf` was generated headlessly; to rebuild it
+(or change the look), use Chrome’s print pipeline — the deck has a dedicated
+`@media print` layout that drops the chrome and lays out one slide per page:
+
+```bash
+chrome --headless --no-pdf-header-footer --virtual-time-budget=4000 \
+  --print-to-pdf=vanillanet-seminar.pdf vanillanet.html
+# PNG set (one image per slide):
+pdftoppm -png -r 96 vanillanet-seminar.pdf slide
+```
+
+Or just open `vanillanet.html` and **Print → Save as PDF** (set margins to None).
 
 ## Dropping the SVGs into Figma
 
