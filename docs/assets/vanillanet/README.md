@@ -10,6 +10,7 @@ Materials for the **Neurocle Researcher** interview seminar on
 | `../vanillanet.html` | **Interactive 15-slide deck.** Open in a browser, present live or screen-record. Two live demos: the deep-training λ collapse and the series-activation curve. |
 | `vanillanet-seminar.pdf` | **Browser-free backup** — all 15 slides, one per page (export from the deck via the steps below). |
 | `architecture.svg` | VanillaNet-6 block diagram (stem → 4 stages → head). |
+| `architecture-3d.svg` | **3D isometric** view — feature volumes shrinking spatially / deepening in channels. The slide-friendly one. |
 | `deep-training.svg` | The 3-step collapse: two convs + activation → one conv. |
 | `series-activation.svg` | Serial vs. parallel activation stacking. |
 | `depth-vs-latency.svg` | Bar chart — depth, not FLOPs, sets GPU latency. |
