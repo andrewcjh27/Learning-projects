@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" font-family="Inter, system-ui, sans-serif">
+  <rect width="1200" height="500" rx="20" fill="#0e1628"/>
+  <text x="48" y="58" fill="#dde8f5" font-size="30" font-weight="800" letter-spacing="-0.5">Deep-Training Collapse — capacity at train time, simplicity at inference</text>
+  <text x="48" y="88" fill="#7a8faa" font-size="16">A′(x) = (1−λ)·A(x) + λ·x,  with λ = epoch / total. Each block trains as two convs, then folds into one.</text>
+
+  <!-- Stage A: lambda=0 -->
+  <g transform="translate(48,150)">
+    <rect x="-12" y="-22" width="360" height="250" rx="14" fill="none" stroke="#1e2d47" stroke-dasharray="5 5"/>
+    <text x="0" y="-2" fill="#4f8ef7" font-size="14" font-weight="700" font-family="JetBrains Mono, monospace">① λ = 0  ·  start of training</text>
+    <g transform="translate(0,24)">
+      <rect width="96" height="80" rx="10" fill="#121c30" stroke="#4f8ef7" stroke-width="1.5"/>
+      <text x="48" y="38" fill="#dde8f5" font-size="16" font-weight="700" text-anchor="middle">Conv₁</text>
+      <text x="48" y="60" fill="#3d5070" font-size="12" text-anchor="middle" font-family="JetBrains Mono, monospace">1×1</text>
+      <text x="112" y="48" fill="#3d5070" font-size="18">→</text>
+      <rect x="128" width="96" height="80" rx="10" fill="#211d0e" stroke="#fbbf24" stroke-width="1.5"/>
+      <text x="176" y="38" fill="#fbbf24" font-size="16" font-weight="700" text-anchor="middle">A(x)</text>
+      <text x="176" y="60" fill="#9a7d27" font-size="12" text-anchor="middle" font-family="JetBrains Mono, monospace">active</text>
+      <text x="240" y="48" fill="#3d5070" font-size="18">→</text>
+      <rect x="256" width="96" height="80" rx="10" fill="#121c30" stroke="#4f8ef7" stroke-width="1.5"/>
+      <text x="304" y="38" fill="#dde8f5" font-size="16" font-weight="700" text-anchor="middle">Conv₂</text>
+      <text x="304" y="60" fill="#3d5070" font-size="12" text-anchor="middle" font-family="JetBrains Mono, monospace">1×1</text>
+    </g>
+    <text x="0" y="156" fill="#7a8faa" font-size="13">Full non-linearity. Trains like a</text>
+    <text x="0" y="176" fill="#7a8faa" font-size="13">deeper model — easier optimisation.</text>
+  </g>
+  <text x="418" y="280" fill="#3d5070" font-size="34">→</text>
+
+  <!-- Stage B: lambda=0.5 -->
+  <g transform="translate(468,150)">
+    <rect x="-12" y="-22" width="360" height="250" rx="14" fill="none" stroke="#1e2d47" stroke-dasharray="5 5"/>
+    <text x="0" y="-2" fill="#a78bfa" font-size="14" font-weight="700" font-family="JetBrains Mono, monospace">② λ → 1  ·  activation fades</text>
+    <g transform="translate(0,24)">
+      <rect width="96" height="80" rx="10" fill="#121c30" stroke="#4f8ef7" stroke-width="1.5"/>
+      <text x="48" y="38" fill="#dde8f5" font-size="16" font-weight="700" text-anchor="middle">Conv₁</text>
+      <text x="48" y="60" fill="#3d5070" font-size="12" text-anchor="middle" font-family="JetBrains Mono, monospace">1×1</text>
+      <text x="112" y="48" fill="#3d5070" font-size="18">→</text>
+      <rect x="128" width="96" height="80" rx="10" fill="#121c30" stroke="#5b6b4f" stroke-width="1.5" opacity="0.6"/>
+      <text x="176" y="38" fill="#7a8faa" font-size="16" font-weight="700" text-anchor="middle">A′(x)</text>
+      <text x="176" y="60" fill="#5a6b50" font-size="12" text-anchor="middle" font-family="JetBrains Mono, monospace">fading</text>
+      <text x="240" y="48" fill="#3d5070" font-size="18">→</text>
+      <rect x="256" width="96" height="80" rx="10" fill="#121c30" stroke="#4f8ef7" stroke-width="1.5"/>
+      <text x="304" y="38" fill="#dde8f5" font-size="16" font-weight="700" text-anchor="middle">Conv₂</text>
+      <text x="304" y="60" fill="#3d5070" font-size="12" text-anchor="middle" font-family="JetBrains Mono, monospace">1×1</text>
+    </g>
+    <text x="0" y="156" fill="#7a8faa" font-size="13">A′(x) blends toward the identity line as training converges.</text>
+  </g>
+  <text x="838" y="280" fill="#3d5070" font-size="34">→</text>
+
+  <!-- Stage C: merged -->
+  <g transform="translate(888,150)">
+    <rect x="-12" y="-22" width="288" height="250" rx="14" fill="none" stroke="#1e2d47" stroke-dasharray="5 5"/>
+    <text x="0" y="-2" fill="#34d399" font-size="14" font-weight="700" font-family="JetBrains Mono, monospace">③ λ = 1  ·  merged for deploy</text>
+    <g transform="translate(48,24)">
+      <rect width="168" height="80" rx="10" fill="#0f2419" stroke="#34d399" stroke-width="2"/>
+      <text x="84" y="36" fill="#34d399" font-size="16" font-weight="700" text-anchor="middle">Conv (W¹·W²)</text>
+      <text x="84" y="60" fill="#2c8f6a" font-size="12" text-anchor="middle" font-family="JetBrains Mono, monospace">single 1×1 layer</text>
+    </g>
+    <text x="0" y="156" fill="#7a8faa" font-size="13">Identity activation removed; two convs fold</text>
+    <text x="0" y="176" fill="#7a8faa" font-size="13">into one. Inference cost of the trick: <tspan fill="#34d399" font-weight="700">zero</tspan>.</text>
+  </g>
+
+  <text x="48" y="452" fill="#7a8faa" font-size="14">Merge math: fold BN into conv → W′ = (γ/σ)·W, B′ = (B−μ)·γ/σ + β.  Then for 1×1 convs, im2col is a reshape, so  y = W¹∗(W²∗x) = (W¹·W²)∗x.</text>
+</svg>

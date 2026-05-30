@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="480" viewBox="0 0 1200 480" font-family="Inter, system-ui, sans-serif">
+  <rect width="1200" height="480" rx="20" fill="#0e1628"/>
+  <text x="48" y="58" fill="#dde8f5" font-size="30" font-weight="800" letter-spacing="-0.5">Series-Informed Activation — stack in parallel, not in series</text>
+  <text x="48" y="88" fill="#7a8faa" font-size="16">Aₛ(x) = Σᵢ aᵢ · A(x + bᵢ).  One activation layer gains the expressiveness of many — for ~1% of a conv's FLOPs.</text>
+
+  <!-- LEFT: serial (deep) -->
+  <g transform="translate(48,140)">
+    <rect width="520" height="290" rx="14" fill="#0b1424" stroke="#1e2d47"/>
+    <text x="24" y="36" fill="#f87171" font-size="16" font-weight="700">Conventional · SERIAL stacking</text>
+    <text x="24" y="60" fill="#7a8faa" font-size="13">more non-linearity = more layers = more latency</text>
+    <g transform="translate(180,90)">
+      <rect width="160" height="34" rx="8" fill="#121c30" stroke="#4f8ef7"/><text x="80" y="22" fill="#dde8f5" font-size="13" text-anchor="middle">Conv + ReLU</text>
+      <text x="80" y="56" fill="#3d5070" font-size="16" text-anchor="middle">↓</text>
+      <rect y="62" width="160" height="34" rx="8" fill="#121c30" stroke="#4f8ef7"/><text x="80" y="84" fill="#dde8f5" font-size="13" text-anchor="middle">Conv + ReLU</text>
+      <text x="80" y="118" fill="#3d5070" font-size="16" text-anchor="middle">↓</text>
+      <rect y="124" width="160" height="34" rx="8" fill="#121c30" stroke="#4f8ef7"/><text x="80" y="146" fill="#dde8f5" font-size="13" text-anchor="middle">Conv + ReLU</text>
+    </g>
+    <text x="260" y="276" fill="#f87171" font-size="13" text-anchor="middle">depth grows ⇒ sequential, slow on GPU</text>
+  </g>
+
+  <!-- RIGHT: parallel (vanilla) -->
+  <g transform="translate(632,140)">
+    <rect width="520" height="290" rx="14" fill="#0b1424" stroke="#a78bfa" stroke-opacity="0.5"/>
+    <text x="24" y="36" fill="#a78bfa" font-size="16" font-weight="700">VanillaNet · PARALLEL stacking</text>
+    <text x="24" y="60" fill="#7a8faa" font-size="13">richer activation inside ONE layer — depth stays at 1</text>
+
+    <!-- input node -->
+    <circle cx="70" cy="175" r="6" fill="#dde8f5"/>
+    <text x="70" y="205" fill="#7a8faa" font-size="12" text-anchor="middle">x</text>
+    <!-- parallel branches -->
+    <g stroke="#2d4470" stroke-width="1.5" fill="none">
+      <path d="M76 175 C140 175 150 105 210 105"/>
+      <path d="M76 175 C140 175 150 150 210 150"/>
+      <path d="M76 175 C140 175 150 200 210 200"/>
+      <path d="M76 175 C140 175 150 245 210 245"/>
+    </g>
+    <g font-size="12" font-family="JetBrains Mono, monospace">
+      <rect x="210" y="88" width="150" height="34" rx="8" fill="#161329" stroke="#a78bfa"/><text x="222" y="110" fill="#c7b6f7">a₁·A(x + b₁)</text>
+      <rect x="210" y="133" width="150" height="34" rx="8" fill="#161329" stroke="#a78bfa"/><text x="222" y="155" fill="#c7b6f7">a₂·A(x + b₂)</text>
+      <rect x="210" y="183" width="150" height="34" rx="8" fill="#161329" stroke="#a78bfa"/><text x="222" y="205" fill="#c7b6f7">a₃·A(x + b₃)</text>
+      <rect x="210" y="228" width="150" height="34" rx="8" fill="#161329" stroke="#a78bfa"/><text x="226" y="250" fill="#6d5a99">⋯  n terms</text>
+    </g>
+    <!-- sum node -->
+    <g stroke="#2d4470" stroke-width="1.5" fill="none">
+      <path d="M360 105 C420 105 420 175 450 175"/>
+      <path d="M360 150 C420 150 420 175 450 175"/>
+      <path d="M360 200 C420 200 420 175 450 175"/>
+      <path d="M360 245 C420 245 420 175 450 175"/>
+    </g>
+    <circle cx="462" cy="175" r="16" fill="#1a1530" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="462" y="181" fill="#a78bfa" font-size="18" font-weight="700" text-anchor="middle">Σ</text>
+    <text x="462" y="212" fill="#7a8faa" font-size="12" text-anchor="middle">Aₛ(x)</text>
+  </g>
+
+  <!-- ablation strip -->
+  <g transform="translate(48,452)" font-size="14">
+    <text x="0" y="0" fill="#7a8faa">Ablation (ImageNet top-1):</text>
+    <text x="190" y="0" fill="#f87171" font-weight="600">n=0 → 60.5%</text>
+    <text x="340" y="0" fill="#dde8f5">·</text>
+    <text x="360" y="0" fill="#34d399" font-weight="600">n=1 → 74.5%</text>
+    <text x="510" y="0" fill="#dde8f5">·</text>
+    <text x="530" y="0" fill="#34d399" font-weight="700">n=3 → 76.4% (default)</text>
+    <text x="760" y="0" fill="#7a8faa">— and the activation is ~84× cheaper than the conv beside it.</text>
+  </g>
+</svg>

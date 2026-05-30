@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" font-family="Inter, system-ui, sans-serif">
+  <rect width="1200" height="430" rx="20" fill="#0e1628"/>
+  <text x="48" y="58" fill="#dde8f5" font-size="30" font-weight="800" letter-spacing="-0.5">VanillaNet-6 — one layer per stage, no shortcuts</text>
+  <text x="48" y="88" fill="#7a8faa" font-size="16">Stem → 4 stages (1×1 conv + BN + activation + pool) → average-pool head. Channels double, resolution halves.</text>
+
+  <!-- blocks -->
+  <g transform="translate(48,150)">
+    <!-- STEM -->
+    <g>
+      <rect width="150" height="140" rx="12" fill="#121c30" stroke="#34d399" stroke-width="1.5"/>
+      <text x="16" y="30" fill="#3d5070" font-size="12" font-weight="600" letter-spacing="1" font-family="JetBrains Mono, monospace">STEM</text>
+      <text x="16" y="70" fill="#dde8f5" font-size="22" font-weight="700">4×4 Conv</text>
+      <text x="16" y="98" fill="#34d399" font-size="14" font-family="JetBrains Mono, monospace">stride 4</text>
+      <text x="16" y="120" fill="#34d399" font-size="14" font-family="JetBrains Mono, monospace">RGB → C</text>
+    </g>
+    <text x="166" y="78" fill="#3d5070" font-size="22">→</text>
+    <!-- STAGE 1 -->
+    <g transform="translate(190,0)">
+      <rect width="150" height="140" rx="12" fill="#121c30" stroke="#4f8ef7" stroke-width="1.5"/>
+      <text x="16" y="30" fill="#3d5070" font-size="12" font-weight="600" letter-spacing="1" font-family="JetBrains Mono, monospace">STAGE 1</text>
+      <text x="16" y="70" fill="#dde8f5" font-size="22" font-weight="700">1×1 Conv</text>
+      <text x="16" y="98" fill="#4f8ef7" font-size="14" font-family="JetBrains Mono, monospace">+ maxpool</text>
+      <text x="16" y="120" fill="#4f8ef7" font-size="14" font-family="JetBrains Mono, monospace">C → 2C</text>
+    </g>
+    <text x="356" y="78" fill="#3d5070" font-size="22">→</text>
+    <!-- STAGE 2 -->
+    <g transform="translate(380,0)">
+      <rect width="150" height="140" rx="12" fill="#121c30" stroke="#4f8ef7" stroke-width="1.5"/>
+      <text x="16" y="30" fill="#3d5070" font-size="12" font-weight="600" letter-spacing="1" font-family="JetBrains Mono, monospace">STAGE 2</text>
+      <text x="16" y="70" fill="#dde8f5" font-size="22" font-weight="700">1×1 Conv</text>
+      <text x="16" y="98" fill="#4f8ef7" font-size="14" font-family="JetBrains Mono, monospace">+ maxpool</text>
+      <text x="16" y="120" fill="#4f8ef7" font-size="14" font-family="JetBrains Mono, monospace">2C → 4C</text>
+    </g>
+    <text x="546" y="78" fill="#3d5070" font-size="22">→</text>
+    <!-- STAGE 3 -->
+    <g transform="translate(570,0)">
+      <rect width="150" height="140" rx="12" fill="#121c30" stroke="#4f8ef7" stroke-width="1.5"/>
+      <text x="16" y="30" fill="#3d5070" font-size="12" font-weight="600" letter-spacing="1" font-family="JetBrains Mono, monospace">STAGE 3</text>
+      <text x="16" y="70" fill="#dde8f5" font-size="22" font-weight="700">1×1 Conv</text>
+      <text x="16" y="98" fill="#4f8ef7" font-size="14" font-family="JetBrains Mono, monospace">+ maxpool</text>
+      <text x="16" y="120" fill="#4f8ef7" font-size="14" font-family="JetBrains Mono, monospace">4C → 8C</text>
+    </g>
+    <text x="736" y="78" fill="#3d5070" font-size="22">→</text>
+    <!-- STAGE 4 -->
+    <g transform="translate(760,0)">
+      <rect width="150" height="140" rx="12" fill="#121c30" stroke="#4f8ef7" stroke-width="1.5"/>
+      <text x="16" y="30" fill="#3d5070" font-size="12" font-weight="600" letter-spacing="1" font-family="JetBrains Mono, monospace">STAGE 4</text>
+      <text x="16" y="70" fill="#dde8f5" font-size="22" font-weight="700">1×1 Conv</text>
+      <text x="16" y="98" fill="#4f8ef7" font-size="14" font-family="JetBrains Mono, monospace">avgpool</text>
+    </g>
+    <text x="926" y="78" fill="#3d5070" font-size="22">→</text>
+    <!-- HEAD -->
+    <g transform="translate(950,0)">
+      <rect width="150" height="140" rx="12" fill="#121c30" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="16" y="30" fill="#3d5070" font-size="12" font-weight="600" letter-spacing="1" font-family="JetBrains Mono, monospace">HEAD</text>
+      <text x="16" y="70" fill="#dde8f5" font-size="22" font-weight="700">FC</text>
+      <text x="16" y="98" fill="#a78bfa" font-size="14" font-family="JetBrains Mono, monospace">→ 1000</text>
+    </g>
+  </g>
+
+  <!-- legend -->
+  <g transform="translate(48,338)" font-size="14" fill="#7a8faa">
+    <rect x="0" y="0" width="14" height="14" rx="3" fill="#34d399"/><text x="22" y="12">Stem: 4×4 conv, stride 4</text>
+    <rect x="240" y="0" width="14" height="14" rx="3" fill="#4f8ef7"/><text x="262" y="12">Body: 1×1 conv + BN + activation + maxpool</text>
+    <rect x="690" y="0" width="14" height="14" rx="3" fill="#a78bfa"/><text x="712" y="12">Head: average pool → fully-connected</text>
+  </g>
+  <text x="48" y="392" fill="#34d399" font-size="14" font-weight="600">No branches · no SE-blocks · no shortcuts — every layer is a single matrix multiply.</text>
+</svg>
