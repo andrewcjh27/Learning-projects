@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#070d1f">
+<title>VanillaNet — The Power of Minimalism · Seminar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1f; --surface:#0e1628; --card:#121c30; --card-hover:#172036;
+  --border:#1e2d47; --border-bright:#2d4470;
+  --primary:#4f8ef7; --primary-dim:rgba(79,142,247,.12); --primary-glow:rgba(79,142,247,.35);
+  --secondary:#a78bfa; --accent:#34d399; --warning:#fbbf24; --danger:#f87171; --pink:#f472b6;
+  --text:#dde8f5; --text-muted:#7a8faa; --text-dim:#3d5070;
+  --font:Inter,-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --r:14px; --r-sm:9px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh;overflow-x:hidden;
+  background-image:radial-gradient(1200px 600px at 80% -10%,rgba(79,142,247,.10),transparent 60%),radial-gradient(1000px 500px at 0% 110%,rgba(167,139,250,.08),transparent 55%)}
+
+/* ---------- chrome ---------- */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:60;height:54px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 22px;background:rgba(7,13,31,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.brand{font-weight:800;letter-spacing:-.03em;font-size:.95rem}
+.brand b{color:var(--primary)} .brand span{color:var(--text-muted);font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.counter{font-family:var(--mono);font-size:.78rem;color:var(--text-muted);font-variant-numeric:tabular-nums}
+.counter b{color:var(--text)}
+.mini-link{font-size:.78rem;color:var(--text-muted);text-decoration:none;border:1px solid var(--border);padding:5px 11px;border-radius:20px;transition:color .2s,border-color .2s}
+.mini-link:hover{color:var(--text);border-color:var(--primary)}
+.progress-track{position:fixed;top:54px;left:0;right:0;height:3px;background:var(--border);z-index:60}
+.progress-thumb{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--secondary));transition:width .45s cubic-bezier(.4,0,.2,1)}
+
+/* ---------- deck ---------- */
+.deck{padding-top:57px}
+.slide{min-height:calc(100vh - 57px);display:none;flex-direction:column;justify-content:center;
+  max-width:1080px;margin:0 auto;padding:46px 30px 96px}
+.slide.active{display:flex;animation:slideIn .5s cubic-bezier(.16,1,.3,1)}
+@keyframes slideIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;background:var(--primary-dim);border:1px solid var(--primary-glow);
+  color:var(--primary);font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 13px;border-radius:20px;margin-bottom:18px}
+.eyebrow.violet{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.35);color:var(--secondary)}
+.eyebrow.green{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.35);color:var(--accent)}
+.eyebrow.amber{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.35);color:var(--warning)}
+h1.title{font-size:clamp(2.1rem,6vw,3.7rem);font-weight:800;letter-spacing:-.045em;line-height:1.05;text-wrap:balance;
+  background:linear-gradient(135deg,#fff 25%,#7ab2ff 75%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+h2.head{font-size:clamp(1.6rem,4vw,2.5rem);font-weight:800;letter-spacing:-.035em;line-height:1.12;text-wrap:balance;margin-bottom:8px}
+.lede{font-size:clamp(1rem,2vw,1.18rem);color:var(--text-muted);max-width:720px;text-wrap:pretty;margin-top:10px}
+.kicker{font-size:.9rem;color:var(--primary);font-weight:600;margin-top:18px}
+p.body{color:var(--text-muted);max-width:760px;margin-top:14px;text-wrap:pretty}
+.hl{color:var(--text);font-weight:600}
+.hl-p{color:var(--primary);font-weight:600}.hl-v{color:var(--secondary);font-weight:600}.hl-g{color:var(--accent);font-weight:600}.hl-a{color:var(--warning);font-weight:600}
+
+/* cards / grids */
+.cards{display:grid;gap:16px;margin-top:26px}
+.cols-2{grid-template-columns:repeat(2,1fr)} .cols-3{grid-template-columns:repeat(3,1fr)} .cols-4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;transition:border-color .25s,transform .25s,box-shadow .25s}
+.card:hover{border-color:var(--border-bright);transform:translateY(-3px);box-shadow:0 16px 44px rgba(0,0,0,.35)}
+.card h3{font-size:1.02rem;font-weight:700;letter-spacing:-.01em;margin-bottom:6px;display:flex;align-items:center;gap:9px}
+.card p{font-size:.9rem;color:var(--text-muted);text-wrap:pretty}
+.card .ic{font-size:1.3rem}
+.chip{display:inline-block;font-family:var(--mono);font-size:.72rem;padding:3px 9px;border-radius:6px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text-muted)}
+.tag-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+
+/* callout */
+.callout{margin-top:24px;border-left:3px solid var(--primary);background:linear-gradient(90deg,var(--primary-dim),transparent);
+  padding:16px 20px;border-radius:0 var(--r) var(--r) 0}
+.callout.v{border-color:var(--secondary);background:linear-gradient(90deg,rgba(167,139,250,.12),transparent)}
+.callout.g{border-color:var(--accent);background:linear-gradient(90deg,rgba(52,211,153,.12),transparent)}
+.callout.a{border-color:var(--warning);background:linear-gradient(90deg,rgba(251,191,36,.12),transparent)}
+.callout strong{color:var(--text)}
+.callout p{color:var(--text-muted);font-size:.95rem;margin:0}
+
+/* math (on demand) */
+details.math{margin-top:18px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);overflow:hidden}
+details.math summary{cursor:pointer;list-style:none;padding:11px 16px;font-size:.82rem;font-weight:600;color:var(--secondary);
+  display:flex;align-items:center;gap:9px;user-select:none}
+details.math summary::-webkit-details-marker{display:none}
+details.math summary::before{content:'∑';font-family:var(--mono);font-size:1rem;color:var(--secondary)}
+details.math summary::after{content:'show math ▾';margin-left:auto;font-family:var(--mono);font-size:.72rem;color:var(--text-dim);font-weight:500}
+details.math[open] summary::after{content:'hide ▴'}
+details.math .math-body{padding:4px 18px 18px;border-top:1px solid var(--border)}
+.eq{font-family:var(--mono);background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:13px 16px;margin:12px 0;color:var(--text);font-size:.92rem;overflow-x:auto;line-height:1.9}
+.eq .v{color:var(--secondary)} .eq .p{color:var(--primary)} .eq .g{color:var(--accent)} .eq .m{color:var(--text-muted)} .eq .a{color:var(--warning)}
+.math-body p{font-size:.86rem;color:var(--text-muted);text-wrap:pretty}
+
+/* ---------- architecture diagram ---------- */
+.arch{display:flex;align-items:stretch;gap:7px;margin-top:30px;flex-wrap:wrap;justify-content:center}
+.layer{position:relative;border-radius:10px;border:1px solid var(--border);background:var(--card);
+  padding:14px 12px;min-width:78px;text-align:center;opacity:0;transform:translateY(14px);transition:opacity .5s,transform .5s,border-color .25s,box-shadow .25s}
+.layer.in{opacity:1;transform:none}
+.layer .ln{font-family:var(--mono);font-size:.64rem;color:var(--text-dim);letter-spacing:.05em}
+.layer .lt{font-weight:700;font-size:.82rem;margin-top:4px}
+.layer .lc{font-family:var(--mono);font-size:.66rem;color:var(--primary);margin-top:6px;font-variant-numeric:tabular-nums}
+.layer.stem{border-color:var(--accent);box-shadow:inset 0 0 22px rgba(52,211,153,.07)}
+.layer.stem .lc{color:var(--accent)}
+.layer.stage{border-color:var(--primary)}
+.layer.head{border-color:var(--secondary);box-shadow:inset 0 0 22px rgba(167,139,250,.07)}
+.layer.head .lc{color:var(--secondary)}
+.arrow{align-self:center;color:var(--text-dim);font-size:1.1rem}
+.arch-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:20px;font-size:.8rem;color:var(--text-muted)}
+.arch-legend span{display:inline-flex;align-items:center;gap:7px}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+/* ---------- interactive controls ---------- */
+.lab{margin-top:26px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;display:grid;gap:18px}
+.lab-row{display:grid;grid-template-columns:1.05fr .95fr;gap:26px;align-items:center}
+.ctrl{display:flex;flex-direction:column;gap:6px}
+.ctrl label{font-size:.82rem;font-weight:600;color:var(--text);display:flex;justify-content:space-between;align-items:baseline}
+.ctrl label .val{font-family:var(--mono);color:var(--primary);font-size:.9rem;font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;background:var(--border);outline:none;touch-action:manipulation;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--primary);cursor:pointer;border:3px solid var(--bg);box-shadow:0 0 0 1px var(--primary),0 0 14px var(--primary-glow);transition:transform .12s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--primary);cursor:pointer;border:3px solid var(--bg)}
+input[type=range]:focus-visible{box-shadow:0 0 0 3px var(--primary-glow)}
+.plot{width:100%;height:auto;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm)}
+.note{font-size:.82rem;color:var(--text-muted);text-wrap:pretty}
+.readout{font-family:var(--mono);font-size:.82rem;color:var(--text-muted);background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 13px;line-height:1.8}
+.readout b{color:var(--accent)}
+
+/* merge animation */
+.merge-stage{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;min-height:120px;margin-top:6px}
+.mbox{border:1px solid var(--border);border-radius:9px;padding:13px 11px;text-align:center;background:var(--card);min-width:66px;transition:opacity .4s,transform .4s,border-color .4s,background .4s}
+.mbox .mt{font-weight:700;font-size:.78rem} .mbox .ms{font-family:var(--mono);font-size:.62rem;color:var(--text-dim);margin-top:3px}
+.mbox.act{border-color:var(--warning);background:rgba(251,191,36,.08)} .mbox.act .mt{color:var(--warning)}
+.mbox.conv{border-color:var(--primary)}
+.mbox.merged{border-color:var(--accent);background:rgba(52,211,153,.1);transform:scale(1.06)} .mbox.merged .mt{color:var(--accent)}
+.mbox.gone{opacity:.12;filter:grayscale(1)}
+.mplus{color:var(--text-dim);font-family:var(--mono)}
+
+/* ---------- bar chart (depth vs latency) ---------- */
+.bars{margin-top:26px;display:grid;gap:13px}
+.bar-row{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}
+.bar-name{font-size:.82rem;color:var(--text-muted);text-align:right;font-variant-numeric:tabular-nums}
+.bar-name b{color:var(--text);display:block;font-size:.86rem}
+.bar-track{position:relative;height:30px;background:rgba(255,255,255,.03);border-radius:7px;overflow:hidden}
+.bar-fill{position:absolute;inset:0 100% 0 0;border-radius:7px;transition:right 1s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:flex-end;padding-right:10px;
+  font-family:var(--mono);font-size:.74rem;font-weight:600;color:#fff;font-variant-numeric:tabular-nums}
+.bar-fill.slow{background:linear-gradient(90deg,#b45309,var(--danger))}
+.bar-fill.fast{background:linear-gradient(90deg,var(--primary),var(--accent))}
+
+/* ---------- tables ---------- */
+.tbl{margin-top:24px;width:100%;border-collapse:collapse;font-size:.86rem}
+.tbl th,.tbl td{padding:10px 13px;text-align:right;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+.tbl th:first-child,.tbl td:first-child{text-align:left}
+.tbl thead th{color:var(--text-dim);font-weight:600;font-size:.74rem;text-transform:uppercase;letter-spacing:.06em}
+.tbl tbody tr{transition:background .2s} .tbl tbody tr:hover{background:rgba(255,255,255,.025)}
+.tbl tr.hero td{color:var(--text)} .tbl tr.hero{background:var(--primary-dim)}
+.tbl tr.hero td:first-child{font-weight:700;color:var(--primary)}
+.tbl .good{color:var(--accent)} .tbl .bad{color:var(--danger)} .tbl .mut{color:var(--text-dim)}
+
+/* stat strip */
+.stats{display:flex;gap:30px;flex-wrap:wrap;margin-top:30px}
+.stat .n{font-size:2.3rem;font-weight:800;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;
+  background:linear-gradient(135deg,#fff,#7ab2ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat .l{font-size:.78rem;color:var(--text-muted);margin-top:6px;max-width:160px;text-wrap:pretty}
+
+/* timeline */
+.tl{position:relative;margin-top:30px;padding-left:4px}
+.tl-track{position:absolute;left:13px;top:6px;bottom:6px;width:2px;background:var(--border)}
+.tl-item{position:relative;padding:0 0 22px 42px}
+.tl-item:last-child{padding-bottom:0}
+.tl-node{position:absolute;left:5px;top:2px;width:18px;height:18px;border-radius:50%;background:var(--card);border:2px solid var(--border-bright);z-index:1}
+.tl-item.key .tl-node{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-dim)}
+.tl-item.fork .tl-node{border-color:var(--danger);box-shadow:0 0 0 4px rgba(248,113,113,.14)}
+.tl-item.us .tl-node{border-color:var(--accent);box-shadow:0 0 0 4px rgba(52,211,153,.16)}
+.tl-yr{font-family:var(--mono);font-size:.72rem;color:var(--primary);font-weight:600}
+.tl-t{font-weight:700;font-size:.98rem;margin-top:2px}
+.tl-d{font-size:.86rem;color:var(--text-muted);margin-top:3px;text-wrap:pretty;max-width:680px}
+.tl-item.fork .tl-yr{color:var(--danger)} .tl-item.us .tl-yr{color:var(--accent)}
+
+/* agenda */
+.agenda{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:30px}
+.ag{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden}
+.ag::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--primary),var(--secondary))}
+.ag .agn{font-family:var(--mono);font-size:.72rem;color:var(--text-dim)}
+.ag h4{font-size:.96rem;margin:6px 0 4px} .ag p{font-size:.8rem;color:var(--text-muted);text-wrap:pretty}
+
+/* ---------- nav buttons ---------- */
+.navbtns{position:fixed;bottom:20px;right:22px;z-index:60;display:flex;gap:10px}
+.nbtn{width:46px;height:46px;border-radius:50%;border:1px solid var(--border);background:rgba(18,28,48,.85);backdrop-filter:blur(10px);
+  color:var(--text);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s,transform .15s;touch-action:manipulation}
+.nbtn:hover{background:var(--card-hover);border-color:var(--primary)}
+.nbtn:active{transform:scale(.92)}
+.nbtn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--primary-glow)}
+.nbtn:disabled{opacity:.32;cursor:not-allowed}
+.dots{position:fixed;left:18px;top:50%;transform:translateY(-50%);z-index:60;display:flex;flex-direction:column;gap:9px}
+.dot-btn{width:9px;height:9px;border-radius:50%;border:none;background:var(--border-bright);cursor:pointer;padding:0;transition:transform .2s,background .2s;touch-action:manipulation}
+.dot-btn:hover{background:var(--text-muted);transform:scale(1.3)}
+.dot-btn.on{background:var(--primary);transform:scale(1.45);box-shadow:0 0 10px var(--primary-glow)}
+.dot-btn:focus-visible{outline:none;box-shadow:0 0 0 3px var(--primary-glow)}
+.hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:55;font-size:.74rem;color:var(--text-dim);
+  font-family:var(--mono);display:flex;align-items:center;gap:7px;pointer-events:none;transition:opacity .5s}
+.kbd{border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--text-muted);background:var(--surface)}
+
+@media(max-width:760px){
+  .cols-2,.cols-3,.cols-4,.lab-row,.agenda{grid-template-columns:1fr}
+  .bar-row{grid-template-columns:96px 1fr}
+  .dots{display:none}
+  .slide{padding:34px 18px 90px}
+  .topbar .brand span{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .slide.active{animation:none}
+}
+
+/* ---------- speaker notes ---------- */
+.notes{position:fixed;left:0;right:0;bottom:0;z-index:58;max-height:40vh;overflow:auto;
+  background:rgba(8,14,30,.97);backdrop-filter:blur(16px);border-top:2px solid var(--secondary);
+  padding:15px 24px 18px;font-size:.94rem;color:var(--text-muted);line-height:1.7;
+  box-shadow:0 -20px 50px rgba(0,0,0,.5);animation:notesUp .3s cubic-bezier(.16,1,.3,1)}
+@keyframes notesUp{from{transform:translateY(100%)}to{transform:none}}
+.notes[hidden]{display:none}
+.notes .nt{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--secondary);font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.notes .nt .pill{background:rgba(167,139,250,.14);border:1px solid rgba(167,139,250,.35);border-radius:20px;padding:2px 9px}
+.notes b{color:var(--text);font-weight:600}
+.notes-fab{position:fixed;bottom:20px;right:120px;z-index:60;height:46px;padding:0 16px;border-radius:23px;
+  border:1px solid var(--border);background:rgba(18,28,48,.85);backdrop-filter:blur(10px);color:var(--text-muted);
+  font-family:var(--font);font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;
+  transition:background .2s,border-color .2s,color .2s;touch-action:manipulation}
+.notes-fab:hover{background:var(--card-hover);border-color:var(--secondary);color:var(--text)}
+.notes-fab:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(167,139,250,.35)}
+.notes-fab.on{color:var(--secondary);border-color:var(--secondary)}
+
+/* ---------- print / PDF export ---------- */
+@media print{
+  @page{size:1280px 1080px;margin:0}
+  html,body{background:#070d1f!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background-image:none!important}
+  .topbar,.progress-track,.dots,.navbtns,.hint,.notes,.notes-fab{display:none!important}
+  .deck{padding-top:0}
+  .slide{display:flex!important;break-after:page;page-break-after:always;break-inside:avoid;
+    height:1080px;min-height:0;overflow:hidden;max-width:none;width:1280px;margin:0;padding:60px 84px;justify-content:flex-start}
+  .slide:last-child{break-after:auto;page-break-after:auto}
+  .slide.active{animation:none}
+  .layer{opacity:1!important;transform:none!important}
+  .card:hover{transform:none;box-shadow:none}
+  /* compress interactive widgets so dense slides fit one page */
+  .plot{max-width:400px}
+  .lab{padding:16px;gap:12px;margin-top:18px}
+  .cards,.bars,.tbl,.stats,.tl,.agenda{margin-top:18px}
+  .callout{margin-top:16px}
+  details.math{break-inside:avoid;margin-top:14px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><b>VanillaNet</b> <span>· the Power of Minimalism in Deep Learning</span></div>
+  <div class="topbar-right">
+    <a class="mini-link" href="https://arxiv.org/abs/2305.12972" target="_blank" rel="noopener">arXiv ↗</a>
+    <span class="counter"><b id="cur">1</b> / <span id="tot">15</span></span>
+  </div>
+</header>
+<div class="progress-track"><div class="progress-thumb" id="thumb"></div></div>
+
+<main class="deck" id="deck" aria-live="polite">
+
+<!-- 1 · TITLE -->
+<section class="slide active" data-title="Title">
+  <span class="eyebrow">Neurocle · Researcher Seminar · 30 min</span>
+  <h1 class="title">The Power of Minimalism in Deep Learning</h1>
+  <p class="lede">A walkthrough of <span class="hl">VanillaNet</span> — a network that throws out depth, shortcuts and self-attention, yet matches ResNet and Swin Transformer. How? By moving complexity out of <em>inference</em> and into <em>training</em>.</p>
+  <div class="stats">
+    <div class="stat"><div class="n">6–13</div><div class="l">layers total — no shortcuts, no attention</div></div>
+    <div class="stat"><div class="n">79.9%</div><div class="l">ImageNet top-1 at 9 layers</div></div>
+    <div class="stat"><div class="n">&gt;50%</div><div class="l">faster than ResNet-50 at equal accuracy</div></div>
+  </div>
+  <p class="body" style="margin-top:34px;font-size:.86rem">Chen, Wang, Guo, Tao — <span class="hl">Huawei Noah’s Ark Lab</span> &amp; University of Sydney · arXiv:2305.12972 (2023)</p>
+  <p class="kicker">Press <span style="font-family:var(--mono)">→</span> or Space to begin.</p>
+</section>
+
+<!-- 2 · AGENDA / THESIS -->
+<section class="slide" data-title="The thesis">
+  <span class="eyebrow">The one-sentence thesis</span>
+  <h2 class="head">“More is different” built modern AI.<br>This paper asks: <span class="hl-p">what if less is enough?</span></h2>
+  <p class="body">Foundation models grew by piling on depth and intricate operators. VanillaNet bets the opposite: a network so plain it’s almost trivial to deploy — and proves the plainness need not cost accuracy.</p>
+  <div class="agenda">
+    <div class="ag"><div class="agn">PART 1 · AUTHOR INTENT</div><h4>Why minimalism?</h4><p>The problem, the contribution, and how it breaks from ResNet-era thinking.</p></div>
+    <div class="ag"><div class="agn">PART 2 · KEY CONCEPTS</div><h4>The two tricks</h4><p>Deep-training collapse &amp; series-informed activation — where the magic hides.</p></div>
+    <div class="ag"><div class="agn">PART 3 · IMPLEMENTATION</div><h4>It actually works</h4><p>The architecture, the merge math, ablations and ImageNet / COCO results.</p></div>
+  </div>
+  <div class="callout"><p><strong>Keep one question in mind:</strong> if a layer adds no accuracy at inference, why pay for it at inference? VanillaNet’s answer is to <span class="hl-p">use</span> it while training and <span class="hl-g">delete</span> it before deployment.</p></div>
+</section>
+
+<!-- 3 · PROBLEM -->
+<section class="slide" data-title="Problem">
+  <span class="eyebrow amber">Part 1 · Problem definition</span>
+  <h2 class="head">Complexity is great for accuracy —<br>and terrible for deployment.</h2>
+  <p class="body">Every accuracy win of the last decade came bundled with an engineering tax that shows up at <span class="hl">inference time</span>:</p>
+  <div class="cards cols-2">
+    <div class="card"><h3><span class="ic">🔀</span> Shortcuts cost memory traffic</h3><p>ResNet’s skip connections merge features from different layers, consuming heavy off-chip memory bandwidth on real hardware.</p></div>
+    <div class="card"><h3><span class="ic">🧩</span> Exotic ops need custom kernels</h3><p>Shifted-window attention (Swin) and axial-shift (AS-MLP) require hand-written CUDA — fragile to port and deploy.</p></div>
+    <div class="card"><h3><span class="ic">🏗️</span> Depth blocks parallelism</h3><p>ViT-Base is ~62 layers; each must finish before the next starts. Sequential depth can’t be parallelised away.</p></div>
+    <div class="card"><h3><span class="ic">🌫️</span> Plain nets were abandoned</h3><p>Since ResNet, pure-conv nets fell out of fashion: a 34-layer plain net trained <em>worse</em> than an 18-layer one (gradient vanishing).</p></div>
+  </div>
+  <div class="callout a"><p><strong>The gap:</strong> nobody was optimising <span class="hl-a">simple, shallow</span> networks anymore — even though they’re by far the easiest to ship. VanillaNet reopens that abandoned door.</p></div>
+</section>
+
+<!-- 4 · THE INSIGHT: DEPTH NOT FLOPS -->
+<section class="slide" data-title="Depth ≠ FLOPs">
+  <span class="eyebrow">Part 1 · The counter-intuitive insight</span>
+  <h2 class="head">On a modern GPU, <span class="hl-p">depth</span> — not FLOPs — sets the speed.</h2>
+  <p class="body">With batch size 1 and abundant compute, a GPU parallelises within a layer effortlessly. What it <em>can’t</em> hide is the sequential chain of layers. So a “cheap” deep net can be slower than an “expensive” shallow one:</p>
+  <div class="bars" id="bars" aria-hidden="true">
+    <div class="bar-row"><div class="bar-name"><b>MobileNetV3-L</b>0.22B FLOPs · 48 deep</div><div class="bar-track"><div class="bar-fill slow" data-pct="80">7.83 ms</div></div></div>
+    <div class="bar-row"><div class="bar-name"><b>ResNet-50</b>4.1B FLOPs · 50 deep</div><div class="bar-track"><div class="bar-fill slow" data-pct="78">7.64 ms</div></div></div>
+    <div class="bar-row"><div class="bar-name"><b>Swin-T</b>4.5B FLOPs · 48 deep</div><div class="bar-track"><div class="bar-fill slow" data-pct="100">10.51 ms</div></div></div>
+    <div class="bar-row"><div class="bar-name"><b>VanillaNet-13</b>11.9B FLOPs · 13 deep</div><div class="bar-track"><div class="bar-fill fast" data-pct="43">4.26 ms</div></div></div>
+    <div class="bar-row"><div class="bar-name"><b>VanillaNet-9</b>8.6B FLOPs · 9 deep</div><div class="bar-track"><div class="bar-fill fast" data-pct="30">2.91 ms</div></div></div>
+  </div>
+  <p class="note" style="margin-top:18px">GPU latency, batch size 1, Nvidia A100. VanillaNet-13 has <span class="hl">54×</span> the FLOPs of MobileNetV3-L yet runs <span class="hl-g">~45% faster</span>.</p>
+  <div class="callout"><p><strong>The reframing:</strong> if latency is bounded by depth, the winning move isn’t fewer FLOPs — it’s <span class="hl-p">fewer layers</span>. Spend FLOPs freely inside each layer; just don’t stack many.</p></div>
+</section>
+
+<!-- 5 · PRIOR WORK -->
+<section class="slide" data-title="Lineage">
+  <span class="eyebrow">Part 1 · Logical progression from prior work</span>
+  <h2 class="head">A deliberate U-turn in the architecture story.</h2>
+  <div class="tl">
+    <div class="tl-track"></div>
+    <div class="tl-item key"><div class="tl-node"></div><div class="tl-yr">2012 · AlexNet</div><div class="tl-t">Shallow &amp; plain wins ImageNet</div><div class="tl-d">12 plain layers beat everything. The starting point — simple, stackable conv blocks.</div></div>
+    <div class="tl-item"><div class="tl-node"></div><div class="tl-yr">2014 · VGGNet</div><div class="tl-t">Go deeper, stay plain</div><div class="tl-d">Uniform 3×3 stacks. Depth helps… until plain nets stop training well.</div></div>
+    <div class="tl-item fork"><div class="tl-node"></div><div class="tl-yr">2015 · ResNet — the fork</div><div class="tl-t">Shortcuts rescue depth</div><div class="tl-d">Skip connections fix gradient vanishing, so 50–1000 layers become trainable. <strong>But the field reads this as “plain nets are dead.”</strong></div></div>
+    <div class="tl-item"><div class="tl-node"></div><div class="tl-yr">2020–22 · ViT · Swin · ConvNeXt</div><div class="tl-t">Even deeper, even more intricate</div><div class="tl-d">Self-attention and elaborate blocks push accuracy higher — and deployment complexity with it.</div></div>
+    <div class="tl-item us"><div class="tl-node"></div><div class="tl-yr">2023 · VanillaNet</div><div class="tl-t">Revisit the fork — go shallow, not deep</div><div class="tl-d">Take the abandoned plain-net path, but instead of fighting gradient vanishing with depth, <strong>avoid depth entirely</strong> and fix the real bottleneck: weak non-linearity.</div></div>
+  </div>
+</section>
+
+<!-- 6 · ARCHITECTURE -->
+<section class="slide" data-title="Architecture">
+  <span class="eyebrow green">Part 3 · The architecture (VanillaNet-6)</span>
+  <h2 class="head">Stem → body → head. <span class="hl-g">One layer per stage.</span></h2>
+  <p class="body">The classic recipe — but stripped to the bone. Each stage is a single 1×1 conv + activation + max-pool. Channels double, resolution halves. No branches, no SE-blocks, <span class="hl">no shortcuts</span> (they tested — shortcuts didn’t help).</p>
+  <div class="arch" id="arch">
+    <div class="layer stem" data-d="0"><div class="ln">STEM</div><div class="lt">4×4 Conv</div><div class="lc">stride 4 · →C</div></div>
+    <div class="arrow">→</div>
+    <div class="layer stage" data-d="1"><div class="ln">STAGE 1</div><div class="lt">1×1 Conv</div><div class="lc">+pool · C→2C</div></div>
+    <div class="arrow">→</div>
+    <div class="layer stage" data-d="2"><div class="ln">STAGE 2</div><div class="lt">1×1 Conv</div><div class="lc">+pool · 2C→4C</div></div>
+    <div class="arrow">→</div>
+    <div class="layer stage" data-d="3"><div class="ln">STAGE 3</div><div class="lt">1×1 Conv</div><div class="lc">+pool · 4C→8C</div></div>
+    <div class="arrow">→</div>
+    <div class="layer stage" data-d="4"><div class="ln">STAGE 4</div><div class="lt">1×1 Conv</div><div class="lc">avgpool</div></div>
+    <div class="arrow">→</div>
+    <div class="layer head" data-d="5"><div class="ln">HEAD</div><div class="lt">FC</div><div class="lc">→ 1000</div></div>
+  </div>
+  <div class="arch-legend">
+    <span><i class="dot" style="background:var(--accent)"></i> Stem: 4×4 conv, stride 4 — RGB → C channels</span>
+    <span><i class="dot" style="background:var(--primary)"></i> Body: 1×1 convs + BN + activation + maxpool</span>
+    <span><i class="dot" style="background:var(--secondary)"></i> Head: average pool → fully-connected</span>
+  </div>
+  <div class="callout g"><p><strong>Why this is a deployment dream:</strong> every layer is a plain 1×1 conv — a single matrix multiply. No CUDA tricks, no merged branches, runs fast on literally any hardware.</p></div>
+</section>
+
+<!-- 7 · THE CATCH -->
+<section class="slide" data-title="The catch">
+  <span class="eyebrow amber">Part 2 · The catch</span>
+  <h2 class="head">Shallow + plain = <span class="hl-a">weak non-linearity</span> = weak accuracy.</h2>
+  <p class="body">A naive 6-layer plain ReLU net tops out around <span class="hl-a">60.5%</span> on ImageNet — useless in practice. The bottleneck isn’t identity mapping (shortcuts don’t help). It’s that too few activation layers means too little non-linearity.</p>
+  <p class="body">The whole paper is two ideas that <span class="hl">inject non-linearity</span> — without adding a single layer or operation to the deployed model:</p>
+  <div class="cards cols-2">
+    <div class="card" style="border-color:var(--primary)"><h3><span class="ic">🪜</span> Trick 1 · Deep Training</h3><p>Train as a <em>deeper</em> net, then mathematically collapse the extra layers into the shallow one before inference. Capacity while learning, simplicity while serving.</p><div class="tag-row"><span class="chip">train-time only</span><span class="chip">zero inference cost</span></div></div>
+    <div class="card" style="border-color:var(--secondary)"><h3><span class="ic">〰️</span> Trick 2 · Series Activation</h3><p>Make each activation far more expressive by stacking it <em>in parallel</em>, so one activation layer does the work of many.</p><div class="tag-row"><span class="chip">richer per-layer</span><span class="chip">~1% of conv FLOPs</span></div></div>
+  </div>
+</section>
+
+<!-- 8 · DEEP TRAINING (interactive) -->
+<section class="slide" data-title="Deep Training">
+  <span class="eyebrow">Part 2 · Key concept ① — Deep Training</span>
+  <h2 class="head">Start deep with activations. <span class="hl-p">Fade them to identity.</span> Merge.</h2>
+  <p class="body">Each layer begins as <span class="hl">two</span> convs with an activation between them. The activation is blended toward the identity over training: <span class="eq" style="display:inline;padding:3px 8px;margin:0">A′(<span class="v">x</span>) = (1−λ)·A(<span class="v">x</span>) + λ·<span class="v">x</span></span> with <span class="hl-p">λ = e / E</span>. Drag λ to watch it collapse:</p>
+  <div class="lab">
+    <div class="lab-row">
+      <div>
+        <div class="ctrl">
+          <label for="lam">Training progress &nbsp;λ = epoch / total<span class="val" id="lamv">0.00</span></label>
+          <input type="range" id="lam" min="0" max="1" step="0.01" value="0" aria-label="Deep-training blend lambda from 0 to 1">
+        </div>
+        <svg class="plot" id="dtPlot" viewBox="0 0 320 200" role="img" aria-label="Activation curve morphing from ReLU toward the identity line as lambda increases"></svg>
+        <p class="note" id="dtNote" style="margin-top:10px"></p>
+      </div>
+      <div>
+        <div class="merge-stage" id="mergeStage">
+          <div class="mbox conv" id="mb1"><div class="mt">Conv ₁</div><div class="ms">1×1</div></div>
+          <span class="mplus" id="mp1">→</span>
+          <div class="mbox act" id="mbA"><div class="mt">A′(x)</div><div class="ms" id="mbAs">active</div></div>
+          <span class="mplus" id="mp2">→</span>
+          <div class="mbox conv" id="mb2"><div class="mt">Conv ₂</div><div class="ms">1×1</div></div>
+        </div>
+        <div class="readout" id="dtRead"></div>
+      </div>
+    </div>
+  </div>
+  <details class="math">
+    <summary>The merge: two layers become one, exactly &amp; for free</summary>
+    <div class="math-body">
+      <p>① Fold each BatchNorm into its preceding conv (scale <span style="color:var(--accent)">γ</span>, shift <span style="color:var(--accent)">β</span>, mean <span style="color:var(--accent)">μ</span>, var <span style="color:var(--accent)">σ</span>):</p>
+      <div class="eq">W′ᵢ = (<span class="g">γᵢ</span>/<span class="g">σᵢ</span>)·Wᵢ &nbsp;&nbsp; B′ᵢ = (Bᵢ−<span class="g">μᵢ</span>)·<span class="g">γᵢ</span>/<span class="g">σᵢ</span> + <span class="g">βᵢ</span></div>
+      <p>② With the activation gone (λ=1), the two stacked 1×1 convs are pure matrix multiplies. A 1×1 conv’s im2col is just a <em>reshape</em>, so:</p>
+      <div class="eq"><span class="v">y</span> = W¹ ∗ (W² ∗ <span class="v">x</span>) = (W¹·W²) ∗ <span class="v">x</span> &nbsp;<span class="m">⟶ one conv</span></div>
+      <p>The product W¹·W² is precomputed once. Inference sees a single conv — the second layer cost <strong>vanishes entirely</strong>, with bit-exact output.</p>
+    </div>
+  </details>
+</section>
+
+<!-- 9 · SERIES ACTIVATION (interactive) -->
+<section class="slide" data-title="Series Activation">
+  <span class="eyebrow violet">Part 2 · Key concept ② — Series-Informed Activation</span>
+  <h2 class="head">Stack activations <span class="hl-v">in parallel</span>, not in series.</h2>
+  <p class="body">Deep nets gain non-linearity by stacking activations <em>serially</em> (= more depth = more latency). VanillaNet stacks them <em>concurrently</em> inside one layer: a learnable weighted sum of shifted ReLUs that approximates a far richer curve. Drag <span class="hl-v">n</span>:</p>
+  <div class="lab">
+    <div class="lab-row">
+      <div>
+        <div class="ctrl">
+          <label for="ser">Terms in the series &nbsp;n<span class="val" id="serv">3</span></label>
+          <input type="range" id="ser" min="0" max="6" step="1" value="3" aria-label="Number of series activation terms n from 0 to 6">
+        </div>
+        <svg class="plot" id="saPlot" viewBox="0 0 320 200" role="img" aria-label="A learned activation curve that grows more expressive as the number of series terms increases"></svg>
+        <p class="note" style="margin-top:10px">n=0 is plain ReLU. Each added term is a scaled, shifted ReLU — together they bend into smooth, expressive shapes.</p>
+      </div>
+      <div>
+        <div class="eq" style="margin-top:0">A<span class="m">s</span>(<span class="v">x</span>) = <span style="font-size:1.2em">Σ</span><span class="m" style="font-size:.8em">ᵢ₌₁ⁿ</span> <span class="p">aᵢ</span>·A(<span class="v">x</span> + <span class="a">bᵢ</span>)</div>
+        <p class="note"><span class="hl-p">aᵢ</span>, <span class="hl-a">bᵢ</span> are learned per channel. Extended to also mix spatial neighbours (like BNET), so one activation gathers <span class="hl">global</span> context.</p>
+        <div class="readout" id="saRead"></div>
+        <div class="callout v" style="margin-top:14px"><p><strong>Ablation:</strong> n=0 → 60.5% · n=1 → <span class="hl-g">74.5%</span> · n=3 → <span class="hl-g">76.4%</span>. One idea recovers nearly all the lost accuracy.</p></div>
+      </div>
+    </div>
+  </div>
+  <details class="math">
+    <summary>Why it’s almost free: the complexity ratio</summary>
+    <div class="math-body">
+      <p>A 1×1 conv costs O = H·W·Cᵢₙ·Cₒᵤₜ·k². The series activation costs only O = H·W·Cᵢₙ·n². Their ratio:</p>
+      <div class="eq">O(CONV) / O(SA) = (Cₒᵤₜ·k²) / n² &nbsp;<span class="m">≈ 2048·1 / 7² ≈</span> <span class="g">84×</span></div>
+      <p>At stage 4 of VanillaNet-B (Cₒᵤₜ=2048, k=1, n=7) the activation is ~84× cheaper than the conv it sits next to. Expressivity for almost no FLOPs.</p>
+    </div>
+  </details>
+</section>
+
+<!-- 10 · ABLATIONS -->
+<section class="slide" data-title="Ablations">
+  <span class="eyebrow">Part 3 · Ablations — does each piece earn its place?</span>
+  <h2 class="head">Both tricks are essential. Shortcuts are not.</h2>
+  <div class="cards cols-2" style="align-items:start">
+    <div>
+      <p class="note" style="margin-bottom:6px;font-weight:600;color:var(--text)">VanillaNet-6 · stacking the two ideas</p>
+      <table class="tbl" style="margin-top:8px">
+        <thead><tr><th>Deep train</th><th>Series act</th><th>Top-1</th></tr></thead>
+        <tbody>
+          <tr><td>—</td><td>—</td><td class="mut">59.58%</td></tr>
+          <tr><td>✓</td><td>—</td><td>60.53%</td></tr>
+          <tr><td>—</td><td>✓</td><td>75.23%</td></tr>
+          <tr class="hero"><td>✓</td><td>✓</td><td class="good">76.36%</td></tr>
+        </tbody>
+      </table>
+      <p class="note" style="margin-top:10px">Series activation does the heavy lifting; deep training adds a further point. Together: <span class="hl-g">+16.8%</span>.</p>
+    </div>
+    <div>
+      <p class="note" style="margin-bottom:6px;font-weight:600;color:var(--text)">Do shortcuts help a shallow net?</p>
+      <table class="tbl" style="margin-top:8px">
+        <thead><tr><th>Shortcut type</th><th>Top-1</th></tr></thead>
+        <tbody>
+          <tr class="hero"><td>No shortcut</td><td class="good">76.36%</td></tr>
+          <tr><td>Before activation</td><td class="bad">75.92%</td></tr>
+          <tr><td>After activation</td><td class="bad">75.72%</td></tr>
+        </tbody>
+      </table>
+      <div class="callout" style="margin-top:16px"><p><strong>The key realisation:</strong> shortcuts <em>hurt</em> slightly — they skip activations, lowering non-linearity. So the vanilla-net bottleneck was never identity mapping; it was <span class="hl-p">non-linearity</span>. That’s why removing shortcuts is safe.</p></div>
+    </div>
+  </div>
+  <p class="note" style="margin-top:18px">Applied to AlexNet, the same two tricks add ~6%. Applied to ResNet-50, almost nothing — deep nets already have enough non-linearity. The tricks specifically cure <span class="hl">shallow</span> nets.</p>
+</section>
+
+<!-- 11 · RESULTS -->
+<section class="slide" data-title="Results">
+  <span class="eyebrow green">Part 3 · Results on ImageNet</span>
+  <h2 class="head">Matches the giants — at a fraction of the latency.</h2>
+  <table class="tbl">
+    <thead><tr><th>Model</th><th>Depth</th><th>Params</th><th>FLOPs</th><th>Latency</th><th>Top-1</th></tr></thead>
+    <tbody>
+      <tr><td>ResNet-50-TNR</td><td>50</td><td>25.6M</td><td>4.1B</td><td class="bad">7.64 ms</td><td>79.8%</td></tr>
+      <tr><td>ConvNeXtV2-P</td><td>41</td><td>9.1M</td><td>1.37B</td><td class="bad">6.29 ms</td><td>79.7%</td></tr>
+      <tr><td>Swin-S</td><td>96</td><td>49.6M</td><td>8.7B</td><td class="bad">20.25 ms</td><td>83.2%</td></tr>
+      <tr class="hero"><td>VanillaNet-9</td><td>9</td><td>41.4M</td><td>8.6B</td><td class="good">2.91 ms</td><td>79.9%</td></tr>
+      <tr class="hero"><td>VanillaNet-13-1.5×†</td><td>13</td><td>127.8M</td><td>48.9B</td><td>9.72 ms</td><td class="good">83.1%</td></tr>
+    </tbody>
+  </table>
+  <div class="stats" style="margin-top:30px">
+    <div class="stat"><div class="n">2.6×</div><div class="l">faster than ResNet-50 at the same 79.9% accuracy (VanillaNet-9)</div></div>
+    <div class="stat"><div class="n">83.1%</div><div class="l">top-1 when scaled up — into Swin-S territory at 13 layers</div></div>
+    <div class="stat"><div class="n">+4.4</div><div class="l">FPS on COCO Mask-RCNN vs Swin-T backbone — the speed edge transfers downstream</div></div>
+  </div>
+</section>
+
+<!-- 12 · ATTENTION / LIMITATION -->
+<section class="slide" data-title="What it learns">
+  <span class="eyebrow violet">Part 3 · What does it actually learn?</span>
+  <h2 class="head">A wide, holistic gaze — its strength <span class="hl-v">and</span> its limit.</h2>
+  <p class="body">Grad-CAM++ on VanillaNet-9 vs ResNet-50 reveals a different style of seeing:</p>
+  <div class="cards cols-2">
+    <div class="card g"><h3><span class="ic">🟢</span> Strength · broad coverage</h3><p>VanillaNet activates over a <span class="hl-g">much larger</span> region. With many channels and FLOPs per layer, it extracts <em>all</em> relevant signal across the image rather than a narrow patch.</p></div>
+    <div class="card"><h3><span class="ic">🟡</span> Limit · weaker isolation</h3><p>Its lower non-linearity makes it <span class="hl-a">less able to focus</span> on a single discriminative part — the honest trade-off of going shallow.</p></div>
+  </div>
+  <div class="callout v"><p><strong>Interpretation:</strong> depth buys the ability to carve out fine, part-specific attention. VanillaNet compensates with width and brute coverage — good enough to match deep nets on classification, by a different mechanism.</p></div>
+</section>
+
+<!-- 13 · IMPLEMENTATION RECAP -->
+<section class="slide" data-title="In practice">
+  <span class="eyebrow green">Part 3 · The implementation, end to end</span>
+  <h2 class="head">Two models in one codebase.</h2>
+  <p class="body">The released implementation cleanly separates the <span class="hl-p">training graph</span> from the <span class="hl-g">deployment graph</span>:</p>
+  <div class="cards cols-2">
+    <div class="card" style="border-color:var(--primary)"><h3><span class="ic">🏋️</span> Training mode</h3><p>Each block = Conv → BN → <span class="hl">A′(x)</span> → Conv → BN, with series activation. λ scheduled <span class="hl-p">0 → 1</span> over the deep-training epochs. Strong regularisation (large per-layer capacity).</p></div>
+    <div class="card" style="border-color:var(--accent)"><h3><span class="ic">⚡</span> Deploy mode · <code style="font-family:var(--mono);font-size:.82em">switch_to_deploy()</code></h3><p>Fold BN → conv, then fold the two convs into <span class="hl-g">one</span>. Activations are now identity, so they disappear. Result: a flat stack of single 1×1 convs.</p></div>
+  </div>
+  <div class="agenda" style="grid-template-columns:repeat(4,1fr)">
+    <div class="ag"><div class="agn">STEP 1</div><h4>Train deep</h4><p>2 convs + active A′ per stage.</p></div>
+    <div class="ag"><div class="agn">STEP 2</div><h4>Anneal λ→1</h4><p>Activations fade to identity.</p></div>
+    <div class="ag"><div class="agn">STEP 3</div><h4>Fold BN</h4><p>Eq. 2 — BN into conv.</p></div>
+    <div class="ag"><div class="agn">STEP 4</div><h4>Merge convs</h4><p>W¹·W² → one layer. Ship it.</p></div>
+  </div>
+</section>
+
+<!-- 14 · TAKEAWAYS -->
+<section class="slide" data-title="Takeaways">
+  <span class="eyebrow">Wrap-up · The contribution, distilled</span>
+  <h2 class="head">What VanillaNet really teaches.</h2>
+  <div class="cards cols-3">
+    <div class="card"><h3><span class="ic">⏱️</span> Latency ≠ FLOPs</h3><p>When compute is abundant, <span class="hl-p">depth</span> is the cost. Optimise the metric that actually bottlenecks deployment.</p></div>
+    <div class="card"><h3><span class="ic">🔀</span> Decouple train &amp; infer</h3><p>Capacity is only needed while learning. <span class="hl-g">Collapse</span> it away before serving — re-parameterisation as a design principle.</p></div>
+    <div class="card"><h3><span class="ic">〰️</span> Non-linearity &gt; depth</h3><p>For shallow nets the real bottleneck is per-layer non-linearity, not identity mapping. Fix <span class="hl-v">that</span>, drop the shortcuts.</p></div>
+  </div>
+  <div class="callout g"><p><strong>The minimalist thesis, proven:</strong> you can match ResNet and Swin with 6–13 branch-free layers — by moving every drop of complexity into training and deleting it before inference. <span class="hl">Less, done cleverly, is enough.</span></p></div>
+  <p class="body" style="margin-top:24px;font-size:.86rem">Limitations worth raising in Q&amp;A: high params/FLOPs per layer (memory-heavy), weaker part-level focus, strong-regularisation dependence, and classification-centric evaluation.</p>
+</section>
+
+<!-- 15 · END -->
+<section class="slide" data-title="Thank you">
+  <span class="eyebrow">Thank you</span>
+  <h1 class="title" style="font-size:clamp(2rem,5.5vw,3.3rem)">Questions?</h1>
+  <p class="lede">VanillaNet · the Power of Minimalism in Deep Learning — Chen, Wang, Guo &amp; Tao, Huawei Noah’s Ark Lab.</p>
+  <div class="tag-row" style="margin-top:26px">
+    <span class="chip">arXiv:2305.12972</span>
+    <span class="chip">github.com/huawei-noah/VanillaNet</span>
+    <span class="chip">Deep-training collapse</span>
+    <span class="chip">Series-informed activation</span>
+  </div>
+  <p class="kicker" style="margin-top:30px">Use <span class="kbd" style="font-family:var(--mono)">←</span> / <span class="kbd" style="font-family:var(--mono)">→</span> to revisit any section · press <span class="kbd" style="font-family:var(--mono)">F</span> for fullscreen.</p>
+</section>
+
+</main>
+
+<nav class="dots" id="dots" aria-label="Slide navigation"></nav>
+<button class="notes-fab" id="notesFab" aria-pressed="false" aria-controls="notes">🎤 Notes <span style="font-family:var(--mono);opacity:.7">S</span></button>
+<div class="navbtns">
+  <button class="nbtn" id="prev" aria-label="Previous slide">‹</button>
+  <button class="nbtn" id="next" aria-label="Next slide">›</button>
+</div>
+<aside class="notes" id="notes" hidden aria-live="polite" aria-label="Speaker notes for the current slide"></aside>
+<div class="hint" id="hint"><span class="kbd">←</span> <span class="kbd">→</span> navigate · <span class="kbd">S</span> notes · <span class="kbd">F</span> fullscreen</div>
+
+<script>
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const N=slides.length, dotsWrap=document.getElementById('dots');
+  const cur=document.getElementById('cur'), thumb=document.getElementById('thumb');
+  const prev=document.getElementById('prev'), next=document.getElementById('next');
+  const hint=document.getElementById('hint');
+  document.getElementById('tot').textContent=N;
+  const notes=document.getElementById('notes'), notesFab=document.getElementById('notesFab');
+  let i=0, notesOpen=false;
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  const NOTES=[
+    `<span class="nt"><span class="pill">Slide 1 · ~1 min</span> Open the talk</span>Lead with the hook: foundation models live by <b>“more is different.”</b> This paper flips it — <b>is less enough?</b> Don’t read the slide; just state the three numbers (6–13 layers, 79.9% at 9 layers, &gt;50% faster than ResNet-50). Credit Huawei Noah’s Ark Lab, 2023.`,
+    `<span class="nt"><span class="pill">Slide 2 · ~2 min</span> The thesis &amp; roadmap</span>State the bet plainly, then walk the three parts (intent → concepts → implementation). <b>Plant the central question:</b> only pay for a layer at inference if it earns its keep at inference. You answer it on the deep-training slide.`,
+    `<span class="nt"><span class="pill">Slide 3 · ~2.5 min</span> Requirement 1A — problem</span>Four “taxes” of complexity — all paid at <b>inference</b>. Dwell on the last card: plain nets were abandoned because a 34-layer plain net trained <b>worse</b> than an 18-layer one (gradient vanishing). That’s the door VanillaNet reopens.`,
+    `<span class="nt"><span class="pill">Slide 4 · ~2.5 min</span> The key insight</span>Slow down here. Batch size 1, A100: the GPU parallelises <b>within</b> a layer but can’t hide the sequential chain <b>across</b> layers. Point at MobileNetV3-L — 54× fewer FLOPs than VanillaNet-13, yet <b>slower</b>. Conclusion: cut layers, not FLOPs.`,
+    `<span class="nt"><span class="pill">Slide 5 · ~3 min</span> Requirement 1C — lineage</span>Tell it as a story with a fork. AlexNet/VGG (plain) → ResNet’s shortcuts rescue depth, <b>but the field reads “plain is dead”</b> → ViT/Swin/ConvNeXt pile on complexity. VanillaNet walks back to the fork and goes <b>shallow</b> instead of deep.`,
+    `<span class="nt"><span class="pill">Slide 6 · ~2.5 min</span> Requirement 3 — architecture</span>Stem → 4 stages → head, <b>one layer per stage</b>, 1×1 convs, channels double / resolution halves. No shortcuts (they tested — no help). Punchline: every layer is a single matrix multiply, so it runs on literally any hardware.`,
+    `<span class="nt"><span class="pill">Slide 7 · ~2 min</span> Set up the tension</span>A naive plain net tops out at <b>60.5%</b> — useless. The bottleneck is <b>not</b> identity mapping (shortcuts don’t help); it’s weak non-linearity. Tease the two fixes that add capacity in training but cost <b>zero</b> at inference.`,
+    `<span class="nt"><span class="pill">Slide 8 · ~4 min</span> Concept ① — do the demo</span>Drag λ from 0→1 live. Narrate: starts as two convs + an activation (deep), the activation fades to identity, then the two convs <b>merge into one</b>. λ = epoch/total. Open the math panel only if asked: fold BN, then W¹·W² because a 1×1 conv’s im2col is just a reshape. Train deep, deploy shallow, <b>bit-exact</b>.`,
+    `<span class="nt"><span class="pill">Slide 9 · ~4 min</span> Concept ② — do the demo</span>Serial stacking = more depth = more latency. VanillaNet stacks <b>in parallel</b> inside one layer: a learned weighted sum of shifted ReLUs. Drag n: 0→60.5%, 1→74.5%, 3→76.4%. Math panel: the activation is ~<b>84×</b> cheaper than the conv beside it.`,
+    `<span class="nt"><span class="pill">Slide 10 · ~3 min</span> Ablations</span>Left: series activation does the heavy lifting; deep training adds ~1 pt; together <b>+16.8%</b>. Right: shortcuts actually <b>hurt</b> — they skip activations, lowering non-linearity. This is the proof the bottleneck was non-linearity, not identity. Note it adds ~6% to AlexNet but ~0 to ResNet-50 (already non-linear).`,
+    `<span class="nt"><span class="pill">Slide 11 · ~2.5 min</span> Results</span>Headline: VanillaNet-9 = 79.9% at <b>2.91 ms</b> vs ResNet-50’s 79.8% at 7.64 ms — 2.6× faster, same accuracy. Scaled up: <b>83.1%</b>, Swin-S territory, at 13 layers. The speed edge transfers to COCO. Be honest about the high params/FLOPs per layer.`,
+    `<span class="nt"><span class="pill">Slide 12 · ~2 min</span> What it learns</span>Grad-CAM++: VanillaNet lights up a <b>wider</b> region (width + brute coverage) but is weaker at isolating one discriminative part (low non-linearity). The strength and the limit are the same coin — a good, honest point for Q&amp;A.`,
+    `<span class="nt"><span class="pill">Slide 13 · ~2 min</span> Implementation, end to end</span>Tie requirement 3 together: <b>one codebase, two graphs.</b> Training: Conv-BN-A′-Conv-BN with series activation, λ scheduled 0→1. Deploy: <code>switch_to_deploy()</code> folds BN then the two convs → a flat stack of single 1×1 convs. Walk the four steps.`,
+    `<span class="nt"><span class="pill">Slide 14 · ~2 min</span> Takeaways</span>Land three transferable lessons: latency ≠ FLOPs; decouple train vs. infer (re-parameterisation as design); for shallow nets, non-linearity &gt; depth. Close on the proven thesis, then pre-empt Q&amp;A with the limitations list.`,
+    `<span class="nt"><span class="pill">Slide 15 · Q&amp;A</span> Close</span>Thank the panel and invite questions. Have crisp answers ready for: memory/params cost, weaker part-level focus, dependence on strong regularisation, and the classification-centric evaluation.`
+  ];
+  function renderNotes(){ notes.innerHTML=NOTES[i]||''; }
+  function toggleNotes(force){
+    notesOpen = force!==undefined ? force : !notesOpen;
+    notes.hidden=!notesOpen; notesFab.classList.toggle('on',notesOpen);
+    notesFab.setAttribute('aria-pressed',String(notesOpen));
+    if(notesOpen) renderNotes();
+  }
+  notesFab.addEventListener('click',()=>toggleNotes());
+
+  slides.forEach((s,k)=>{
+    const b=document.createElement('button');
+    b.className='dot-btn'; b.setAttribute('aria-label',`Go to slide ${k+1}: ${s.dataset.title||''}`);
+    b.addEventListener('click',()=>go(k)); dotsWrap.appendChild(b);
+  });
+  const dots=[...dotsWrap.children];
+
+  function go(n){
+    n=Math.max(0,Math.min(N-1,n)); if(n===i&&slides[i].classList.contains('active'))return;
+    slides[i].classList.remove('active'); i=n; slides[i].classList.add('active');
+    cur.textContent=i+1; thumb.style.width=((i)/(N-1)*100)+'%';
+    dots.forEach((d,k)=>d.classList.toggle('on',k===i));
+    prev.disabled=i===0; next.disabled=i===N-1;
+    window.scrollTo({top:0,behavior:reduce?'auto':'smooth'});
+    if(notesOpen) renderNotes();
+    onEnter(i);
+  }
+  prev.addEventListener('click',()=>go(i-1));
+  next.addEventListener('click',()=>go(i+1));
+  document.addEventListener('keydown',e=>{
+    if(e.target.matches('input,select,textarea'))return;
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(i+1);}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1);}
+    else if(e.key==='Home'){e.preventDefault();go(0);}
+    else if(e.key==='End'){e.preventDefault();go(N-1);}
+    else if(e.key==='f'||e.key==='F'){e.preventDefault();toggleFs();}
+    else if(e.key==='s'||e.key==='S'){e.preventDefault();toggleNotes();}
+  });
+  function toggleFs(){ if(!document.fullscreenElement)document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
+  setTimeout(()=>{hint.style.opacity='0';},4200);
+
+  /* per-slide enter hooks */
+  const seen=new Set();
+  function onEnter(n){
+    const t=slides[n].dataset.title;
+    if(t==='Architecture') animArch();
+    if(t==='Depth ≠ FLOPs') animBars();
+    if(t==='Deep Training'){ if(!seen.has('dt')){buildDT();seen.add('dt');} }
+    if(t==='Series Activation'){ if(!seen.has('sa')){buildSA();seen.add('sa');} }
+  }
+
+  /* architecture reveal */
+  function animArch(){
+    const ls=[...document.querySelectorAll('#arch .layer')];
+    ls.forEach((l,k)=>{ l.classList.remove('in'); setTimeout(()=>l.classList.add('in'), reduce?0:120*k); });
+  }
+  /* bars */
+  function animBars(){
+    document.querySelectorAll('#bars .bar-fill').forEach(f=>{
+      f.style.right='100%';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{ f.style.right=(100-(+f.dataset.pct))+'%'; }));
+    });
+  }
+
+  /* ---- Deep Training interactive ---- */
+  function buildDT(){
+    const lam=document.getElementById('lam'), lamv=document.getElementById('lamv');
+    const plot=document.getElementById('dtPlot'), note=document.getElementById('dtNote'), read=document.getElementById('dtRead');
+    const mbA=document.getElementById('mbA'), mbAs=document.getElementById('mbAs'), mb2=document.getElementById('mb2'),
+          mp1=document.getElementById('mp1'), mp2=document.getElementById('mp2'), mb1=document.getElementById('mb1');
+    const W=320,H=200,pad=24, x0=pad,x1=W-pad,y0=H-pad,y1=pad;
+    const sx=v=>x0+(v+3)/6*(x1-x0), sy=v=>y0-(v+1)/5*(y0-y1); // x∈[-3,3], y∈[-1,4]
+    function curve(l){
+      let d=''; for(let px=-3;px<=3.001;px+=0.06){ const relu=Math.max(0,px); const yv=(1-l)*relu+l*px; d+=(d?'L':'M')+sx(px).toFixed(1)+' '+sy(yv).toFixed(1)+' '; } return d;
+    }
+    function axis(){ return `<line x1="${x0}" y1="${sy(0)}" x2="${x1}" y2="${sy(0)}" stroke="#1e2d47"/><line x1="${sx(0)}" y1="${y1}" x2="${sx(0)}" y2="${y0}" stroke="#1e2d47"/>`; }
+    function render(l){
+      lamv.textContent=l.toFixed(2);
+      plot.innerHTML=axis()
+        +`<path d="${curve(0)}" fill="none" stroke="#3d5070" stroke-width="1.5" stroke-dasharray="4 4"/>`
+        +`<path d="${curve(1)}" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="2 5" opacity=".55"/>`
+        +`<path d="${curve(l)}" fill="none" stroke="#4f8ef7" stroke-width="3" stroke-linecap="round"/>`
+        +`<text x="${x1-6}" y="${y1+12}" fill="#34d399" font-size="9" text-anchor="end" font-family="monospace">identity (λ=1)</text>`
+        +`<text x="${x0+4}" y="${y1+12}" fill="#3d5070" font-size="9" font-family="monospace">ReLU (λ=0)</text>`;
+      const merged=l>=0.999;
+      mbA.classList.toggle('gone',merged); mb2.classList.toggle('gone',merged);
+      mp2.style.opacity=merged?'.15':'1';
+      mb1.classList.toggle('merged',merged);
+      mb1.querySelector('.mt').textContent=merged?'Conv (W¹·W²)':'Conv ₁';
+      mb1.querySelector('.ms').textContent=merged?'single layer':'1×1';
+      mbAs.textContent = l<0.05?'active':(merged?'identity':'fading');
+      mbA.style.opacity=String(Math.max(0.18,1-l*0.85));
+      note.innerHTML = merged
+        ? 'λ=1 — activation is pure identity. The two convs are now one matrix; the middle layer is <b style="color:#34d399">deleted with zero cost</b>.'
+        : `Blue = A′(x) at λ=${l.toFixed(2)}, blended between ReLU and the dashed identity line.`;
+      read.innerHTML = merged
+        ? 'Inference graph: <b>1 conv</b> per stage.<br>Cost of trick at deploy: <b>0</b>.'
+        : `Effective depth while training: <b>2×</b> convs.<br>Non-linearity retained: <b>${Math.round((1-l)*100)}%</b>.`;
+    }
+    lam.addEventListener('input',()=>render(+lam.value));
+    render(0);
+  }
+
+  /* ---- Series Activation interactive ---- */
+  function buildSA(){
+    const ser=document.getElementById('ser'), serv=document.getElementById('serv');
+    const plot=document.getElementById('saPlot'), read=document.getElementById('saRead');
+    const W=320,H=200,pad=24,x0=pad,x1=W-pad,y0=H-pad,y1=pad;
+    const sx=v=>x0+(v+3)/6*(x1-x0), sy=v=>y0-(v+0.5)/4*(y0-y1); // x∈[-3,3] y∈[-0.5,3.5]
+    // fixed pseudo-random learned-looking coeffs
+    const A=[1,0.9,-0.7,0.8,-0.5,0.6,0.45], B=[0,-1.1,0.8,-1.8,1.5,-2.3,2.2];
+    function f(px,n){ let s=0; for(let k=0;k<=n;k++){ s+=A[k]*Math.max(0,px+B[k]); } return s/(1+n*0.18); }
+    function curve(n){ let d=''; for(let px=-3;px<=3.001;px+=0.05){ d+=(d?'L':'M')+sx(px).toFixed(1)+' '+sy(f(px,n)).toFixed(1)+' '; } return d; }
+    function render(n){
+      serv.textContent=n;
+      let ghosts='';
+      if(n>0) ghosts=`<path d="${curve(0)}" fill="none" stroke="#3d5070" stroke-width="1.3" stroke-dasharray="4 4"/>`;
+      plot.innerHTML=`<line x1="${x0}" y1="${sy(0)}" x2="${x1}" y2="${sy(0)}" stroke="#1e2d47"/><line x1="${sx(0)}" y1="${y1}" x2="${sx(0)}" y2="${y0}" stroke="#1e2d47"/>`
+        +ghosts
+        +`<path d="${curve(n)}" fill="none" stroke="#a78bfa" stroke-width="3" stroke-linecap="round"/>`
+        +`<text x="${x0+4}" y="${y1+12}" fill="#3d5070" font-size="9" font-family="monospace">${n===0?'plain ReLU':'n='+n+' terms'}</text>`;
+      const acc=[60.53,74.53,75.62,76.36,76.43,76.6,76.7][n];
+      read.innerHTML=`Series terms: <b>${n}</b><br>ImageNet top-1: <b>${acc.toFixed(2)}%</b>${n===3?' &nbsp;← paper default':''}`;
+    }
+    ser.addEventListener('input',()=>render(+ser.value));
+    render(3);
+  }
+
+  /* pre-render dynamic content so PDF export & deep-links are always complete */
+  buildDT(); seen.add('dt');
+  buildSA(); seen.add('sa');
+  document.querySelectorAll('#arch .layer').forEach(l=>l.classList.add('in'));
+  document.querySelectorAll('#bars .bar-fill').forEach(f=>f.style.right=(100-(+f.dataset.pct))+'%');
+
+  go(0);
+})();
+</script>
+</body>
+</html>
