@@ -11,6 +11,7 @@ Materials for the **Neurocle Researcher** interview seminar on
 | `vanillanet-seminar.pdf` | **Browser-free backup** — all 15 slides, one per page (export from the deck via the steps below). |
 | `architecture.svg` | VanillaNet-6 block diagram (stem → 4 stages → head). |
 | `architecture-3d.svg` | **3D isometric** view — feature volumes shrinking spatially / deepening in channels. The slide-friendly one. |
+| `architecture-paper-3d.svg` | **Faithful 3D recreation of the paper's Figure 1** (white boxes, blue kernels, pink projection cones). Every block & kernel is a separate named group — see below. |
 | `deep-training.svg` | The 3-step collapse: two convs + activation → one conv. |
 | `series-activation.svg` | Serial vs. parallel activation stacking. |
 | `depth-vs-latency.svg` | Bar chart — depth, not FLOPs, sets GPU latency. |
@@ -41,6 +42,23 @@ pdftoppm -png -r 96 vanillanet-seminar.pdf slide
 ```
 
 Or just open `vanillanet.html` and **Print → Save as PDF** (set margins to None).
+
+## `architecture-paper-3d.svg` — separable parts
+
+Each block and kernel is its own `<g id="…">`, which Figma imports as a
+**named, individually-selectable group** (transparent background, so it drops
+onto any slide):
+
+```
+block-input  block-stem  block-s1  block-s2  block-s3  block-gap  block-fc
+kernel-stem-4x4  kernel-s1-1x1  kernel-s2-1x1  kernel-s3-1x1
+arrow-avgpool  arrow-fc
+```
+
+Drag the SVG in, then in the Layers panel click any group (e.g. `block-s2` or
+`kernel-stem-4x4`), copy it, and paste it wherever you like — dimensions and
+relative placement are preserved. Each block group also holds its three faces
+(front / top / side) plus its dimension labels, so you can dive in further.
 
 ## Dropping the SVGs into Figma
 
