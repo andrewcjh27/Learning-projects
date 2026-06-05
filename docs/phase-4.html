@@ -172,6 +172,18 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .bytes-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:4px}
 
 /* =============================================
+   PHASE 4 SPECIFIC — REDIS USE CASE CARDS
+   ============================================= */
+.use-case-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+@media(max-width:700px){.use-case-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.use-case-grid{grid-template-columns:1fr}}
+.use-case-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;position:relative;overflow:hidden}
+.use-case-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--uc-color,var(--primary))}
+.uc-title{font-size:.82rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.uc-cmd{font-family:var(--mono);font-size:.67rem;color:var(--uc-color,var(--primary));background:rgba(0,0,0,.25);padding:3px 8px;border-radius:3px;display:inline-block;margin-bottom:8px;word-break:break-all}
+.uc-desc{font-size:.76rem;color:var(--muted);line-height:1.55}
+
+/* =============================================
    PHASE 4 SPECIFIC — REDIS EXPLORER
    ============================================= */
 .redis-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
@@ -561,14 +573,40 @@ revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span
     </div>
   </div>
 
-  <div class="concepts-box" style="margin-top:28px">
-    <h4>Redis Is More Than a Cache</h4>
-    <div class="concept-item"><div class="concept-key">Caching</div><div class="concept-val">Store an expensive SQL result temporarily — SETEX page:/home 60 "…" expires after 60 s. The next miss repopulates from PostgreSQL.</div></div>
-    <div class="concept-item"><div class="concept-key">Sessions</div><div class="concept-val">Keep users logged in between requests — HSET session:abc user_id 1 + EXPIRE. Auto-deleted when TTL hits zero, no manual cleanup.</div></div>
-    <div class="concept-item"><div class="concept-key">Rate limiting</div><div class="concept-val">INCR api:user:1 on every request, reject if count &gt; 100. EXPIRE resets the counter each minute. Atomic — no race conditions.</div></div>
-    <div class="concept-item"><div class="concept-key">Leaderboards</div><div class="concept-val">ZADD scores 1500 "alice" — sorted sets keep members ranked by score automatically. ZREVRANK returns position in O(log n).</div></div>
-    <div class="concept-item"><div class="concept-key">Pub/Sub</div><div class="concept-val">PUBLISH events "order:placed" — other services subscribed to "events" receive it instantly. Redis acts as a lightweight message broker.</div></div>
-    <div class="concept-item"><div class="concept-key">vs in-memory dict</div><div class="concept-val">A Python dict only works on one server. Redis is a separate process — all servers in your cluster share the same data.</div></div>
+  <div style="margin-top:28px">
+    <div style="font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:4px">Redis Is More Than a Cache</div>
+    <div class="use-case-grid">
+      <div class="use-case-card" style="--uc-color:var(--primary)">
+        <div class="uc-title">Caching</div>
+        <div class="uc-cmd">SETEX page:/home 60 "…"</div>
+        <div class="uc-desc">Store an expensive SQL result for 60 s. Auto-expires — the next miss repopulates from PostgreSQL automatically.</div>
+      </div>
+      <div class="use-case-card" style="--uc-color:var(--secondary)">
+        <div class="uc-title">Sessions</div>
+        <div class="uc-cmd">HSET session:abc user_id 1</div>
+        <div class="uc-desc">Keep users logged in between page loads. Add EXPIRE and it auto-deletes on logout — no manual cleanup needed.</div>
+      </div>
+      <div class="use-case-card" style="--uc-color:var(--orange)">
+        <div class="uc-title">Rate Limiting</div>
+        <div class="uc-cmd">INCR api:user:1</div>
+        <div class="uc-desc">Increment atomically on every request. Reject if count &gt; 100. EXPIRE resets the window each minute — no race conditions.</div>
+      </div>
+      <div class="use-case-card" style="--uc-color:var(--accent)">
+        <div class="uc-title">Leaderboards</div>
+        <div class="uc-cmd">ZADD scores 1500 "alice"</div>
+        <div class="uc-desc">Sorted sets keep members ranked by score automatically. ZREVRANK returns position in O(log n) — no ORDER BY needed.</div>
+      </div>
+      <div class="use-case-card" style="--uc-color:var(--warning)">
+        <div class="uc-title">Pub / Sub</div>
+        <div class="uc-cmd">PUBLISH events "order:placed"</div>
+        <div class="uc-desc">Subscribers receive the message instantly. Redis acts as a lightweight broker between services — no Kafka required.</div>
+      </div>
+      <div class="use-case-card" style="--uc-color:var(--dim)">
+        <div class="uc-title">Why not a Python dict?</div>
+        <div class="uc-cmd">shared across all servers</div>
+        <div class="uc-desc">An in-memory dict only lives on one server. Redis is a separate process — every server in your cluster reads the same data.</div>
+      </div>
+    </div>
   </div>
 
   <div class="concepts-box" style="margin-top:16px">
