@@ -609,48 +609,84 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
     </div>
   </div>
 
-  <!-- SCHEMA COMPARISON -->
+  <!-- INSERT COMPARISON -->
   <div class="concepts-box" style="margin-bottom:24px">
-    <h4>How the same data looks in each system</h4>
+    <h4>What happens when Andrew buys a Mouse</h4>
+    <p style="font-size:.82rem;color:var(--muted);margin:6px 0 16px">The exact same real-world event produces very different writes in each system.</p>
 
-    <div style="margin-top:16px">
-      <div style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:8px">OLTP — PostgreSQL (normalised, 4 tables)</div>
-      <div class="schema-query" style="margin-bottom:0;font-size:.78rem;line-height:1.8"><span class="kw">-- Each piece of data lives in exactly one place</span>
-<span class="kw">CREATE TABLE</span> users (id <span class="dt">SERIAL</span> <span class="kw">PRIMARY KEY</span>, name <span class="dt">VARCHAR</span>, country <span class="dt">VARCHAR</span>);
-<span class="kw">CREATE TABLE</span> products (id <span class="dt">SERIAL</span> <span class="kw">PRIMARY KEY</span>, name <span class="dt">VARCHAR</span>, price <span class="dt">DECIMAL</span>);
-<span class="kw">CREATE TABLE</span> orders (id <span class="dt">SERIAL</span> <span class="kw">PRIMARY KEY</span>, user_id <span class="dt">INT</span> <span class="kw">REFERENCES</span> users(id), created_at <span class="dt">TIMESTAMP</span>);
-<span class="kw">CREATE TABLE</span> order_items (order_id <span class="dt">INT</span>, product_id <span class="dt">INT</span>, quantity <span class="dt">INT</span>);
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:8px">OLTP — PostgreSQL</div>
+        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.75"><span class="kw">-- 2 tiny inserts, each only 3 columns</span>
+<span class="kw">INSERT INTO</span> orders (user_id, created_at)
+  <span class="kw">VALUES</span> (<span class="num">1</span>, <span class="fn">NOW</span>());
+<span class="kw">-- orders: id=5 | user_id=1 | created_at=...</span>
 
-<span class="kw">-- Insert one order: tiny row, fast write</span>
-<span class="kw">INSERT INTO</span> orders (user_id, created_at) <span class="kw">VALUES</span> (<span class="num">1</span>, <span class="fn">NOW</span>());
+<span class="kw">INSERT INTO</span> order_items (order_id, product_id, qty)
+  <span class="kw">VALUES</span> (<span class="num">5</span>, <span class="num">3</span>, <span class="num">1</span>);
+<span class="kw">-- order_items: order_id=5 | product_id=3 | qty=1</span>
 
-<span class="kw">-- Retrieve it: need 4 JOINs</span>
-<span class="kw">SELECT</span> u.name, p.name, oi.quantity
-<span class="kw">FROM</span> orders o
-<span class="kw">JOIN</span> users u        <span class="kw">ON</span> u.id = o.user_id
-<span class="kw">JOIN</span> order_items oi <span class="kw">ON</span> oi.order_id = o.id
-<span class="kw">JOIN</span> products p     <span class="kw">ON</span> p.id = oi.product_id
-<span class="kw">WHERE</span> o.id = <span class="num">1</span>;</div>
+<span class="kw">-- users and products: UNCHANGED</span>
+<span class="kw">-- Andrew's name stored once, not repeated</span></div>
+      </div>
+      <div>
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">OLAP — BigQuery / Snowflake</div>
+        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.75"><span class="kw">-- 1 fat insert — all context copied in</span>
+<span class="kw">INSERT INTO</span> fact_orders <span class="kw">VALUES</span> (
+  <span class="num">5</span>,              <span class="kw">-- order_id</span>
+  <span class="str">'2024-06-05'</span>,   <span class="kw">-- order_date</span>
+  <span class="num">1</span>, <span class="str">'Andrew'</span>, <span class="str">'US'</span>,        <span class="kw">-- ← copied from users</span>
+  <span class="num">3</span>, <span class="str">'Mouse'</span>, <span class="str">'Electronics'</span>, <span class="kw">-- ← copied from products</span>
+  <span class="num">1</span>,              <span class="kw">-- quantity</span>
+  <span class="num">29.00</span>           <span class="kw">-- revenue (pre-calculated)</span>
+);
+<span class="kw">-- 1 new row, 10 columns written to disk</span></div>
+      </div>
     </div>
 
-    <div style="margin-top:20px">
-      <div style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">OLAP — BigQuery / Snowflake (denormalised, 1 wide table)</div>
-      <div class="schema-query" style="margin-bottom:0;font-size:.78rem;line-height:1.8"><span class="kw">-- Everything pre-joined — user name duplicated in every row</span>
-<span class="kw">CREATE TABLE</span> fact_orders (
-  order_id      <span class="dt">INT</span>,   order_date   <span class="dt">DATE</span>,
-  user_id       <span class="dt">INT</span>,   user_name    <span class="dt">VARCHAR</span>,   user_country <span class="dt">VARCHAR</span>,
-  product_id    <span class="dt">INT</span>,   product_name <span class="dt">VARCHAR</span>,   category     <span class="dt">VARCHAR</span>,
-  quantity      <span class="dt">INT</span>,   revenue      <span class="dt">DECIMAL</span>
-);
+    <div style="margin-top:16px;padding:12px 14px;background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.18);border-radius:var(--r-sm)">
+      <div style="font-size:.75rem;font-weight:700;color:var(--danger);margin-bottom:8px">What if Andrew changes his name to Andy?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.6"><span class="kw">-- OLTP: update 1 row in users</span>
+<span class="kw">UPDATE</span> users <span class="kw">SET</span> name = <span class="str">'Andy'</span>
+<span class="kw">WHERE</span> id = <span class="num">1</span>;
+<span class="kw">-- Done. All orders still link via user_id=1</span></div>
+        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.6"><span class="kw">-- OLAP: update every row he appears in</span>
+<span class="kw">UPDATE</span> fact_orders <span class="kw">SET</span> user_name = <span class="str">'Andy'</span>
+<span class="kw">WHERE</span> user_id = <span class="num">1</span>;
+<span class="kw">-- Could be 10,000+ rows rewritten</span></div>
+      </div>
+    </div>
+  </div>
 
-<span class="kw">-- Same query, no joins needed</span>
-<span class="kw">SELECT</span> user_name, product_name, quantity <span class="kw">FROM</span> fact_orders <span class="kw">WHERE</span> order_id = <span class="num">1</span>;
+  <!-- ROW-BASED VS COLUMNAR -->
+  <div class="concepts-box" style="margin-bottom:24px">
+    <h4>How data physically sits on disk</h4>
+    <p style="font-size:.82rem;color:var(--muted);margin:6px 0 16px">Both systems have rows and columns. The difference is which direction data is laid out on disk — and that determines what's fast to read.</p>
 
-<span class="kw">-- Analytical query — scans 500M rows, only reads revenue column</span>
-<span class="kw">SELECT</span> user_country, <span class="fn">SUM</span>(revenue) <span class="kw">AS</span> total
-<span class="kw">FROM</span> fact_orders
-<span class="kw">WHERE</span> order_date >= <span class="str">'2024-01-01'</span>
-<span class="kw">GROUP BY</span> user_country <span class="kw">ORDER BY</span> total <span class="kw">DESC</span>;</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:8px">Row-based (OLTP — PostgreSQL)</div>
+        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.75"><span class="kw">-- Each full row stored together</span>
+Block 1: [id=<span class="num">1</span>, name=<span class="str">"Andrew"</span>, revenue=<span class="num">999</span>]
+Block 2: [id=<span class="num">2</span>, name=<span class="str">"Alice"</span>,  revenue=<span class="num">29</span> ]
+Block 3: [id=<span class="num">3</span>, name=<span class="str">"Bob"</span>,    revenue=<span class="num">1497</span>]
+
+<span class="kw">-- Fetch order #2: read 1 block → fast ✓</span>
+<span class="kw">-- SUM(revenue): must read ALL blocks</span>
+<span class="kw">--   even though name is never needed</span></div>
+      </div>
+      <div>
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Columnar (OLAP — BigQuery)</div>
+        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.75"><span class="kw">-- Each column stored together</span>
+id block:      [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span> ...]
+name block:    [<span class="str">"Andrew"</span>, <span class="str">"Alice"</span>, <span class="str">"Bob"</span> ...]
+revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span class="num">1497</span>, <span class="num">49</span> ...]
+
+<span class="kw">-- SUM(revenue): read only revenue block ✓</span>
+<span class="kw">--   id and name blocks never touched</span>
+<span class="kw">-- 500M rows: reads 4 GB instead of 40 GB</span></div>
+      </div>
     </div>
   </div>
 
