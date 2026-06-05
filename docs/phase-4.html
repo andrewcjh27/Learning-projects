@@ -526,13 +526,17 @@ revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span
   <div class="lesson-header">
     <div class="lesson-num">Lesson 03</div>
     <div class="lesson-title">Redis</div>
-    <div class="lesson-desc">Sub-millisecond in-memory key-value store — not just a cache, but a speed layer for sessions, leaderboards, rate limiting, and pub/sub messaging.</div>
+    <div class="lesson-desc">A standalone server that stores data in RAM as key→value pairs — not just a cache, but a speed layer for sessions, leaderboards, rate limiting, and pub/sub messaging.</div>
   </div>
 
   <div class="split split-wide">
     <div class="prose">
+      <h3>What is Redis?</h3>
+      <p>Redis (<em>Remote Dictionary Server</em>) is an <strong>in-memory key-value store</strong> — it holds data in RAM rather than on disk. Every value is stored under a plain string key: <code>key → value</code>. Unlike PostgreSQL, there are no tables, no columns, no SQL — just keys and values, with rich data structure types (strings, lists, hashes, sets) built on top.</p>
+      <p>It runs as a <strong>standalone server process</strong> separate from your application. Your app connects to it over a network socket, the same way it connects to PostgreSQL — which means every service and every server in your system talks to the same Redis instance.</p>
+
       <h3>In-Memory Speed</h3>
-      <p>Redis stores all data in RAM, delivering <strong>sub-millisecond latency</strong> — typical reads take 0.1–0.5ms vs 1–10ms for a PostgreSQL query. This makes it ideal as a <strong>speed layer</strong> in front of a slower database.</p>
+      <p>Because all data lives in RAM, Redis delivers <strong>sub-millisecond latency</strong> — typical reads take 0.1–0.5ms vs 1–10ms for a PostgreSQL query. The trade-off: data is bounded by how much RAM you have, and it doesn't survive a crash by default.</p>
 
       <h3>Redis vs "a Cache" — what's the difference?</h3>
       <p>A <strong>cache</strong> is a concept: store something temporarily so you don't recompute it. Redis is a <em>tool</em> that implements that — plus much more. You could cache results in a Python dict, but that only works on one server. Redis is a separate process every server in your cluster shares.</p>
