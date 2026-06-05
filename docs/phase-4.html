@@ -514,13 +514,23 @@ revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span
   <div class="lesson-header">
     <div class="lesson-num">Lesson 03</div>
     <div class="lesson-title">Redis</div>
-    <div class="lesson-desc">Sub-millisecond in-memory key-value store with rich data structures — the go-to for caching, sessions, leaderboards, and rate limiting.</div>
+    <div class="lesson-desc">Sub-millisecond in-memory key-value store — not just a cache, but a speed layer for sessions, leaderboards, rate limiting, and pub/sub messaging.</div>
   </div>
 
   <div class="split split-wide">
     <div class="prose">
       <h3>In-Memory Speed</h3>
-      <p>Redis stores all data in RAM, delivering <strong>sub-millisecond latency</strong> — typical reads take 0.1–0.5ms vs 1–10ms for a PostgreSQL query. This makes it ideal as a <strong>cache layer</strong> in front of a slower database.</p>
+      <p>Redis stores all data in RAM, delivering <strong>sub-millisecond latency</strong> — typical reads take 0.1–0.5ms vs 1–10ms for a PostgreSQL query. This makes it ideal as a <strong>speed layer</strong> in front of a slower database.</p>
+
+      <h3>Redis vs "a Cache" — what's the difference?</h3>
+      <p>A <strong>cache</strong> is a concept: store something temporarily so you don't recompute it. Redis is a <em>tool</em> that implements that — plus much more. You could cache results in a Python dict, but that only works on one server. Redis is a separate process every server in your cluster shares.</p>
+      <ul>
+        <li><strong>Caching</strong> — store an expensive SQL result: <code>SETEX page:/home 60 "&lt;html&gt;..."</code> expires in 60 s</li>
+        <li><strong>Sessions</strong> — <code>HSET session:abc user_id 1 name Andrew</code> with TTL so it auto-deletes when you log out</li>
+        <li><strong>Rate limiting</strong> — <code>INCR api:user:1</code> then reject if count &gt; 100; EXPIRE resets the window each minute</li>
+        <li><strong>Leaderboards</strong> — <code>ZADD scores 1500 "alice"</code>; <code>ZREVRANK</code> returns rank instantly without sorting a table</li>
+        <li><strong>Pub/Sub</strong> — service A publishes an event, service B receives it; Redis is the lightweight message broker in between</li>
+      </ul>
 
       <h3>Data Structures</h3>
       <ul>
@@ -530,13 +540,13 @@ revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span
         <li><strong>Sorted Set</strong> — members with float scores, auto-sorted: <code>ZADD lb 1500 "alice"</code>. Perfect for leaderboards.</li>
       </ul>
 
-      <h3>TTL &amp; Use Cases</h3>
-      <p>Set a <strong>TTL</strong> (time-to-live) on any key: <code>EXPIRE session:abc 3600</code> auto-deletes after 1 hour. Use cases: session tokens, rate limiting counters, pub/sub message broker, distributed locks.</p>
+      <h3>TTL &amp; Expiry</h3>
+      <p>Set a <strong>TTL</strong> (time-to-live) on any key: <code>EXPIRE session:abc 3600</code> auto-deletes after 1 hour — no manual cleanup needed. Query remaining time with <code>TTL session:abc</code>.</p>
 
       <h3>When Not to Use Redis</h3>
-      <p>Redis is not for data larger than RAM (it's bounded by memory), doesn't support complex joins, and is not a primary database — treat it as a fast read cache or temporary store in front of PostgreSQL.</p>
+      <p>Redis is not for data larger than RAM (it's bounded by memory), doesn't support complex joins, and is not a primary database — treat it as a fast temporary layer in front of PostgreSQL.</p>
 
-      <div class="callout"><p><strong>Cache invalidation pattern:</strong> Write to PostgreSQL first, then delete the Redis key (not update it) — the next read will miss and repopulate from the database, preventing stale data races.</p></div>
+      <div class="callout"><p><strong>Cache invalidation pattern:</strong> Write to PostgreSQL first, then <em>delete</em> the Redis key (not update it) — the next read will miss and repopulate from the database, preventing stale data races.</p></div>
     </div>
 
     <div class="demo-panel">
@@ -552,6 +562,16 @@ revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span
   </div>
 
   <div class="concepts-box" style="margin-top:28px">
+    <h4>Redis Is More Than a Cache</h4>
+    <div class="concept-item"><div class="concept-key">Caching</div><div class="concept-val">Store an expensive SQL result temporarily — SETEX page:/home 60 "…" expires after 60 s. The next miss repopulates from PostgreSQL.</div></div>
+    <div class="concept-item"><div class="concept-key">Sessions</div><div class="concept-val">Keep users logged in between requests — HSET session:abc user_id 1 + EXPIRE. Auto-deleted when TTL hits zero, no manual cleanup.</div></div>
+    <div class="concept-item"><div class="concept-key">Rate limiting</div><div class="concept-val">INCR api:user:1 on every request, reject if count &gt; 100. EXPIRE resets the counter each minute. Atomic — no race conditions.</div></div>
+    <div class="concept-item"><div class="concept-key">Leaderboards</div><div class="concept-val">ZADD scores 1500 "alice" — sorted sets keep members ranked by score automatically. ZREVRANK returns position in O(log n).</div></div>
+    <div class="concept-item"><div class="concept-key">Pub/Sub</div><div class="concept-val">PUBLISH events "order:placed" — other services subscribed to "events" receive it instantly. Redis acts as a lightweight message broker.</div></div>
+    <div class="concept-item"><div class="concept-key">vs in-memory dict</div><div class="concept-val">A Python dict only works on one server. Redis is a separate process — all servers in your cluster share the same data.</div></div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:16px">
     <h4>Redis Commands Reference</h4>
     <div class="concept-item"><div class="concept-key">SET / GET</div><div class="concept-val">Store and retrieve a string value; SETEX also sets a TTL in seconds</div></div>
     <div class="concept-item"><div class="concept-key">LPUSH / LRANGE</div><div class="concept-val">Prepend to list / read a range (0 -1 = all). RPUSH appends.</div></div>
