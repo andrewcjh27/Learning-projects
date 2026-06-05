@@ -128,6 +128,15 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .theme-toggle{background:none;border:1px solid var(--border);border-radius:20px;padding:5px 13px;color:var(--muted);cursor:pointer;font-size:.8rem;font-family:var(--font);transition:all .2s;white-space:nowrap;flex-shrink:0}
 .theme-toggle:hover{color:var(--text);border-color:var(--primary)}
 @media(max-width:640px){.phase-hero,.lesson-section{padding-left:20px;padding-right:20px}}
+.db-tbl-wrap{overflow-x:auto;margin-bottom:10px}
+.db-tbl-label{font-size:.65rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.db-tbl{border-collapse:collapse;font-size:.72rem;font-family:var(--mono);white-space:nowrap}
+.db-tbl th{background:var(--card);color:var(--dim);font-weight:700;padding:5px 10px;border:1px solid var(--border);text-align:left;font-size:.65rem;letter-spacing:.05em;text-transform:uppercase}
+.db-tbl td{padding:4px 10px;border:1px solid var(--border);color:var(--muted)}
+.db-tbl tr.db-new td{background:rgba(52,211,153,.08);color:var(--accent);font-weight:600}
+.db-tbl tr.db-ctx td{opacity:.45}
+.db-new-badge{display:inline-block;font-size:.6rem;font-weight:700;background:rgba(52,211,153,.15);color:var(--accent);border-radius:3px;padding:0 4px;margin-left:4px;vertical-align:middle}
+.db-changed-badge{display:inline-block;font-size:.6rem;font-weight:700;background:rgba(248,113,113,.15);color:var(--danger);border-radius:3px;padding:0 4px;margin-left:4px;vertical-align:middle}
 
 /* =============================================
    PHASE 4 SPECIFIC — SQL QUERY EXPLORER
@@ -233,8 +242,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <button class="lesson-tab" onclick="goLesson(2)">3. Redis</button>
       <button class="lesson-tab" onclick="goLesson(3)">4. Parquet</button>
       <button class="lesson-tab" onclick="goLesson(4)">5. Schema</button>
-      <button class="lesson-tab" onclick="goLesson(5)">6. OLTP vs OLAP</button>
-      <button class="lesson-tab" onclick="goLesson(6)">✦ Quiz</button>
+      <button class="lesson-tab" onclick="goLesson(5)">✦ Quiz</button>
     </div>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
   </div>
@@ -250,8 +258,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
     <div class="pp-step" onclick="goLesson(2)"><div class="pp-dot"></div>Redis</div>
     <div class="pp-step" onclick="goLesson(3)"><div class="pp-dot"></div>Parquet &amp; Delta Lake</div>
     <div class="pp-step" onclick="goLesson(4)"><div class="pp-dot"></div>Schema Design</div>
-    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>OLTP vs OLAP</div>
-    <div class="pp-step" onclick="goLesson(6)"><div class="pp-dot"></div>Quiz</div>
+    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>Quiz</div>
   </div>
 </div>
 
@@ -374,6 +381,126 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
     <div class="concept-item"><div class="concept-key">Concurrency</div><div class="concept-val">PostgreSQL: hundreds of concurrent writers. DuckDB: single writer, designed for single-process analytics.</div></div>
     <div class="concept-item"><div class="concept-key">DuckDB deployment</div><div class="concept-val">Runs in-process like SQLite — no server, just a library. Reads Parquet, CSV, JSON natively.</div></div>
     <div class="concept-item"><div class="concept-key">ACID transactions</div><div class="concept-val">PostgreSQL: full ACID with WAL. DuckDB: ACID within a single connection, not for concurrent multi-user writes.</div></div>
+  </div>
+
+  <!-- VISUAL TABLE COMPARISON -->
+  <div class="concepts-box" style="margin-top:28px;margin-bottom:24px">
+    <h4>What happens when Andrew buys a Mouse</h4>
+    <p style="font-size:.82rem;color:var(--muted);margin:6px 0 16px">The same real-world event produces very different writes in each system.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <!-- OLTP side -->
+      <div>
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:10px">OLTP — PostgreSQL (4 separate tables)</div>
+
+        <div class="db-tbl-label">orders</div>
+        <div class="db-tbl-wrap">
+          <table class="db-tbl">
+            <tr><th>id</th><th>user_id</th><th>created_at</th></tr>
+            <tr class="db-ctx"><td>1</td><td>1</td><td>2024-01-15</td></tr>
+            <tr class="db-ctx"><td>3</td><td>2</td><td>2024-03-02</td></tr>
+            <tr class="db-new"><td>5 <span class="db-new-badge">NEW</span></td><td>1</td><td>2024-06-05</td></tr>
+          </table>
+        </div>
+
+        <div class="db-tbl-label" style="margin-top:8px">order_items</div>
+        <div class="db-tbl-wrap">
+          <table class="db-tbl">
+            <tr><th>order_id</th><th>product_id</th><th>qty</th></tr>
+            <tr class="db-ctx"><td>1</td><td>1</td><td>2</td></tr>
+            <tr class="db-new"><td>5 <span class="db-new-badge">NEW</span></td><td>3</td><td>1</td></tr>
+          </table>
+        </div>
+
+        <div style="font-size:.72rem;color:var(--dim);margin-top:8px;font-family:var(--mono)">users &amp; products tables: unchanged ✓</div>
+      </div>
+
+      <!-- OLAP side -->
+      <div>
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px">OLAP — BigQuery (1 wide table)</div>
+
+        <div class="db-tbl-label">fact_orders</div>
+        <div class="db-tbl-wrap">
+          <table class="db-tbl">
+            <tr><th>order_id</th><th>date</th><th>user_name</th><th>country</th><th>product</th><th>category</th><th>qty</th><th>revenue</th></tr>
+            <tr class="db-ctx"><td>1</td><td>2024-01-15</td><td>Andrew</td><td>US</td><td>Laptop</td><td>Electronics</td><td>2</td><td>1998</td></tr>
+            <tr class="db-ctx"><td>3</td><td>2024-03-02</td><td>Alice</td><td>KR</td><td>Phone</td><td>Electronics</td><td>1</td><td>499</td></tr>
+            <tr class="db-new"><td>5 <span class="db-new-badge">NEW</span></td><td>2024-06-05</td><td>Andrew</td><td>US</td><td>Mouse</td><td>Electronics</td><td>1</td><td>29</td></tr>
+          </table>
+        </div>
+        <div style="font-size:.72rem;color:var(--dim);margin-top:8px;font-family:var(--mono)">"Andrew" + "US" duplicated into every order row</div>
+      </div>
+    </div>
+
+    <!-- Name change consequence -->
+    <div style="margin-top:16px;padding:12px 14px;background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.18);border-radius:var(--r-sm)">
+      <div style="font-size:.75rem;font-weight:700;color:var(--danger);margin-bottom:10px">Andrew changes his name to Andy</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div class="db-tbl-label">OLTP — update 1 row in users</div>
+          <div class="db-tbl-wrap">
+            <table class="db-tbl">
+              <tr><th>id</th><th>name</th><th>country</th></tr>
+              <tr class="db-new"><td>1</td><td>Andy <span class="db-changed-badge">changed</span></td><td>US</td></tr>
+              <tr class="db-ctx"><td>2</td><td>Alice</td><td>KR</td></tr>
+            </table>
+          </div>
+          <div style="font-size:.72rem;color:var(--accent);font-family:var(--mono);margin-top:4px">1 row updated ✓</div>
+        </div>
+        <div>
+          <div class="db-tbl-label">OLAP — every order row must change</div>
+          <div class="db-tbl-wrap">
+            <table class="db-tbl">
+              <tr><th>order_id</th><th>user_name</th><th>…</th></tr>
+              <tr class="db-new"><td>1</td><td>Andy <span class="db-changed-badge">changed</span></td><td>…</td></tr>
+              <tr class="db-ctx"><td>3</td><td>Alice</td><td>…</td></tr>
+              <tr class="db-new"><td>5</td><td>Andy <span class="db-changed-badge">changed</span></td><td>…</td></tr>
+            </table>
+          </div>
+          <div style="font-size:.72rem;color:var(--danger);font-family:var(--mono);margin-top:4px">Could be 10,000+ rows rewritten ✗</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISK LAYOUT -->
+  <div class="concepts-box" style="margin-bottom:24px">
+    <h4>How data physically sits on disk</h4>
+    <p style="font-size:.82rem;color:var(--muted);margin:6px 0 16px">Both systems have rows and columns. The difference is the physical layout on disk — and that determines what's fast to read.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:8px">Row-based (OLTP)</div>
+        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.75"><span class="kw">-- Each full row stored together on disk</span>
+Block 1: [id=<span class="num">1</span>, name=<span class="str">"Andrew"</span>, revenue=<span class="num">999</span>]
+Block 2: [id=<span class="num">2</span>, name=<span class="str">"Alice"</span>,  revenue=<span class="num">29</span> ]
+Block 3: [id=<span class="num">3</span>, name=<span class="str">"Bob"</span>,    revenue=<span class="num">1497</span>]
+
+<span class="kw">-- Fetch order #2: read 1 block → fast ✓</span>
+<span class="kw">-- SUM(revenue): reads ALL blocks — slow ✗</span></div>
+      </div>
+      <div>
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Columnar (OLAP)</div>
+        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.75"><span class="kw">-- Each column stored together on disk</span>
+id block:      [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span> ...]
+name block:    [<span class="str">"Andrew"</span>, <span class="str">"Alice"</span>, <span class="str">"Bob"</span> ...]
+revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span class="num">1497</span>, <span class="num">49</span> ...]
+
+<span class="kw">-- SUM(revenue): reads only revenue block ✓</span>
+<span class="kw">-- 500M rows: 4 GB read instead of 40 GB</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETL PIPELINE -->
+  <div class="callout" style="margin-bottom:24px">
+    <p><strong>How companies use both:</strong> The live app writes to OLTP (PostgreSQL) for speed and consistency. A nightly ETL pipeline transforms that data into the wide denormalised format and loads it into an OLAP warehouse. Analysts query the warehouse — never the production database — so reports never slow down the app.</p>
+    <div style="margin-top:10px;font-family:var(--mono);font-size:.78rem;color:var(--muted);line-height:2">
+      [Your App] → writes to → [PostgreSQL / OLTP]<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ ETL pipeline (nightly)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[BigQuery / OLAP warehouse]<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Analysts run reports &amp; dashboards]
+    </div>
   </div>
 
   <div class="lesson-nav">
@@ -572,164 +699,14 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 
   <div class="lesson-nav">
     <button class="big-btn ghost" onclick="goLesson(3)">← Previous</button>
-    <button class="big-btn primary" onclick="goLesson(5)">Next: OLTP vs OLAP →</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
   </div>
 </section>
 
-<!-- ==================== LESSON 5: OLTP vs OLAP ==================== -->
-<section class="lesson-section" id="lesson-5">
-  <div class="lesson-header">
-    <div class="lesson-num">Lesson 06</div>
-    <div class="lesson-title">OLTP vs OLAP</div>
-    <div class="lesson-desc">Two fundamentally different ways to store and query data — one for running your app, one for understanding it.</div>
-  </div>
-
-  <div class="split" style="margin-bottom:28px">
-    <div class="prose">
-      <h3>OLTP — the cash register</h3>
-      <p>Online Transaction Processing handles the live operations of your app. Every time a user places an order, logs in, or updates their profile — that's an OLTP write. It's optimised for many small, fast reads and writes happening simultaneously.</p>
-      <ul>
-        <li><strong>Row-based storage</strong> — writes one full row at a time</li>
-        <li><strong>Normalised schema</strong> — data split across many tables, no duplication</li>
-        <li><strong>ACID transactions</strong> — every write is consistent and safe</li>
-        <li><strong>Thousands of users</strong> hitting it at once</li>
-      </ul>
-      <p>Examples: PostgreSQL, MySQL, SQLite</p>
-    </div>
-    <div class="prose">
-      <h3>OLAP — the end-of-year report</h3>
-      <p>Online Analytical Processing answers questions like "what were total sales by region last quarter?" — queries that scan millions of rows and aggregate them. No individual writes, just bulk reads.</p>
-      <ul>
-        <li><strong>Columnar storage</strong> — only reads the columns you need</li>
-        <li><strong>Denormalised schema</strong> — everything pre-joined into wide tables</li>
-        <li><strong>Optimised for aggregations</strong> — SUM, COUNT, GROUP BY across TBs</li>
-        <li><strong>Few analysts</strong>, slow queries are acceptable</li>
-      </ul>
-      <p>Examples: BigQuery, Snowflake, Redshift, DuckDB</p>
-    </div>
-  </div>
-
-  <!-- INSERT COMPARISON -->
-  <div class="concepts-box" style="margin-bottom:24px">
-    <h4>What happens when Andrew buys a Mouse</h4>
-    <p style="font-size:.82rem;color:var(--muted);margin:6px 0 16px">The exact same real-world event produces very different writes in each system.</p>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div>
-        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:8px">OLTP — PostgreSQL</div>
-        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.75"><span class="kw">-- 2 tiny inserts, each only 3 columns</span>
-<span class="kw">INSERT INTO</span> orders (user_id, created_at)
-  <span class="kw">VALUES</span> (<span class="num">1</span>, <span class="fn">NOW</span>());
-<span class="kw">-- orders: id=5 | user_id=1 | created_at=...</span>
-
-<span class="kw">INSERT INTO</span> order_items (order_id, product_id, qty)
-  <span class="kw">VALUES</span> (<span class="num">5</span>, <span class="num">3</span>, <span class="num">1</span>);
-<span class="kw">-- order_items: order_id=5 | product_id=3 | qty=1</span>
-
-<span class="kw">-- users and products: UNCHANGED</span>
-<span class="kw">-- Andrew's name stored once, not repeated</span></div>
-      </div>
-      <div>
-        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">OLAP — BigQuery / Snowflake</div>
-        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.75"><span class="kw">-- 1 fat insert — all context copied in</span>
-<span class="kw">INSERT INTO</span> fact_orders <span class="kw">VALUES</span> (
-  <span class="num">5</span>,              <span class="kw">-- order_id</span>
-  <span class="str">'2024-06-05'</span>,   <span class="kw">-- order_date</span>
-  <span class="num">1</span>, <span class="str">'Andrew'</span>, <span class="str">'US'</span>,        <span class="kw">-- ← copied from users</span>
-  <span class="num">3</span>, <span class="str">'Mouse'</span>, <span class="str">'Electronics'</span>, <span class="kw">-- ← copied from products</span>
-  <span class="num">1</span>,              <span class="kw">-- quantity</span>
-  <span class="num">29.00</span>           <span class="kw">-- revenue (pre-calculated)</span>
-);
-<span class="kw">-- 1 new row, 10 columns written to disk</span></div>
-      </div>
-    </div>
-
-    <div style="margin-top:16px;padding:12px 14px;background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.18);border-radius:var(--r-sm)">
-      <div style="font-size:.75rem;font-weight:700;color:var(--danger);margin-bottom:8px">What if Andrew changes his name to Andy?</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.6"><span class="kw">-- OLTP: update 1 row in users</span>
-<span class="kw">UPDATE</span> users <span class="kw">SET</span> name = <span class="str">'Andy'</span>
-<span class="kw">WHERE</span> id = <span class="num">1</span>;
-<span class="kw">-- Done. All orders still link via user_id=1</span></div>
-        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.6"><span class="kw">-- OLAP: update every row he appears in</span>
-<span class="kw">UPDATE</span> fact_orders <span class="kw">SET</span> user_name = <span class="str">'Andy'</span>
-<span class="kw">WHERE</span> user_id = <span class="num">1</span>;
-<span class="kw">-- Could be 10,000+ rows rewritten</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ROW-BASED VS COLUMNAR -->
-  <div class="concepts-box" style="margin-bottom:24px">
-    <h4>How data physically sits on disk</h4>
-    <p style="font-size:.82rem;color:var(--muted);margin:6px 0 16px">Both systems have rows and columns. The difference is which direction data is laid out on disk — and that determines what's fast to read.</p>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div>
-        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:8px">Row-based (OLTP — PostgreSQL)</div>
-        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.75"><span class="kw">-- Each full row stored together</span>
-Block 1: [id=<span class="num">1</span>, name=<span class="str">"Andrew"</span>, revenue=<span class="num">999</span>]
-Block 2: [id=<span class="num">2</span>, name=<span class="str">"Alice"</span>,  revenue=<span class="num">29</span> ]
-Block 3: [id=<span class="num">3</span>, name=<span class="str">"Bob"</span>,    revenue=<span class="num">1497</span>]
-
-<span class="kw">-- Fetch order #2: read 1 block → fast ✓</span>
-<span class="kw">-- SUM(revenue): must read ALL blocks</span>
-<span class="kw">--   even though name is never needed</span></div>
-      </div>
-      <div>
-        <div style="font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Columnar (OLAP — BigQuery)</div>
-        <div class="schema-query" style="margin-bottom:0;font-size:.75rem;line-height:1.75"><span class="kw">-- Each column stored together</span>
-id block:      [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span> ...]
-name block:    [<span class="str">"Andrew"</span>, <span class="str">"Alice"</span>, <span class="str">"Bob"</span> ...]
-revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span class="num">1497</span>, <span class="num">49</span> ...]
-
-<span class="kw">-- SUM(revenue): read only revenue block ✓</span>
-<span class="kw">--   id and name blocks never touched</span>
-<span class="kw">-- 500M rows: reads 4 GB instead of 40 GB</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- WHY WRITES ARE FASTER IN OLTP -->
-  <div class="split" style="margin-bottom:24px">
-    <div>
-      <div class="concepts-box">
-        <h4>Why OLTP writes are faster</h4>
-        <div class="concept-item"><div class="concept-key">Small rows</div><div class="concept-val">INSERT into orders writes 3 columns. OLAP writes 10+ columns every time — more data to disk per event</div></div>
-        <div class="concept-item"><div class="concept-key">Update once</div><div class="concept-val">Andrew changes email → update 1 row in users. In OLAP, you'd update every order row he appears in</div></div>
-        <div class="concept-item"><div class="concept-key">No redundancy</div><div class="concept-val">User name stored once in users table, not repeated in 10,000 order rows</div></div>
-      </div>
-    </div>
-    <div>
-      <div class="concepts-box">
-        <h4>Why OLAP reads are faster</h4>
-        <div class="concept-item"><div class="concept-key">Columnar storage</div><div class="concept-val">SUM(revenue) only reads the revenue column from disk — skips all other columns entirely</div></div>
-        <div class="concept-item"><div class="concept-key">No joins</div><div class="concept-val">Everything pre-joined — analyst queries scan one table instead of joining 4</div></div>
-        <div class="concept-item"><div class="concept-key">Compression</div><div class="concept-val">Columns of the same type compress extremely well — "US" repeated 1M times compresses to almost nothing</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ETL PIPELINE -->
-  <div class="callout" style="margin-bottom:24px">
-    <p><strong>How companies use both:</strong> The live app writes to OLTP (PostgreSQL) for speed and consistency. A nightly ETL pipeline extracts that data, transforms it into the wide denormalised format, and loads it into an OLAP warehouse (BigQuery/Snowflake). Analysts query the warehouse — never the production database — so reports never slow down the app.</p>
-    <div style="margin-top:12px;font-family:var(--mono);font-size:.78rem;color:var(--muted);line-height:2">
-      [Your App] → writes to → [PostgreSQL / OLTP]<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ ETL pipeline (nightly)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[BigQuery / OLAP warehouse]<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Analysts run reports &amp; dashboards]
-    </div>
-  </div>
-
-  <div class="lesson-nav">
-    <button class="big-btn ghost" onclick="goLesson(4)">← Schema Design</button>
-    <button class="big-btn primary" onclick="goLesson(6)">Take the Quiz →</button>
-  </div>
-</section>
+<!-- removed standalone OLTP vs OLAP lesson — content merged into lesson-1 -->
 
 <!-- ==================== QUIZ ==================== -->
-<section class="lesson-section" id="lesson-6">
+<section class="lesson-section" id="lesson-5">
   <div class="lesson-header">
     <div class="lesson-num">Phase 04 — Quiz</div>
     <div class="lesson-title">Test Your Knowledge</div>
@@ -760,7 +737,7 @@ revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span
   </div>
 
   <div class="lesson-nav" style="margin-top:24px">
-    <button class="big-btn ghost" onclick="goLesson(5)">← Back</button>
+    <button class="big-btn ghost" onclick="goLesson(4)">← Back</button>
     <span></span>
   </div>
 </section>
@@ -784,7 +761,7 @@ function goLesson(n) {
   });
   currentLesson = n;
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (n === 6) initQuiz();
+  if (n === 5) initQuiz();
 }
 
 /* ============================================================
