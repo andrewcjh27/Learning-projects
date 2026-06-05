@@ -172,6 +172,26 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 .bytes-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:4px}
 
 /* =============================================
+   PHASE 4 SPECIFIC — PARQUET COLUMN BLOCKS
+   ============================================= */
+.pq-col-table{width:100%;border-collapse:collapse;font-size:.74rem;font-family:var(--mono);margin-bottom:10px}
+.pq-col-table td{padding:5px 10px;border:1px solid var(--border)}
+.pq-col-name{color:var(--primary);font-weight:700;white-space:nowrap;background:rgba(79,142,247,.07);width:80px}
+.pq-col-vals{color:var(--muted)}
+.pq-val{display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1px 6px;margin:1px 2px;font-size:.7rem}
+.pq-col-active .pq-col-name{color:var(--accent);background:rgba(52,211,153,.08)}
+.pq-col-active .pq-val{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.35);color:var(--accent)}
+.pq-col-dim td{opacity:.35}
+.pq-only-badge{font-size:.63rem;font-weight:700;color:var(--accent);background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);border-radius:3px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+.pq-dict-note{font-size:.67rem;color:var(--dim);font-style:italic;margin-left:4px}
+.delta-step{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);font-size:.78rem}
+.delta-step:last-child{border-bottom:none}
+.delta-icon{font-size:.9rem;margin-top:1px;flex-shrink:0}
+.delta-text{color:var(--muted);line-height:1.5}
+.delta-text strong{color:var(--text)}
+.delta-text code{font-family:var(--mono);font-size:.75rem;background:rgba(79,142,247,.1);padding:1px 5px;border-radius:3px;color:var(--primary)}
+
+/* =============================================
    PHASE 4 SPECIFIC — REDIS USE CASE CARDS
    ============================================= */
 .use-case-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
@@ -637,117 +657,176 @@ revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span
     <div class="lesson-desc">The columnar file format that powers modern data lakes, and the transaction log that turns them into reliable lakehouses.</div>
   </div>
 
+  <!-- SPLIT 1: Apache Parquet + Parquet vs OLAP  |  CSV vs Parquet visual -->
   <div class="split split-wide">
     <div class="prose">
       <h3>Apache Parquet</h3>
-      <p>Parquet is a <strong>columnar binary file format</strong> — data from each column is stored contiguously. This enables <strong>column pruning</strong>: a query selecting 2 of 8 columns reads only those 2 columns from disk, skipping the rest entirely.</p>
+      <p>Parquet is a <strong>columnar binary file format</strong> — data from each column is stored contiguously on disk. This enables <strong>column pruning</strong>: a query selecting 2 of 8 columns reads only those 2 column blocks, skipping the rest entirely.</p>
       <ul>
-        <li><strong>Run-length encoding</strong> — repeated values (e.g. "US","US","US") stored as ("US" × 3000)</li>
-        <li><strong>Dictionary encoding</strong> — low-cardinality columns store an integer index into a small dictionary</li>
-        <li><strong>Predicate pushdown</strong> — min/max statistics per row group let the engine skip row groups without reading them</li>
+        <li><strong>Run-length encoding</strong> — "US","US","US"…×3000 stored as a single <code>("US", 3000)</code> entry</li>
+        <li><strong>Dictionary encoding</strong> — stores each unique string once; values become cheap integer indices</li>
+        <li><strong>Predicate pushdown</strong> — min/max stats per row group let the engine skip blocks without reading them</li>
       </ul>
 
       <h3>Parquet vs an OLAP Database</h3>
-      <p>Both are columnar — but at different layers. Parquet is a <strong>file format</strong> (bytes on disk, no query engine). An OLAP database like BigQuery or DuckDB is a <strong>full system</strong> — it has a query engine, SQL interface, and optimizer. DuckDB can query a <code>.parquet</code> file directly; BigQuery reads Parquet from cloud storage. The same file works with any tool — that portability is the key advantage over a proprietary database.</p>
+      <p>Both are columnar — but at different layers. Parquet is a <strong>file format</strong> (bytes on disk, no query engine, no SQL). An OLAP system like BigQuery or DuckDB is a <strong>full engine</strong> with optimizer, execution, and SQL interface. The same <code>.parquet</code> file can be read by DuckDB, Spark, Pandas, BigQuery, or Athena — that portability is the key advantage over a proprietary database format.</p>
+    </div>
 
+    <div class="demo-panel">
+      <div class="demo-title">How data is stored <span>CSV vs Parquet</span></div>
+
+      <div class="db-tbl-label" style="color:var(--danger);margin-bottom:6px">CSV — text, row by row</div>
+      <div class="db-tbl-wrap" style="margin-bottom:4px">
+        <table class="mock-table" style="width:100%">
+          <thead><tr><th>id</th><th>name</th><th>country</th><th>revenue</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Andrew</td><td>US</td><td>999</td></tr>
+            <tr><td>2</td><td>Alice</td><td>US</td><td>29</td></tr>
+            <tr><td>3</td><td>Bob</td><td>KR</td><td>1497</td></tr>
+            <tr><td>4</td><td>Carol</td><td>US</td><td>49</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:.7rem;color:var(--danger);margin-bottom:14px">SUM(revenue) → must scan every row and every column to find 4 numbers</div>
+
+      <div class="db-tbl-label" style="color:var(--accent);margin-bottom:6px">Parquet — binary, column blocks</div>
+      <table class="pq-col-table">
+        <tbody>
+          <tr class="pq-col-dim">
+            <td class="pq-col-name">id</td>
+            <td class="pq-col-vals">
+              <span class="pq-val">1</span><span class="pq-val">2</span><span class="pq-val">3</span><span class="pq-val">4</span>
+              <span class="pq-dict-note">int32 × 4</span>
+            </td>
+          </tr>
+          <tr class="pq-col-dim">
+            <td class="pq-col-name">name</td>
+            <td class="pq-col-vals">
+              <span class="pq-val">0</span><span class="pq-val">1</span><span class="pq-val">2</span><span class="pq-val">3</span>
+              <span class="pq-dict-note">dict: {0:"Andrew", 1:"Alice"…}</span>
+            </td>
+          </tr>
+          <tr class="pq-col-dim">
+            <td class="pq-col-name">country</td>
+            <td class="pq-col-vals">
+              <span class="pq-val">US×3</span><span class="pq-val">KR×1</span>
+              <span class="pq-dict-note">run-length encoded</span>
+            </td>
+          </tr>
+          <tr class="pq-col-active">
+            <td class="pq-col-name">revenue</td>
+            <td class="pq-col-vals">
+              <span class="pq-val">999</span><span class="pq-val">29</span><span class="pq-val">1497</span><span class="pq-val">49</span>
+              <span class="pq-only-badge">← only this read</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="font-size:.7rem;color:var(--accent);margin-bottom:10px">SUM(revenue) → jump directly to revenue block, read 16 bytes, done</div>
+      <div class="callout" style="margin-top:0"><p style="margin:0"><strong>Binary:</strong> <code>999</code> is stored as 2 bytes <code>0x03E7</code>, not 3 text chars <code>'9','9','9'</code>. Files are 5–10× smaller. You need DuckDB, Pandas, or Spark to decode them — not a text editor.</p></div>
+    </div>
+  </div>
+
+  <!-- SPLIT 2: ACID + Delta Lake  |  transaction log example -->
+  <div class="split" style="margin-top:28px">
+    <div class="prose">
       <h3>What is ACID?</h3>
-      <p>ACID is a set of guarantees that make writes reliable. Plain Parquet files have <em>none</em> of these — if a write fails midway, you get a corrupt table. Delta Lake adds ACID via its transaction log:</p>
+      <p>ACID is a set of guarantees that make writes reliable. Plain Parquet files have <em>none</em> of these — a crash mid-write silently corrupts your table. Delta Lake adds ACID via a transaction log:</p>
       <ul>
-        <li><strong>Atomicity</strong> — a write either fully commits or fully rolls back. No half-written files left behind.</li>
+        <li><strong>Atomicity</strong> — a write either fully commits or fully rolls back. No half-written files.</li>
         <li><strong>Consistency</strong> — every commit leaves the table in a valid state matching the schema.</li>
-        <li><strong>Isolation</strong> — concurrent readers see a consistent snapshot; partial writes are invisible.</li>
+        <li><strong>Isolation</strong> — concurrent readers see a complete snapshot; partial writes are invisible.</li>
         <li><strong>Durability</strong> — once the log entry is written, the data survives crashes.</li>
       </ul>
 
       <h3>Delta Lake</h3>
-      <p>Delta Lake adds ACID transactions on top of Parquet files via a <code>_delta_log/</code> transaction log — a series of JSON commit files that record every add/remove/metadata change. Features:</p>
+      <p>Delta Lake adds ACID on top of Parquet via a <code>_delta_log/</code> folder — a series of JSON commit files recording every add/remove. Features:</p>
       <ul>
-        <li><strong>Time travel</strong> — <code>SELECT * FROM events VERSION AS OF 5</code> reads any past version</li>
+        <li><strong>Time travel</strong> — <code>VERSION AS OF 5</code> replays the log to reconstruct any past state</li>
         <li><strong>Schema enforcement</strong> — rejects writes that violate the declared schema</li>
-        <li><strong>OPTIMIZE</strong> — compacts many small files into fewer large ones (the "small files problem" fix)</li>
-        <li><strong>Z-ORDER</strong> — co-locates related data in the same files for multi-column clustering</li>
+        <li><strong>OPTIMIZE</strong> — compacts many small files into fewer large ones</li>
+        <li><strong>Z-ORDER</strong> — co-locates related data for faster multi-column filtering</li>
       </ul>
-
-      <div class="callout"><p><strong>Common pattern:</strong> Raw data lands as JSON/CSV → converted to Parquet → managed by Delta Lake as a table → queried by Spark or DuckDB.</p></div>
+      <div class="callout"><p><strong>Pipeline pattern:</strong> CSV/JSON lands raw → convert to Parquet → Delta Lake manages it → Spark or DuckDB queries it.</p></div>
     </div>
 
     <div class="demo-panel">
-      <div class="demo-title">Column Pruning Visualiser <span>interactive</span></div>
-      <div style="margin-bottom:10px;font-size:.78rem;color:var(--muted)">
-        8-column table — query selects only <strong style="color:var(--accent)">order_id</strong> and <strong style="color:var(--accent)">total</strong>
+      <div class="demo-title">Delta Lake ACID <span>example</span></div>
+
+      <div class="db-tbl-label" style="color:var(--danger);margin-bottom:8px">Without ACID — plain Parquet files</div>
+      <div class="delta-step">
+        <div class="delta-icon" style="color:var(--accent)">✓</div>
+        <div class="delta-text"><strong>part-001.parquet</strong> written (rows 1–1000)</div>
       </div>
-      <div id="pruningGrid" class="col-pruning-grid"></div>
-      <div class="pruning-stats">
-        <div class="pruning-stat">
-          <div class="pruning-stat-label">Store</div>
-          <div class="pruning-stat-val" id="pruningStoreLabel" style="color:var(--dim)">—</div>
-        </div>
-        <div class="pruning-stat">
-          <div class="pruning-stat-label">Columns Read</div>
-          <div class="pruning-stat-val" id="pruningColsRead" style="color:var(--dim)">—</div>
-        </div>
-        <div class="pruning-stat">
-          <div class="pruning-stat-label">Data Read</div>
-          <div class="pruning-stat-val" id="pruningBytesRead" style="color:var(--dim)">—</div>
-        </div>
-        <div class="pruning-stat">
-          <div class="pruning-stat-label">Savings</div>
-          <div class="pruning-stat-val" id="pruningSavings" style="color:var(--dim)">—</div>
-        </div>
+      <div class="delta-step">
+        <div class="delta-icon" style="color:var(--danger)">✗</div>
+        <div class="delta-text"><strong>Server crash!</strong> part-002.parquet never written<br><span style="color:var(--danger);font-size:.72rem">Table now silently has 1000/2000 rows — no error, just wrong data forever</span></div>
       </div>
-      <div class="btn-group" style="margin-top:14px;margin-bottom:0">
-        <button class="btn" onclick="runPruningAnim('row')">▶ Row Store (480 KB)</button>
-        <button class="btn accent" onclick="runPruningAnim('col')">▶ Column Store (120 KB)</button>
-        <button class="btn" onclick="resetPruningAnim()">↺ Reset</button>
+
+      <div class="db-tbl-label" style="color:var(--accent);margin-top:16px;margin-bottom:8px">With Delta Lake — transaction log</div>
+      <div class="delta-step">
+        <div class="delta-icon" style="color:var(--accent)">✓</div>
+        <div class="delta-text"><strong>part-001.parquet</strong> + <strong>part-002.parquet</strong> written to disk</div>
+      </div>
+      <div class="delta-step">
+        <div class="delta-icon" style="color:var(--accent)">✓</div>
+        <div class="delta-text"><code>_delta_log/00001.json</code> written atomically<br><span style="font-size:.72rem;color:var(--dim)">{"add":"part-001.parquet", "add":"part-002.parquet"}</span></div>
+      </div>
+      <div class="delta-step">
+        <div class="delta-icon" style="color:var(--primary)">↺</div>
+        <div class="delta-text"><strong>Crash before log entry?</strong> Both .parquet files exist on disk but are <em>invisible</em> — reader replays the log and sees only the last clean commit</div>
+      </div>
+
+      <div style="margin-top:16px">
+        <div class="db-tbl-label" style="margin-bottom:6px">Time travel</div>
+        <div class="sql-pre" style="margin-bottom:0"><span class="kw">SELECT</span> * <span class="kw">FROM</span> orders
+<span class="kw">VERSION AS OF</span> <span class="num">3</span>
+<span class="cmt">-- reads _delta_log up to commit 3</span>
+<span class="cmt">-- reconstructs the table as it was then</span></div>
       </div>
     </div>
   </div>
 
+  <!-- SPARK vs DUCKDB -->
   <div style="margin-top:28px">
-    <div style="font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px">How Parquet stores data — CSV vs Parquet</div>
+    <div style="font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px">Spark vs DuckDB — Who reads the Parquet?</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div>
-        <div class="db-tbl-label" style="color:var(--danger)">CSV — text, row-oriented</div>
-        <div class="sql-pre" style="margin-bottom:8px"><span class="cmt"># bytes on disk, top to bottom, row by row</span>
-<span class="str">id,name,country,revenue\n</span>
-<span class="str">1,Andrew,US,999\n</span>
-<span class="str">2,Alice,US,29\n</span>
-<span class="str">3,Bob,KR,1497\n</span>
-<span class="str">4,Carol,US,49\n</span>
-
-<span class="cmt"># SELECT SUM(revenue):</span>
-<span class="cmt"># must read ALL rows &amp; ALL columns</span>
-<span class="cmt"># to find the 4 revenue numbers</span></div>
+      <div class="demo-panel" style="padding:18px">
+        <div style="font-size:.85rem;font-weight:700;color:var(--primary);margin-bottom:10px">DuckDB</div>
+        <div style="font-size:.8rem;color:var(--muted);line-height:1.7;margin-bottom:12px">
+          <strong style="color:var(--text)">Embedded</strong> — runs inside your Python or R process. No cluster, no setup.<br>
+          <strong style="color:var(--text)">Scale</strong> — single machine, up to ~hundreds of GBs.<br>
+          <strong style="color:var(--text)">Best for</strong> — data science, local ETL, ad-hoc analysis, querying S3 files from a laptop.
+        </div>
+        <div class="sql-pre" style="margin-bottom:0;font-size:.72rem"><span class="kw">import</span> duckdb
+duckdb.<span class="fn">query</span>(<span class="str">"SELECT SUM(revenue)
+  FROM 'orders.parquet'"</span>)</div>
       </div>
-      <div>
-        <div class="db-tbl-label" style="color:var(--accent)">Parquet — binary, column-oriented</div>
-        <div class="sql-pre"><span class="cmt"># bytes on disk, grouped by column</span>
-<span class="kw">[Row Group 1]</span>
-  col <span class="fn">id</span>      → <span class="num">[1, 2, 3, 4]</span>         int32 × 4
-  col <span class="fn">name</span>    → dict: <span class="str">{0:"Andrew", 1:"Alice"...}</span>
-               values: <span class="num">[0, 1, 2, 3]</span>    <span class="cmt"># indices, not strings</span>
-  col <span class="fn">country</span> → dict: <span class="str">{0:"US", 1:"KR"}</span>
-               run-len: <span class="num">[(0,3),(1,1)]</span>  <span class="cmt"># "US"×3 then "KR"×1</span>
-  col <span class="fn">revenue</span> → <span class="num">[999, 29, 1497, 49]</span>  int32 × 4
-<span class="kw">[Footer]</span>  schema · min/max per column
-
-<span class="cmt"># SELECT SUM(revenue):</span>
-<span class="cmt"># jump directly to revenue column block</span>
-<span class="cmt"># read 16 bytes — skip everything else</span></div>
+      <div class="demo-panel" style="padding:18px">
+        <div style="font-size:.85rem;font-weight:700;color:var(--warning);margin-bottom:10px">Apache Spark</div>
+        <div style="font-size:.8rem;color:var(--muted);line-height:1.7;margin-bottom:12px">
+          <strong style="color:var(--text)">Distributed</strong> — splits work across a cluster of many machines.<br>
+          <strong style="color:var(--text)">Scale</strong> — terabytes to petabytes; data that doesn't fit on one machine.<br>
+          <strong style="color:var(--text)">Best for</strong> — large-scale pipelines on Databricks, AWS EMR, or Google Dataproc.
+        </div>
+        <div class="sql-pre" style="margin-bottom:0;font-size:.72rem"><span class="kw">from</span> pyspark.sql <span class="kw">import</span> SparkSession
+spark = SparkSession.<span class="fn">builder</span>.<span class="fn">getOrCreate</span>()
+df = spark.read.<span class="fn">parquet</span>(<span class="str">"s3://bucket/orders/"</span>)
+df.<span class="fn">groupBy</span>(<span class="str">"country"</span>).<span class="fn">sum</span>(<span class="str">"revenue"</span>).<span class="fn">show</span>()</div>
       </div>
     </div>
-    <div class="callout" style="margin-top:12px"><p><strong>Binary means</strong> the number <code>999</code> is stored as 2 raw bytes (<code>0x03E7</code>), not 3 text characters <code>'9','9','9'</code>. You can't open a .parquet file in a text editor — you need a library (DuckDB, Pandas, Spark) to decode it. The trade-off: files are 5–10× smaller and reads are far faster.</p></div>
+    <div class="callout" style="margin-top:12px"><p>Both speak SQL, both read Parquet natively. Rule of thumb: start with DuckDB on your laptop. Switch to Spark when data outgrows a single machine or when you need a managed pipeline on a cloud cluster.</p></div>
   </div>
 
   <div class="concepts-box" style="margin-top:16px">
     <h4>Parquet &amp; Delta Lake Concepts</h4>
-    <div class="concept-item"><div class="concept-key">Column pruning</div><div class="concept-val">Skip columns not referenced in SELECT — major I/O reduction for wide tables</div></div>
-    <div class="concept-item"><div class="concept-key">Row group</div><div class="concept-val">Parquet files are split into row groups (~128MB each); each stores column data + min/max statistics</div></div>
+    <div class="concept-item"><div class="concept-key">Column pruning</div><div class="concept-val">Skip columns not in SELECT — major I/O reduction for wide tables</div></div>
+    <div class="concept-item"><div class="concept-key">Row group</div><div class="concept-val">Parquet files split into ~128 MB chunks; each stores column blocks + min/max stats per column</div></div>
     <div class="concept-item"><div class="concept-key">Predicate pushdown</div><div class="concept-val">WHERE date &gt; '2024-01-01' skips row groups whose max date is earlier — no read needed</div></div>
-    <div class="concept-item"><div class="concept-key">ACID</div><div class="concept-val">Atomicity (all-or-nothing write), Consistency (valid state after every commit), Isolation (concurrent readers see a snapshot), Durability (survives crashes)</div></div>
+    <div class="concept-item"><div class="concept-key">ACID</div><div class="concept-val">Atomicity (all-or-nothing), Consistency (valid state), Isolation (snapshot reads), Durability (survives crashes)</div></div>
     <div class="concept-item"><div class="concept-key">_delta_log/</div><div class="concept-val">Delta Lake transaction log: each commit is a JSON file listing which Parquet files were added/removed</div></div>
-    <div class="concept-item"><div class="concept-key">VERSION AS OF n</div><div class="concept-val">Time travel — replay the log up to version n to reconstruct the table at that point</div></div>
-    <div class="concept-item"><div class="concept-key">OPTIMIZE + Z-ORDER</div><div class="concept-val">Compact small files; Z-ORDER clusters data by multiple columns to speed up multi-predicate queries</div></div>
+    <div class="concept-item"><div class="concept-key">VERSION AS OF n</div><div class="concept-val">Time travel — replay the log to reconstruct the table at any past commit</div></div>
+    <div class="concept-item"><div class="concept-key">DuckDB vs Spark</div><div class="concept-val">DuckDB: single-machine embedded engine, GBs scale. Spark: distributed cluster engine, TB–PB scale.</div></div>
   </div>
 
   <div class="lesson-nav">
