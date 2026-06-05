@@ -233,7 +233,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
       <button class="lesson-tab" onclick="goLesson(2)">3. Redis</button>
       <button class="lesson-tab" onclick="goLesson(3)">4. Parquet</button>
       <button class="lesson-tab" onclick="goLesson(4)">5. Schema</button>
-      <button class="lesson-tab" onclick="goLesson(5)">✦ Quiz</button>
+      <button class="lesson-tab" onclick="goLesson(5)">6. OLTP vs OLAP</button>
+      <button class="lesson-tab" onclick="goLesson(6)">✦ Quiz</button>
     </div>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀ Light</button>
   </div>
@@ -249,7 +250,8 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
     <div class="pp-step" onclick="goLesson(2)"><div class="pp-dot"></div>Redis</div>
     <div class="pp-step" onclick="goLesson(3)"><div class="pp-dot"></div>Parquet &amp; Delta Lake</div>
     <div class="pp-step" onclick="goLesson(4)"><div class="pp-dot"></div>Schema Design</div>
-    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>Quiz</div>
+    <div class="pp-step" onclick="goLesson(5)"><div class="pp-dot"></div>OLTP vs OLAP</div>
+    <div class="pp-step" onclick="goLesson(6)"><div class="pp-dot"></div>Quiz</div>
   </div>
 </div>
 
@@ -570,12 +572,128 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
 
   <div class="lesson-nav">
     <button class="big-btn ghost" onclick="goLesson(3)">← Previous</button>
-    <button class="big-btn primary" onclick="goLesson(5)">Take the Quiz →</button>
+    <button class="big-btn primary" onclick="goLesson(5)">Next: OLTP vs OLAP →</button>
+  </div>
+</section>
+
+<!-- ==================== LESSON 5: OLTP vs OLAP ==================== -->
+<section class="lesson-section" id="lesson-5">
+  <div class="lesson-header">
+    <div class="lesson-num">Lesson 06</div>
+    <div class="lesson-title">OLTP vs OLAP</div>
+    <div class="lesson-desc">Two fundamentally different ways to store and query data — one for running your app, one for understanding it.</div>
+  </div>
+
+  <div class="split" style="margin-bottom:28px">
+    <div class="prose">
+      <h3>OLTP — the cash register</h3>
+      <p>Online Transaction Processing handles the live operations of your app. Every time a user places an order, logs in, or updates their profile — that's an OLTP write. It's optimised for many small, fast reads and writes happening simultaneously.</p>
+      <ul>
+        <li><strong>Row-based storage</strong> — writes one full row at a time</li>
+        <li><strong>Normalised schema</strong> — data split across many tables, no duplication</li>
+        <li><strong>ACID transactions</strong> — every write is consistent and safe</li>
+        <li><strong>Thousands of users</strong> hitting it at once</li>
+      </ul>
+      <p>Examples: PostgreSQL, MySQL, SQLite</p>
+    </div>
+    <div class="prose">
+      <h3>OLAP — the end-of-year report</h3>
+      <p>Online Analytical Processing answers questions like "what were total sales by region last quarter?" — queries that scan millions of rows and aggregate them. No individual writes, just bulk reads.</p>
+      <ul>
+        <li><strong>Columnar storage</strong> — only reads the columns you need</li>
+        <li><strong>Denormalised schema</strong> — everything pre-joined into wide tables</li>
+        <li><strong>Optimised for aggregations</strong> — SUM, COUNT, GROUP BY across TBs</li>
+        <li><strong>Few analysts</strong>, slow queries are acceptable</li>
+      </ul>
+      <p>Examples: BigQuery, Snowflake, Redshift, DuckDB</p>
+    </div>
+  </div>
+
+  <!-- SCHEMA COMPARISON -->
+  <div class="concepts-box" style="margin-bottom:24px">
+    <h4>How the same data looks in each system</h4>
+
+    <div style="margin-top:16px">
+      <div style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:8px">OLTP — PostgreSQL (normalised, 4 tables)</div>
+      <div class="schema-query" style="margin-bottom:0;font-size:.78rem;line-height:1.8"><span class="kw">-- Each piece of data lives in exactly one place</span>
+<span class="kw">CREATE TABLE</span> users (id <span class="dt">SERIAL</span> <span class="kw">PRIMARY KEY</span>, name <span class="dt">VARCHAR</span>, country <span class="dt">VARCHAR</span>);
+<span class="kw">CREATE TABLE</span> products (id <span class="dt">SERIAL</span> <span class="kw">PRIMARY KEY</span>, name <span class="dt">VARCHAR</span>, price <span class="dt">DECIMAL</span>);
+<span class="kw">CREATE TABLE</span> orders (id <span class="dt">SERIAL</span> <span class="kw">PRIMARY KEY</span>, user_id <span class="dt">INT</span> <span class="kw">REFERENCES</span> users(id), created_at <span class="dt">TIMESTAMP</span>);
+<span class="kw">CREATE TABLE</span> order_items (order_id <span class="dt">INT</span>, product_id <span class="dt">INT</span>, quantity <span class="dt">INT</span>);
+
+<span class="kw">-- Insert one order: tiny row, fast write</span>
+<span class="kw">INSERT INTO</span> orders (user_id, created_at) <span class="kw">VALUES</span> (<span class="num">1</span>, <span class="fn">NOW</span>());
+
+<span class="kw">-- Retrieve it: need 4 JOINs</span>
+<span class="kw">SELECT</span> u.name, p.name, oi.quantity
+<span class="kw">FROM</span> orders o
+<span class="kw">JOIN</span> users u        <span class="kw">ON</span> u.id = o.user_id
+<span class="kw">JOIN</span> order_items oi <span class="kw">ON</span> oi.order_id = o.id
+<span class="kw">JOIN</span> products p     <span class="kw">ON</span> p.id = oi.product_id
+<span class="kw">WHERE</span> o.id = <span class="num">1</span>;</div>
+    </div>
+
+    <div style="margin-top:20px">
+      <div style="font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">OLAP — BigQuery / Snowflake (denormalised, 1 wide table)</div>
+      <div class="schema-query" style="margin-bottom:0;font-size:.78rem;line-height:1.8"><span class="kw">-- Everything pre-joined — user name duplicated in every row</span>
+<span class="kw">CREATE TABLE</span> fact_orders (
+  order_id      <span class="dt">INT</span>,   order_date   <span class="dt">DATE</span>,
+  user_id       <span class="dt">INT</span>,   user_name    <span class="dt">VARCHAR</span>,   user_country <span class="dt">VARCHAR</span>,
+  product_id    <span class="dt">INT</span>,   product_name <span class="dt">VARCHAR</span>,   category     <span class="dt">VARCHAR</span>,
+  quantity      <span class="dt">INT</span>,   revenue      <span class="dt">DECIMAL</span>
+);
+
+<span class="kw">-- Same query, no joins needed</span>
+<span class="kw">SELECT</span> user_name, product_name, quantity <span class="kw">FROM</span> fact_orders <span class="kw">WHERE</span> order_id = <span class="num">1</span>;
+
+<span class="kw">-- Analytical query — scans 500M rows, only reads revenue column</span>
+<span class="kw">SELECT</span> user_country, <span class="fn">SUM</span>(revenue) <span class="kw">AS</span> total
+<span class="kw">FROM</span> fact_orders
+<span class="kw">WHERE</span> order_date >= <span class="str">'2024-01-01'</span>
+<span class="kw">GROUP BY</span> user_country <span class="kw">ORDER BY</span> total <span class="kw">DESC</span>;</div>
+    </div>
+  </div>
+
+  <!-- WHY WRITES ARE FASTER IN OLTP -->
+  <div class="split" style="margin-bottom:24px">
+    <div>
+      <div class="concepts-box">
+        <h4>Why OLTP writes are faster</h4>
+        <div class="concept-item"><div class="concept-key">Small rows</div><div class="concept-val">INSERT into orders writes 3 columns. OLAP writes 10+ columns every time — more data to disk per event</div></div>
+        <div class="concept-item"><div class="concept-key">Update once</div><div class="concept-val">Andrew changes email → update 1 row in users. In OLAP, you'd update every order row he appears in</div></div>
+        <div class="concept-item"><div class="concept-key">No redundancy</div><div class="concept-val">User name stored once in users table, not repeated in 10,000 order rows</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="concepts-box">
+        <h4>Why OLAP reads are faster</h4>
+        <div class="concept-item"><div class="concept-key">Columnar storage</div><div class="concept-val">SUM(revenue) only reads the revenue column from disk — skips all other columns entirely</div></div>
+        <div class="concept-item"><div class="concept-key">No joins</div><div class="concept-val">Everything pre-joined — analyst queries scan one table instead of joining 4</div></div>
+        <div class="concept-item"><div class="concept-key">Compression</div><div class="concept-val">Columns of the same type compress extremely well — "US" repeated 1M times compresses to almost nothing</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETL PIPELINE -->
+  <div class="callout" style="margin-bottom:24px">
+    <p><strong>How companies use both:</strong> The live app writes to OLTP (PostgreSQL) for speed and consistency. A nightly ETL pipeline extracts that data, transforms it into the wide denormalised format, and loads it into an OLAP warehouse (BigQuery/Snowflake). Analysts query the warehouse — never the production database — so reports never slow down the app.</p>
+    <div style="margin-top:12px;font-family:var(--mono);font-size:.78rem;color:var(--muted);line-height:2">
+      [Your App] → writes to → [PostgreSQL / OLTP]<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓ ETL pipeline (nightly)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[BigQuery / OLAP warehouse]<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Analysts run reports &amp; dashboards]
+    </div>
+  </div>
+
+  <div class="lesson-nav">
+    <button class="big-btn ghost" onclick="goLesson(4)">← Schema Design</button>
+    <button class="big-btn primary" onclick="goLesson(6)">Take the Quiz →</button>
   </div>
 </section>
 
 <!-- ==================== QUIZ ==================== -->
-<section class="lesson-section" id="lesson-5">
+<section class="lesson-section" id="lesson-6">
   <div class="lesson-header">
     <div class="lesson-num">Phase 04 — Quiz</div>
     <div class="lesson-title">Test Your Knowledge</div>
@@ -606,7 +724,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
   </div>
 
   <div class="lesson-nav" style="margin-top:24px">
-    <button class="big-btn ghost" onclick="goLesson(4)">← Back</button>
+    <button class="big-btn ghost" onclick="goLesson(5)">← Back</button>
     <span></span>
   </div>
 </section>
@@ -630,7 +748,7 @@ function goLesson(n) {
   });
   currentLesson = n;
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (n === 5) initQuiz();
+  if (n === 6) initQuiz();
 }
 
 /* ============================================================
