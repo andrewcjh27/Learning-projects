@@ -647,8 +647,20 @@ revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span
         <li><strong>Predicate pushdown</strong> — min/max statistics per row group let the engine skip row groups without reading them</li>
       </ul>
 
+      <h3>Parquet vs an OLAP Database</h3>
+      <p>Both are columnar — but at different layers. Parquet is a <strong>file format</strong> (bytes on disk, no query engine). An OLAP database like BigQuery or DuckDB is a <strong>full system</strong> — it has a query engine, SQL interface, and optimizer. DuckDB can query a <code>.parquet</code> file directly; BigQuery reads Parquet from cloud storage. The same file works with any tool — that portability is the key advantage over a proprietary database.</p>
+
+      <h3>What is ACID?</h3>
+      <p>ACID is a set of guarantees that make writes reliable. Plain Parquet files have <em>none</em> of these — if a write fails midway, you get a corrupt table. Delta Lake adds ACID via its transaction log:</p>
+      <ul>
+        <li><strong>Atomicity</strong> — a write either fully commits or fully rolls back. No half-written files left behind.</li>
+        <li><strong>Consistency</strong> — every commit leaves the table in a valid state matching the schema.</li>
+        <li><strong>Isolation</strong> — concurrent readers see a consistent snapshot; partial writes are invisible.</li>
+        <li><strong>Durability</strong> — once the log entry is written, the data survives crashes.</li>
+      </ul>
+
       <h3>Delta Lake</h3>
-      <p>Delta Lake adds <strong>ACID transactions</strong> on top of Parquet files via a <code>_delta_log/</code> transaction log — a series of JSON commit files that record every add/remove/metadata change. Features:</p>
+      <p>Delta Lake adds ACID transactions on top of Parquet files via a <code>_delta_log/</code> transaction log — a series of JSON commit files that record every add/remove/metadata change. Features:</p>
       <ul>
         <li><strong>Time travel</strong> — <code>SELECT * FROM events VERSION AS OF 5</code> reads any past version</li>
         <li><strong>Schema enforcement</strong> — rejects writes that violate the declared schema</li>
@@ -691,11 +703,48 @@ revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span
     </div>
   </div>
 
-  <div class="concepts-box" style="margin-top:28px">
+  <div style="margin-top:28px">
+    <div style="font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px">How Parquet stores data — CSV vs Parquet</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div class="db-tbl-label" style="color:var(--danger)">CSV — text, row-oriented</div>
+        <div class="sql-pre" style="margin-bottom:8px"><span class="cmt"># bytes on disk, top to bottom, row by row</span>
+<span class="str">id,name,country,revenue\n</span>
+<span class="str">1,Andrew,US,999\n</span>
+<span class="str">2,Alice,US,29\n</span>
+<span class="str">3,Bob,KR,1497\n</span>
+<span class="str">4,Carol,US,49\n</span>
+
+<span class="cmt"># SELECT SUM(revenue):</span>
+<span class="cmt"># must read ALL rows &amp; ALL columns</span>
+<span class="cmt"># to find the 4 revenue numbers</span></div>
+      </div>
+      <div>
+        <div class="db-tbl-label" style="color:var(--accent)">Parquet — binary, column-oriented</div>
+        <div class="sql-pre"><span class="cmt"># bytes on disk, grouped by column</span>
+<span class="kw">[Row Group 1]</span>
+  col <span class="fn">id</span>      → <span class="num">[1, 2, 3, 4]</span>         int32 × 4
+  col <span class="fn">name</span>    → dict: <span class="str">{0:"Andrew", 1:"Alice"...}</span>
+               values: <span class="num">[0, 1, 2, 3]</span>    <span class="cmt"># indices, not strings</span>
+  col <span class="fn">country</span> → dict: <span class="str">{0:"US", 1:"KR"}</span>
+               run-len: <span class="num">[(0,3),(1,1)]</span>  <span class="cmt"># "US"×3 then "KR"×1</span>
+  col <span class="fn">revenue</span> → <span class="num">[999, 29, 1497, 49]</span>  int32 × 4
+<span class="kw">[Footer]</span>  schema · min/max per column
+
+<span class="cmt"># SELECT SUM(revenue):</span>
+<span class="cmt"># jump directly to revenue column block</span>
+<span class="cmt"># read 16 bytes — skip everything else</span></div>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:12px"><p><strong>Binary means</strong> the number <code>999</code> is stored as 2 raw bytes (<code>0x03E7</code>), not 3 text characters <code>'9','9','9'</code>. You can't open a .parquet file in a text editor — you need a library (DuckDB, Pandas, Spark) to decode it. The trade-off: files are 5–10× smaller and reads are far faster.</p></div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:16px">
     <h4>Parquet &amp; Delta Lake Concepts</h4>
     <div class="concept-item"><div class="concept-key">Column pruning</div><div class="concept-val">Skip columns not referenced in SELECT — major I/O reduction for wide tables</div></div>
     <div class="concept-item"><div class="concept-key">Row group</div><div class="concept-val">Parquet files are split into row groups (~128MB each); each stores column data + min/max statistics</div></div>
     <div class="concept-item"><div class="concept-key">Predicate pushdown</div><div class="concept-val">WHERE date &gt; '2024-01-01' skips row groups whose max date is earlier — no read needed</div></div>
+    <div class="concept-item"><div class="concept-key">ACID</div><div class="concept-val">Atomicity (all-or-nothing write), Consistency (valid state after every commit), Isolation (concurrent readers see a snapshot), Durability (survives crashes)</div></div>
     <div class="concept-item"><div class="concept-key">_delta_log/</div><div class="concept-val">Delta Lake transaction log: each commit is a JSON file listing which Parquet files were added/removed</div></div>
     <div class="concept-item"><div class="concept-key">VERSION AS OF n</div><div class="concept-val">Time travel — replay the log up to version n to reconstruct the table at that point</div></div>
     <div class="concept-item"><div class="concept-key">OPTIMIZE + Z-ORDER</div><div class="concept-val">Compact small files; Z-ORDER clusters data by multiple columns to speed up multi-predicate queries</div></div>
