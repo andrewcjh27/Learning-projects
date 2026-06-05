@@ -374,15 +374,6 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
     </div>
   </div>
 
-  <div class="concepts-box" style="margin-top:28px">
-    <h4>OLTP vs OLAP Comparison</h4>
-    <div class="concept-item"><div class="concept-key">Storage layout</div><div class="concept-val">Row store: all columns of a row together. Column store: all values of a column together.</div></div>
-    <div class="concept-item"><div class="concept-key">Query type</div><div class="concept-val">OLTP: point lookups, updates by primary key. OLAP: aggregations across millions of rows.</div></div>
-    <div class="concept-item"><div class="concept-key">Concurrency</div><div class="concept-val">PostgreSQL: hundreds of concurrent writers. DuckDB: single writer, designed for single-process analytics.</div></div>
-    <div class="concept-item"><div class="concept-key">DuckDB deployment</div><div class="concept-val">Runs in-process like SQLite — no server, just a library. Reads Parquet, CSV, JSON natively.</div></div>
-    <div class="concept-item"><div class="concept-key">ACID transactions</div><div class="concept-val">PostgreSQL: full ACID with WAL. DuckDB: ACID within a single connection, not for concurrent multi-user writes.</div></div>
-  </div>
-
   <!-- VISUAL TABLE COMPARISON -->
   <div class="concepts-box" style="margin-top:28px;margin-bottom:24px">
     <h4>What happens when Andrew buys a Mouse</h4>
@@ -501,6 +492,15 @@ revenue block: [<span class="num">999</span>, <span class="num">29</span>, <span
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Analysts run reports &amp; dashboards]
     </div>
+  </div>
+
+  <div class="concepts-box" style="margin-top:24px">
+    <h4>OLTP vs OLAP Comparison</h4>
+    <div class="concept-item"><div class="concept-key">Storage layout</div><div class="concept-val">Row store: all columns of a row together. Column store: all values of a column together.</div></div>
+    <div class="concept-item"><div class="concept-key">Query type</div><div class="concept-val">OLTP: point lookups, updates by primary key. OLAP: aggregations across millions of rows.</div></div>
+    <div class="concept-item"><div class="concept-key">Concurrency</div><div class="concept-val">PostgreSQL: hundreds of concurrent writers. DuckDB: single writer, designed for single-process analytics.</div></div>
+    <div class="concept-item"><div class="concept-key">DuckDB deployment</div><div class="concept-val">Runs in-process like SQLite — no server, just a library. Reads Parquet, CSV, JSON natively.</div></div>
+    <div class="concept-item"><div class="concept-key">ACID transactions</div><div class="concept-val">PostgreSQL: full ACID with WAL. DuckDB: ACID within a single connection, not for concurrent multi-user writes.</div></div>
   </div>
 
   <div class="lesson-nav">
