@@ -245,6 +245,16 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,13,31,.92);backdrop-filt
    ============================================= */
 .star-schema-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;overflow:visible}
 .star-schema-wrap svg{width:100%;height:360px;overflow:visible}
+.star-schema-container svg{width:100%;height:320px;overflow:visible}
+.nf-tabs{display:flex;gap:6px;margin-bottom:14px}
+.nf-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.nf-tab.active{background:var(--primary-dim);border-color:var(--primary-glow);color:var(--primary)}
+.nf-panel{display:none}.nf-panel.active{display:block}
+.nf-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.nf-verdict{font-size:.72rem;padding:6px 10px;border-radius:var(--r-sm);margin-bottom:8px;font-weight:600}
+.nf-bad{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--danger)}
+.nf-good{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);color:var(--accent)}
+.nf-rule{font-size:.74rem;color:var(--muted);margin-top:8px;padding:8px 12px;border-left:3px solid var(--primary);background:var(--primary-dim);border-radius:0 var(--r-sm) var(--r-sm) 0}
 .dim-popup{display:none;position:absolute;background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;font-size:.78rem;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:100}
 .dim-popup.visible{display:block}
 .dim-popup-title{font-weight:700;font-size:.85rem;margin-bottom:8px;color:var(--text)}
@@ -843,16 +853,128 @@ df.<span class="fn">groupBy</span>(<span class="str">"country"</span>).<span cla
     <div class="lesson-desc">Normalisation, star schemas, foreign keys, and JSONB — structuring data for correctness and query performance.</div>
   </div>
 
+  <!-- NORMALISATION EXAMPLES -->
+  <div style="margin-bottom:28px">
+    <div style="font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:12px">Normalisation — 1NF · 2NF · 3NF</div>
+    <div class="nf-tabs">
+      <button class="nf-tab active" onclick="showNF('1nf',this)">1NF — Atomic values</button>
+      <button class="nf-tab" onclick="showNF('2nf',this)">2NF — No partial deps</button>
+      <button class="nf-tab" onclick="showNF('3nf',this)">3NF — No transitive deps</button>
+    </div>
+
+    <!-- 1NF -->
+    <div class="nf-panel active" id="nf-1nf">
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Rule:</strong> every cell must hold one value only — no lists, no comma-separated strings.</p>
+      <div class="nf-split">
+        <div>
+          <div class="nf-verdict nf-bad">✗ Violates 1NF</div>
+          <div class="db-tbl-wrap"><table class="db-tbl">
+            <thead><tr><th>student_id</th><th>courses</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td style="color:var(--danger)">"Math, Science, English"</td></tr>
+              <tr><td>2</td><td style="color:var(--danger)">"History, Math"</td></tr>
+            </tbody>
+          </table></div>
+          <div style="font-size:.71rem;color:var(--danger);margin-top:5px">Can't query WHERE course = 'Math' reliably</div>
+        </div>
+        <div>
+          <div class="nf-verdict nf-good">✓ 1NF — one value per cell</div>
+          <div class="db-tbl-wrap"><table class="db-tbl">
+            <thead><tr><th>student_id</th><th>course</th></tr></thead>
+            <tbody>
+              <tr class="db-new"><td>1</td><td>Math</td></tr>
+              <tr class="db-new"><td>1</td><td>Science</td></tr>
+              <tr class="db-new"><td>1</td><td>English</td></tr>
+              <tr><td>2</td><td>History</td></tr>
+              <tr><td>2</td><td>Math</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+      <div class="nf-rule">Each row represents one fact. Primary key is now (student_id, course) — a composite key.</div>
+    </div>
+
+    <!-- 2NF -->
+    <div class="nf-panel" id="nf-2nf">
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Rule:</strong> every non-key column must depend on the <em>full</em> composite key, not just part of it.</p>
+      <div class="nf-split">
+        <div>
+          <div class="nf-verdict nf-bad">✗ Violates 2NF</div>
+          <div class="db-tbl-wrap"><table class="db-tbl">
+            <thead><tr><th>order_id</th><th>product_id</th><th>customer_name</th><th>price</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>42</td><td style="color:var(--danger)">Andrew</td><td>29.00</td></tr>
+              <tr><td>1</td><td>99</td><td style="color:var(--danger)">Andrew</td><td>9.99</td></tr>
+              <tr><td>2</td><td>42</td><td style="color:var(--danger)">Alice</td><td>29.00</td></tr>
+            </tbody>
+          </table></div>
+          <div style="font-size:.71rem;color:var(--danger);margin-top:5px">customer_name depends only on order_id, not (order_id + product_id)</div>
+        </div>
+        <div>
+          <div class="nf-verdict nf-good">✓ 2NF — split into two tables</div>
+          <div class="db-tbl-wrap" style="margin-bottom:6px"><table class="db-tbl">
+            <thead><tr><th>order_id</th><th>customer_name</th></tr></thead>
+            <tbody>
+              <tr class="db-new"><td>1</td><td>Andrew</td></tr>
+              <tr class="db-new"><td>2</td><td>Alice</td></tr>
+            </tbody>
+          </table></div>
+          <div class="db-tbl-wrap"><table class="db-tbl">
+            <thead><tr><th>order_id</th><th>product_id</th><th>price</th></tr></thead>
+            <tbody>
+              <tr class="db-new"><td>1</td><td>42</td><td>29.00</td></tr>
+              <tr class="db-new"><td>1</td><td>99</td><td>9.99</td></tr>
+              <tr class="db-new"><td>2</td><td>42</td><td>29.00</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+      <div class="nf-rule">Split columns that depend only on part of the key into their own table. Andrew's name is stored once — update it in one place.</div>
+    </div>
+
+    <!-- 3NF -->
+    <div class="nf-panel" id="nf-3nf">
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px"><strong style="color:var(--text)">Rule:</strong> non-key columns must depend only on the primary key — not on each other.</p>
+      <div class="nf-split">
+        <div>
+          <div class="nf-verdict nf-bad">✗ Violates 3NF</div>
+          <div class="db-tbl-wrap"><table class="db-tbl">
+            <thead><tr><th>emp_id</th><th>dept</th><th>dept_floor</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Engineering</td><td style="color:var(--danger)">3</td></tr>
+              <tr><td>2</td><td>Marketing</td><td style="color:var(--danger)">5</td></tr>
+              <tr><td>3</td><td>Engineering</td><td style="color:var(--danger)">3</td></tr>
+            </tbody>
+          </table></div>
+          <div style="font-size:.71rem;color:var(--danger);margin-top:5px">dept_floor depends on dept, not on emp_id — transitive chain: emp → dept → floor</div>
+        </div>
+        <div>
+          <div class="nf-verdict nf-good">✓ 3NF — break the chain</div>
+          <div class="db-tbl-wrap" style="margin-bottom:6px"><table class="db-tbl">
+            <thead><tr><th>emp_id</th><th>dept</th></tr></thead>
+            <tbody>
+              <tr class="db-new"><td>1</td><td>Engineering</td></tr>
+              <tr class="db-new"><td>2</td><td>Marketing</td></tr>
+              <tr class="db-new"><td>3</td><td>Engineering</td></tr>
+            </tbody>
+          </table></div>
+          <div class="db-tbl-wrap"><table class="db-tbl">
+            <thead><tr><th>dept</th><th>floor</th></tr></thead>
+            <tbody>
+              <tr class="db-new"><td>Engineering</td><td>3</td></tr>
+              <tr class="db-new"><td>Marketing</td><td>5</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+      <div class="nf-rule">Engineering moves to floor 4? Update 1 row in departments — not 1000 employee rows.</div>
+    </div>
+  </div>
+
   <div class="split">
     <div class="prose">
       <h3>Normalisation</h3>
-      <p>Normalisation eliminates redundancy by splitting data into related tables. The main forms:</p>
-      <ul>
-        <li><strong>1NF</strong> — atomic values in every cell, no repeating groups</li>
-        <li><strong>2NF</strong> — no partial key dependencies (all non-key columns depend on the full primary key)</li>
-        <li><strong>3NF</strong> — no transitive dependencies (non-key columns depend only on the key)</li>
-      </ul>
-      <p>Normalised schemas reduce anomalies: update a city name in one place, not 10,000 rows.</p>
+      <p>The three forms above progressively eliminate redundancy. Each builds on the previous — a 3NF table is also in 2NF and 1NF. Normalised schemas mean updates happen in one place: change a department floor once, not across every employee row.</p>
 
       <h3>Star Schema</h3>
       <p>For analytics, normalised schemas require many joins. A <strong>star schema</strong> denormalises into a central <strong>fact table</strong> (quantitative events: sales, clicks) surrounded by <strong>dimension tables</strong> (descriptive context: customer, product, date). Fewer joins, faster analytics.</p>
@@ -1548,6 +1670,14 @@ function showDimPopup(t) {
       }
     });
   }, 10);
+}
+
+/* NF tabs */
+function showNF(id, btn) {
+  document.querySelectorAll('.nf-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nf-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('nf-' + id).classList.add('active');
+  btn.classList.add('active');
 }
 
 buildStarSchema();
