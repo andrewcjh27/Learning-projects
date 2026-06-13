@@ -1,98 +1,162 @@
-# Hand Tab Controller
+# Hand Gesture Controller
 
-A webcam-based hand-motion gesture controller for a tab/panel workspace. Wave,
-pinch, point, and grab to switch, move, resize, and split tabs — all mappings
-are customizable through a JSON config.
+A webcam-based hand-motion gesture controller. Wave, pinch, point, and grab to
+**switch apps, move/resize windows, and tile them side by side** — controlling
+**real macOS windows** (Notes, Terminal, VS Code, Figma, any app). An optional
+in-app "canvas" demo backend is kept for testing without permissions.
 
-It uses [MediaPipe Hands](https://developers.google.com/mediapipe) for hand
-tracking and OpenCV for the camera feed and workspace rendering. The gesture
-math and workspace logic are kept in pure, dependency-light modules so they can
-be unit-tested without a camera.
+It uses [MediaPipe Hands](https://developers.google.com/mediapipe) (the new
+**Tasks API** `HandLandmarker`, VIDEO mode) for hand tracking and OpenCV for the
+camera feed. Window control is driven by `osascript` (AppleScript + System
+Events) — no extra Python dependencies. The gesture math, config, and routing
+are pure, dependency-light modules so they can be unit-tested without a camera.
 
-## Install
+## Requirements & install (Apple Silicon)
+
+MediaPipe must run under a **native arm64** Python. The bundled venv is arm64
+Python 3.11. The system `python3` may be x86_64/Rosetta and will crash on
+`import mediapipe` (no AVX). Always use the venv:
 
 ```bash
-pip install -r requirements.txt
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python main.py
 ```
 
-Requires Python 3.10+. `mediapipe` and `opencv-python` are only needed to run
-the live app; the logic modules and tests do not import them.
+### Tasks API model file
+
+The app needs the `hand_landmarker.task` model in the project root. If missing,
+download it:
+
+```bash
+curl -sSL -o hand_landmarker.task \
+  https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
+```
+
+## Permissions (macOS)
+
+OS window-control mode needs **both**:
+
+1. **Camera** — System Settings → Privacy & Security → Camera → enable your
+   terminal/IDE.
+2. **Accessibility** — System Settings → Privacy & Security → **Accessibility**
+   → enable **Terminal** (or your IDE). **Quit and reopen** the terminal after
+   granting, or the permission won't take effect.
+
+`osascript` drives other apps' windows via System Events, which is gated behind
+Accessibility. Without it, window actions fail gracefully (an error string is
+logged on screen) instead of crashing.
+
+## Choosing a camera
+
+On macOS, the built-in **FaceTime HD Camera** is usually index `0`, but an
+**iPhone Continuity Camera** can claim a slot. List what's available:
+
+```bash
+.venv/bin/python main.py --list-cameras
+```
+
+This probes indices 0–5 and prints which open and their frame size. Then pick
+one either on the command line or in `gestures.json`:
+
+```bash
+.venv/bin/python main.py --camera 0          # force built-in webcam
+```
+
+```json
+{ "camera_index": 0 }
+```
+
+A valid `--camera` flag overrides `camera_index` in the config.
 
 ## Run
 
 ```bash
-python main.py
+.venv/bin/python main.py                # OS window control (default backend)
+.venv/bin/python main.py --backend canvas   # in-app demo, no Accessibility needed
 ```
 
-Press `q` to quit. The window shows the workspace with tabs plus a mirrored
-camera thumbnail (top-right) with hand-landmark dots, and an on-screen list of
-the active gesture mappings.
+Press `q` to quit. The OpenCV window shows the mirrored camera feed with
+hand-landmark dots and a text panel listing the gesture mappings and the most
+recent fired actions, so you can see what was detected and what happened.
 
-## Gestures
+## Gestures → window actions (OS mode)
 
-| Gesture           | Type             | Default action       | What it does                                  |
-|-------------------|------------------|----------------------|-----------------------------------------------|
-| Open-hand swipe ← | `SWIPE_LEFT`     | `prev_tab`           | Switch to the previous tab                    |
-| Open-hand swipe → | `SWIPE_RIGHT`    | `next_tab`           | Switch to the next tab                        |
-| Pinch in          | `PINCH`          | `resize_shrink`      | Shrink the active tab                         |
-| Pinch out (spread)| `SPREAD`         | `resize_grow`        | Grow the active tab                           |
-| Point (index)     | `POINT`          | `begin_move`         | Start dragging the active tab                 |
-| Grab / fist       | `GRAB`           | `drag_move`          | Drag the active tab to follow the hand        |
-| Open palm         | `OPEN_PALM`      | `release`            | Release a drag                                |
-| Two-hand pinch    | `TWO_HAND_PINCH` | `resize_two_hand`    | Resize using the distance between both palms  |
-| V / peace sign    | `V_SIGN`         | `toggle_double_view` | Toggle the split (double-tab) view            |
+| Gesture            | Type             | Action          | What it does                                         |
+|--------------------|------------------|-----------------|------------------------------------------------------|
+| Open-hand swipe ←  | `SWIPE_LEFT`     | `prev_app`      | Bring the previous visible app to the front          |
+| Open-hand swipe →  | `SWIPE_RIGHT`    | `next_app`      | Bring the next visible app to the front              |
+| Pinch in           | `PINCH`          | `resize_shrink` | Shrink the front window (×0.9, clamped)              |
+| Pinch out (spread) | `SPREAD`         | `resize_grow`   | Grow the front window (×1.1, clamped to screen)      |
+| Point (index)      | `POINT`          | `begin_move`    | Enter move mode for the front window                 |
+| Grab / fist        | `GRAB`           | `drag_move`     | Drag the front window to follow the hand             |
+| Open palm          | `OPEN_PALM`      | `release`       | Release / commit the move                            |
+| Two-hand pinch     | `TWO_HAND_PINCH` | `resize_two_hand` | Resize the front window by the distance between hands |
+| V / peace sign     | `V_SIGN`         | `toggle_split`  | Tile the front window left, previous app right       |
 
-### Split / double view
+App cycling covers visible, non-background application processes. The hand
+centroid (normalized) is mapped to absolute screen coordinates (mirrored in x)
+so the window follows your hand during a drag.
 
-Hold up a **V / peace sign** (index + middle finger) to toggle the split
-(double-tab) view, which lays the active and next tab side by side. This is
-bound by default; you can move it to any other gesture by editing the
-`toggle_double_view` mapping in `gestures.json`, e.g.:
+### Canvas (demo) mode
+
+`--backend canvas` (or `"backend": "canvas"` in `gestures.json`) keeps the
+original in-app tab workspace. It needs no Accessibility permission and is handy
+for testing the pipeline. In that mode the same gestures map to `next_tab`,
+`prev_tab`, `begin_move`/`drag_move`/`release`, `resize_*`, and
+`toggle_double_view`.
+
+## Customizing (`gestures.json`)
 
 ```json
-"mappings": { "OPEN_PALM": "toggle_double_view" }
+{
+  "backend": "os",
+  "camera_index": 0,
+  "mappings": { "V_SIGN": "toggle_split" },
+  "thresholds": { "cooldown_ms": 600 }
+}
 ```
 
-## Customizing gestures (`gestures.json`)
-
-`gestures.json` has two sections:
-
-- **`mappings`** — gesture type → action name. Available actions: `next_tab`,
-  `prev_tab`, `resize_grow`, `resize_shrink`, `resize_two_hand`, `begin_move`,
-  `drag_move`, `release`, `toggle_double_view`.
+- **`backend`** — `"os"` (real windows, default) or `"canvas"` (in-app demo).
+- **`camera_index`** — webcam index (see `--list-cameras`).
+- **`mappings`** — gesture type → action name. Overlaid on the active backend's
+  defaults, so you can override individual gestures.
+  - OS actions: `next_app`, `prev_app`, `resize_grow`, `resize_shrink`,
+    `resize_two_hand`, `begin_move`, `drag_move`, `release`, `toggle_split`.
+  - Canvas actions: `next_tab`, `prev_tab`, `resize_grow`, `resize_shrink`,
+    `resize_two_hand`, `begin_move`, `drag_move`, `release`, `toggle_double_view`.
 - **`thresholds`** — tunable numbers:
 
-| Field              | Meaning                                                            |
-|--------------------|-------------------------------------------------------------------|
-| `swipe_velocity`   | Min horizontal palm velocity (norm. units/frame) for a swipe      |
-| `pinch_sensitivity`| Min per-frame change in thumb-index distance for PINCH/SPREAD     |
-| `pinch_threshold`  | Thumb-index distance below which a hand counts as pinched (GRAB)   |
-| `smoothing_window` | Frames used for velocity estimation                               |
-| `cooldown_ms`      | Debounce between repeated firings of a discrete action            |
-| `move_speed`       | Pixels moved per drag step                                        |
-| `resize_step`      | Fractional size change per PINCH/SPREAD                           |
+| Field               | Meaning                                                          |
+|---------------------|------------------------------------------------------------------|
+| `swipe_velocity`    | Min horizontal palm velocity (norm. units/frame) for a swipe     |
+| `pinch_sensitivity` | Min per-frame change in thumb-index distance for PINCH/SPREAD    |
+| `pinch_threshold`   | Thumb-index distance below which a hand counts as pinched (GRAB) |
+| `smoothing_window`  | Frames used for velocity estimation                              |
+| `cooldown_ms`       | Debounce between repeated firings of a discrete action           |
+| `move_speed`        | Pixels moved per drag step (canvas mode)                         |
+| `resize_step`       | Fractional size change per PINCH/SPREAD                          |
 
 Regenerate the default config any time with:
 
 ```bash
-python config.py
+.venv/bin/python config.py
 ```
 
 ## Tests
 
-Pure-logic tests run without a camera or MediaPipe:
+Pure-logic tests (gesture math, workspace, routing, AppleScript builders, camera
+index resolution, app-cycle math) run without a camera, MediaPipe, or osascript:
 
 ```bash
-python -m pytest -q
+.venv/bin/python -m pytest -q
 ```
 
 ## Troubleshooting
 
-- **Camera won't open / `VideoCapture(0)` fails**: grant camera permission to
-  your terminal/IDE (macOS: System Settings → Privacy & Security → Camera;
-  Linux: ensure your user can access `/dev/video0`). Close other apps using the
-  camera, or try a different index (`VideoCapture(1)`).
-- **`Missing required packages`**: run `pip install -r requirements.txt`.
-- **`mediapipe` won't install**: it ships wheels only for certain
-  Python/OS combinations; check the supported versions and use a matching
-  Python (3.10–3.12 generally work).
+- **Window actions do nothing / "not authorized"**: grant Accessibility to your
+  terminal and **reopen it**.
+- **Camera won't open**: grant Camera permission; run `--list-cameras` to find a
+  working index; close other apps using the camera.
+- **`mediapipe` crashes on import**: you're likely on x86_64/Rosetta Python. Use
+  the arm64 venv (`.venv/bin/python`).
+- **`Missing required packages`**: `.venv/bin/pip install -r requirements.txt`.
