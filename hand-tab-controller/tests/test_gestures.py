@@ -10,6 +10,7 @@ from gestures import (
     detect_swipe,
     is_open_palm,
     is_point,
+    is_v_sign,
     pinch_distance,
     two_hand_pinch_distance,
 )
@@ -51,6 +52,15 @@ def test_open_palm_detection():
 def test_point_detection():
     assert is_point(make_hand(open_fingers=1))
     assert not is_point(make_hand(open_fingers=4))
+
+
+def test_v_sign_detection():
+    # index + middle extended, ring + pinky folded
+    assert is_v_sign(make_hand(open_fingers=2))
+    assert not is_v_sign(make_hand(open_fingers=1))  # only index -> point
+    assert not is_v_sign(make_hand(open_fingers=4))  # open palm
+    # a V-sign must not also register as a point
+    assert not is_point(make_hand(open_fingers=2))
 
 
 def test_extended_count():

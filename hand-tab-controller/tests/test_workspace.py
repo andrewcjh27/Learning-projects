@@ -119,6 +119,14 @@ def test_drag_move_requires_begin():
     assert moved is True
 
 
+def test_v_sign_toggles_double_view_by_default():
+    ws = make_workspace(2)
+    cfg = Config()  # V_SIGN -> toggle_double_view is a default mapping
+    router = ActionRouter(ws, cfg, clock=FakeClock())
+    assert router.handle(Gesture(GestureType.V_SIGN)) is True
+    assert ws.double_view is True
+
+
 def test_toggle_double_view_remappable():
     ws = make_workspace(2)
     cfg = Config()

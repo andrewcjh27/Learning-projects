@@ -57,6 +57,7 @@ class GestureType(str, Enum):
     GRAB = "GRAB"
     OPEN_PALM = "OPEN_PALM"
     TWO_HAND_PINCH = "TWO_HAND_PINCH"
+    V_SIGN = "V_SIGN"
 
 
 @dataclass
@@ -172,6 +173,20 @@ def is_point(landmarks: np.ndarray) -> bool:
         + finger_extended(landmarks, PINKY_TIP, PINKY_MCP)
     )
     return index and others == 0
+
+
+def is_v_sign(landmarks: np.ndarray) -> bool:
+    """True for a "V"/peace sign: index and middle extended, ring and pinky down.
+
+    Used as the default gesture for toggling a double (split) tab view.
+    """
+    index = finger_extended(landmarks, INDEX_TIP, INDEX_MCP)
+    middle = finger_extended(landmarks, MIDDLE_TIP, MIDDLE_MCP)
+    others = (
+        finger_extended(landmarks, RING_TIP, 13)
+        + finger_extended(landmarks, PINKY_TIP, PINKY_MCP)
+    )
+    return index and middle and others == 0
 
 
 def two_hand_pinch_distance(
@@ -301,6 +316,9 @@ class HandLandmarks:
     def is_point(self) -> bool:
         return is_point(self.points)
 
+    def is_v_sign(self) -> bool:
+        return is_v_sign(self.points)
+
 
 class GestureRecognizer:
     """Stateful per-frame recognizer for one or two hands.
@@ -370,6 +388,10 @@ class GestureRecognizer:
                 events.append(
                     Gesture(GestureType.GRAB, magnitude=curr_pinch,
                             position=centroid, hand=label)
+                )
+            elif hand.is_v_sign():
+                events.append(
+                    Gesture(GestureType.V_SIGN, position=centroid, hand=label)
                 )
             elif hand.is_point():
                 events.append(

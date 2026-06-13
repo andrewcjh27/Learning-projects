@@ -40,12 +40,14 @@ the active gesture mappings.
 | Grab / fist       | `GRAB`           | `drag_move`          | Drag the active tab to follow the hand        |
 | Open palm         | `OPEN_PALM`      | `release`            | Release a drag                                |
 | Two-hand pinch    | `TWO_HAND_PINCH` | `resize_two_hand`    | Resize using the distance between both palms  |
+| V / peace sign    | `V_SIGN`         | `toggle_double_view` | Toggle the split (double-tab) view            |
 
 ### Split / double view
 
-Set up a split (double-tab) view by mapping any gesture to the
-`toggle_double_view` action in `gestures.json`. For example, to make an open
-palm toggle the split view:
+Hold up a **V / peace sign** (index + middle finger) to toggle the split
+(double-tab) view, which lays the active and next tab side by side. This is
+bound by default; you can move it to any other gesture by editing the
+`toggle_double_view` mapping in `gestures.json`, e.g.:
 
 ```json
 "mappings": { "OPEN_PALM": "toggle_double_view" }

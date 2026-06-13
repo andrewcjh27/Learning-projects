@@ -39,6 +39,7 @@ DEFAULT_MAPPINGS: Dict[str, str] = {
     "GRAB": "drag_move",
     "OPEN_PALM": "release",
     "TWO_HAND_PINCH": "resize_two_hand",
+    "V_SIGN": "toggle_double_view",
 }
 
 DEFAULT_THRESHOLDS: Dict[str, float] = {

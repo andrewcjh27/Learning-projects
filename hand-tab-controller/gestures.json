@@ -7,7 +7,8 @@
     "POINT": "begin_move",
     "GRAB": "drag_move",
     "OPEN_PALM": "release",
-    "TWO_HAND_PINCH": "resize_two_hand"
+    "TWO_HAND_PINCH": "resize_two_hand",
+    "V_SIGN": "toggle_double_view"
   },
   "thresholds": {
     "swipe_velocity": 0.04,
