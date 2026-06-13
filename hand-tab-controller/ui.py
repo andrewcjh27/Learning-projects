@@ -81,6 +81,30 @@ def draw_landmarks(frame, hands_points: List, color=ACCENT):
     return frame
 
 
+def overlay_text_panel(frame, lines: List[str]):
+    """Draw a semi-transparent help/log panel over a (mirrored) camera frame.
+
+    Used in OS window-control mode where there is no tab canvas — the user sees
+    the camera feed plus what gesture/action fired. Returns the frame (or None).
+    """
+    if not CV2_AVAILABLE or frame is None:
+        return frame
+    mirrored = cv2.flip(frame, 1)
+    if not lines:
+        return mirrored
+    h, w = mirrored.shape[:2]
+    panel_h = 22 * len(lines) + 16
+    overlay = mirrored.copy()
+    cv2.rectangle(overlay, (0, 0), (w, panel_h), BG, thickness=-1)
+    cv2.addWeighted(overlay, 0.6, mirrored, 0.4, 0, mirrored)
+    y = 24
+    for line in lines:
+        cv2.putText(mirrored, line, (12, y), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, TEXT, 1, cv2.LINE_AA)
+        y += 22
+    return mirrored
+
+
 def overlay_camera(canvas, frame, scale: float = 0.25):
     """Mirror the camera frame and paste it into the canvas top-right corner."""
     if not CV2_AVAILABLE or canvas is None or frame is None:

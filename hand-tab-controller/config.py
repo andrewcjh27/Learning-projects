@@ -42,6 +42,25 @@ DEFAULT_MAPPINGS: Dict[str, str] = {
     "V_SIGN": "toggle_double_view",
 }
 
+# When ``backend`` is "os", the gesture *type* names stay the same but they are
+# routed to the OS window controller via these action names. This is the set the
+# OSActionRouter understands.
+DEFAULT_OS_MAPPINGS: Dict[str, str] = {
+    "SWIPE_LEFT": "prev_app",
+    "SWIPE_RIGHT": "next_app",
+    "PINCH": "resize_shrink",
+    "SPREAD": "resize_grow",
+    "POINT": "begin_move",
+    "GRAB": "drag_move",
+    "OPEN_PALM": "release",
+    "TWO_HAND_PINCH": "resize_two_hand",
+    "V_SIGN": "toggle_split",
+}
+
+# Valid backends: "os" drives real macOS windows; "canvas" is the in-app demo.
+DEFAULT_BACKEND = "os"
+DEFAULT_CAMERA_INDEX = 0
+
 DEFAULT_THRESHOLDS: Dict[str, float] = {
     "swipe_velocity": 0.04,
     "pinch_sensitivity": 0.05,
@@ -61,6 +80,8 @@ class Config:
     thresholds: Dict[str, float] = field(
         default_factory=lambda: dict(DEFAULT_THRESHOLDS)
     )
+    backend: str = DEFAULT_BACKEND
+    camera_index: int = DEFAULT_CAMERA_INDEX
 
     def action_for(self, gesture_type: str) -> str | None:
         """Return the action name mapped to a gesture type, or None."""
@@ -71,20 +92,46 @@ class Config:
         return float(self.thresholds.get(name, DEFAULT_THRESHOLDS[name]))
 
 
+def resolve_camera_index(config_index: int, cli_index: int | None) -> int:
+    """Resolve the camera index: a valid CLI override wins over the config.
+
+    ``cli_index`` is ``None`` when ``--camera`` was not passed. Negative indices
+    are treated as "unset" and fall back to the config value.
+    """
+    if cli_index is not None and cli_index >= 0:
+        return int(cli_index)
+    return int(config_index)
+
+
 def load_config(path: str | None = None) -> Config:
     """Load configuration from JSON, merging over defaults.
 
     Missing file or missing keys fall back to the documented defaults.
     """
     path = path or DEFAULT_CONFIG_PATH
-    mappings = dict(DEFAULT_MAPPINGS)
-    thresholds = dict(DEFAULT_THRESHOLDS)
+    data: Dict = {}
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as fh:
             data = json.load(fh)
-        mappings.update(data.get("mappings", {}))
-        thresholds.update(data.get("thresholds", {}))
-    return Config(mappings=mappings, thresholds=thresholds)
+
+    backend = str(data.get("backend", DEFAULT_BACKEND)).lower()
+    if backend not in ("os", "canvas"):
+        backend = DEFAULT_BACKEND
+    camera_index = int(data.get("camera_index", DEFAULT_CAMERA_INDEX))
+
+    # Pick the base mapping set for the active backend, then overlay any
+    # user-supplied mappings so per-gesture overrides still work.
+    base = dict(DEFAULT_OS_MAPPINGS) if backend == "os" else dict(DEFAULT_MAPPINGS)
+    base.update(data.get("mappings", {}))
+
+    thresholds = dict(DEFAULT_THRESHOLDS)
+    thresholds.update(data.get("thresholds", {}))
+    return Config(
+        mappings=base,
+        thresholds=thresholds,
+        backend=backend,
+        camera_index=camera_index,
+    )
 
 
 def write_default_config(path: str | None = None) -> str:
@@ -92,7 +139,12 @@ def write_default_config(path: str | None = None) -> str:
     path = path or DEFAULT_CONFIG_PATH
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(
-            {"mappings": DEFAULT_MAPPINGS, "thresholds": DEFAULT_THRESHOLDS},
+            {
+                "backend": DEFAULT_BACKEND,
+                "camera_index": DEFAULT_CAMERA_INDEX,
+                "mappings": DEFAULT_OS_MAPPINGS,
+                "thresholds": DEFAULT_THRESHOLDS,
+            },
             fh,
             indent=2,
         )
